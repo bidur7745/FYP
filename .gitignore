@@ -1,0 +1,41 @@
+# Node.js dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+pnpm-error.log*
+lerna-debug.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE configurations
+.idea/
+.vscode/
+*.swp
+.history/
+
+# Optional: if client and server are in separate folders
+# Uncomment and adjust paths as necessary
+
+# Client-side (React) build and dependencies
+# client/build/
+# client/node_modules/
+
+# Server-side (Node/Express) dependencies
+# server/node_modules/
+
