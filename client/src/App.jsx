@@ -13,17 +13,7 @@ import {
   Navigate
 } from 'react-router-dom'
 import Footer from './components/Footer'
-import OurStory from './pages/OurStory'
-import Support from './pages/Support'
-import CropAdvisory from './pages/CropAdvisory'
-import DiseaseDetection from './pages/DiseaseDetection'
-import Privacypolicy from './pages/Privacypolicy'
-import Term from './pages/Term'
-import ProtectedRoute from './components/ProtectedRoute'
-import UserDashboard from './pages/user/UserDashboard'
-import Admindashboard from './pages/admin/Admindashboard'
-import Experdashboard from './pages/expert/Experdashboard'
-import Unauthorized from './pages/Unauthorized'
+
 
 const AuthLayout = ({ children }) => (
   <div className="relative min-h-screen pt-28 pb-16 px-4 overflow-hidden">
@@ -53,23 +43,8 @@ function App() {
 
           <Route path="/login" element={<AuthLayout><Login /> </AuthLayout>} />
           <Route path="/signup" element={<AuthLayout> <Signup /> </AuthLayout> } />
-          <Route path="/our-story" element={<OurStory/>}/>
-          <Route path="/support" element={<Support/>}/>
-          <Route path="/crop-advisory" element={<CropAdvisory/>}/>
-          <Route path="/disease-detection" element={<DiseaseDetection/>}/>
-          <Route path="/privacy-policy" element={<Privacypolicy />} />
-          <Route path="/terms-conditions" element={<Term />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
           
-          <Route element={<ProtectedRoute allowedRoles={['user']} />}>
-            <Route path="/dashboard/user" element={<UserDashboard />} />
-          </Route>
-          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-            <Route path="/dashboard/admin" element={<Admindashboard />} />
-          </Route>
-          <Route element={<ProtectedRoute allowedRoles={['expert']} />}>
-            <Route path="/dashboard/expert" element={<Experdashboard />} />
-          </Route>
+         
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

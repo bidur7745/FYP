@@ -1,0 +1,376 @@
+{
+  "nav": {
+    "items": [
+      {
+        "name": "Home",
+        "href": "/home"
+      },
+      {
+        "name": "Services",
+        "href": "/services",
+        "dropdown": [
+          {
+            "name": "Crop Advisory",
+            "href": "/crop-advisory"
+          },
+          {
+            "name": "Disease Detection",
+            "href": "/disease-detection"
+          }
+        ]
+      },
+      {
+        "name": "Our Story",
+        "href": "/our-story"
+      },
+      {
+        "name": "Support",
+        "href": "/support"
+      }
+    ],
+    "joinLabel": "Join Us",
+    "dashboardLabel": "Dashboard",
+    "logoutLabel": "Logout",
+    "bottomNav": {
+      "home": "Home",
+      "advisory": "Advisory",
+      "scan": "Scan",
+      "profile": "Profile"
+    }
+  },
+  "home": {
+    "hero": {
+      "badgeLabel": "KrishiMitra · Digital Agriculture Assistant",
+      "title": "Empowering Nepalese Farmers with Intelligent, Localized Guidance",
+      "description": "Close advisory, weather, market, and subsidy gaps with a Nepali-first platform that combines expert knowledge, AI disease detection, and transparent market data—so every farmer can make confident, profitable decisions.",
+      "ctas": {
+        "primary": {
+          "label": "Learn More",
+          "href": "/our-story"
+        },
+        "secondary": {
+          "label": "Get Started"
+        }
+      },
+      "sidebar": {
+        "eyebrow": "Key Pillars",
+        "title": "Holistic Support Stack",
+        "description": "KrishiMitra bridges the knowledge gap by unifying expert crop advisory, real-time climate alerts, transparent market prices, AI-based diagnostics, and government scheme awareness into a single farmer-facing cockpit.",
+        "footerNote": "Upcoming milestones include AI disease module integration, weather + market automation, and multilingual UX polish—keeping every sprint focused on meaningful field impact."
+      }
+    },
+    "heroHighlights": [
+      {
+        "title": "Region-Based Crop Advisory",
+        "description": "Actionable sowing, spacing, and input guidance for Terai, Hill, and Mountain belts.",
+        "icon": "Leaf"
+      },
+      {
+        "title": "Weather & Disaster Alerts",
+        "description": "Real-time climate insights to protect crops, livestock, and stored harvest.",
+        "icon": "CloudSun"
+      },
+      {
+        "title": "AI Disease Diagnostics",
+        "description": "Instant recommendations with safety steps for pests and plant diseases.",
+        "icon": "ShieldCheck"
+      }
+    ],
+    "heroStats": [
+      {
+        "label": "Farm Productivity Boost",
+        "value": "+30-50%"
+      },
+      {
+        "label": "Schemes Centralized",
+        "value": "70+"
+      },
+      {
+        "label": "Weather Reliance",
+        "value": "80% rain-fed"
+      }
+    ]
+  },
+  "footer": {
+    "subheading": "Smart digital agriculture assistant connecting Nepali farmers with expert guidance, weather insights, and AI-powered support.",
+    "quickLinksTitle": "Quick Links",
+    "quickLinks": [
+      {
+        "label": "Home",
+        "href": "/"
+      },
+      {
+        "label": "About Us",
+        "href": "/about-us"
+      },
+      {
+        "label": "Practice Questions",
+        "href": "/question-bank"
+      },
+      {
+        "label": "Register",
+        "href": "/register"
+      }
+    ],
+    "servicesTitle": "Services",
+    "services": [
+      {
+        "label": "Crop Advisory",
+        "href": "#crop-advisory"
+      },
+      {
+        "label": "Disease Detection",
+        "href": "#disease-detection"
+      },
+      {
+        "label": "Weather Alerts",
+        "href": "#weather"
+      },
+      {
+        "label": "Market Updates",
+        "href": "#market"
+      }
+    ],
+    "followUs": "Follow Us",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "copyright": "All rights reserved."
+  },
+  "privacyPolicyPage": {
+    "lastUpdated": "Last Updated: 2025",
+    "introductionHeading": "Introduction",
+    "introduction": "We are committed to protecting your privacy and ensuring that your personal and agricultural data is handled with transparency and care. This Privacy Policy explains how our platform collects, uses, stores, and safeguards the information you provide while using our services. By accessing the website, you consent to the practices described here and acknowledge that we prioritize the responsible handling of data to deliver a secure and reliable experience.",
+    "informationWeCollectHeading": "Information We Collect",
+    "informationWeCollect": "We may collect personal information such as your name, email, phone number, location, and account details, along with agricultural data like soil inputs, crop details, and images submitted for predictions. We also gather technical information, including device details, cookies, and interaction logs, to support system functionality. All collected data is essential for delivering accurate recommendations, maintaining account security, and improving service quality.",
+    "howWeUseYourInformationHeading": "How We Use Your Information",
+    "howWeUseYourInformation": "Your information is used to create and manage accounts, deliver personalized recommendations, process advisory or prediction requests, enhance system performance, and provide user support. We also use aggregated and anonymized data to improve our AI models and overall platform efficiency. No personal data is sold or rented to external parties.",
+    "dataSharingSecurityHeading": "Data Sharing, Security, and Third-Party Services",
+    "dataSharingSecurity": "We take strong measures to secure your information through encryption, secure storage, and controlled access. Limited data may be shared with trusted third-party tools such as hosting providers, analytics services, or AI systems strictly to operate and improve the platform. Cookies may be used to maintain sessions and enhance user experience. Data is shared only when legally required or with explicit user consent.",
+    "userRightsHeading": "User Rights",
+    "userRights": "You have the right to access your data, request corrections, update your information, or delete your account entirely. You may also withdraw consent at any time or request a copy of your stored information. We are committed to supporting users in managing their data responsibly.",
+    "contactUsHeading": "Contact Us",
+    "contactUs": "If you have any questions, concerns, or requests related to this Privacy Policy or your personal data, you may contact us at: Email: Krishimitra2025@gmail.com | Project Name: KrishiMitra"
+  },
+  "termsPage": {
+    "lastUpdated": "Last Updated: 2025",
+    "introductionHeading": "Introduction",
+    "introduction": "These Terms and Conditions govern your access and use of the KrishiMitra platform. By using this website or any of its services, you agree to comply with these Terms. If you do not agree with any part of these Terms, you should stop using the platform immediately. KrishiMitra is developed as an academic project to assist farmers with crop advisory, soil analysis support, and AI-powered disease detection.",
+    "useOfPlatformHeading": "Use of the Platform",
+    "useOfPlatform": "You agree to use the platform only for lawful purposes. You must not misuse the system, attempt unauthorized access, disrupt functionality, or perform any activity that may harm the platform or other users. The recommendations and predictions provided by the system are generated using available data and AI models, and should be used as guidance, not as professional agricultural guarantees.",
+    "intellectualPropertyHeading": "Intellectual Property",
+    "intellectualProperty": "All content, design elements, text, graphics, logos, models, and system components of KrishiMitra are protected intellectual property. Users may not copy, reproduce, modify, or redistribute any part of the platform without prior permission.",
+    "accountSuspensionHeading": "Account Suspension or Termination",
+    "accountSuspension": "We reserve the right to suspend or permanently terminate user access if any violation of these Terms is detected, including misuse, security threats, or harmful behavior.",
+    "changesHeading": "Changes to Terms and Conditions",
+    "changes": "We may update or revise these Terms at any time. Changes will be posted on this page with an updated date. Continued use of the platform after modifications indicates acceptance of the revised Terms.",
+    "contactUsHeading": "Contact Us",
+    "contactUs": "If you have any questions or concerns regarding these Terms and Conditions, you may contact us at: Email: Krishimitra2025@gmail.com | Project Name: KrishiMitra"
+  },
+  "auth": {
+    "signup": {
+      "tagline": "Join KrishiMitra",
+      "title": "Signup",
+      "subtitle": "Create an account to receive localized advisory, alerts, and market insights.",
+      "fullNameLabel": "Full Name",
+      "emailLabel": "Gmail",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "continueButton": "Continue to Verification",
+      "alreadyAccount": "Already have an account?",
+      "loginLink": "Login",
+      "verifyIntroPrefix": "We sent a 6-digit verification code to",
+      "verifyIntroSuffix": "Enter it below to activate your KrishiMitra account.",
+      "verifyButton": "Verify & Go to Login",
+      "editDetails": "Edit account details",
+      "successMessage": "Signed up successfully. Complete your first login to enter the farmer dashboard.",
+      "successCta": "Proceed to Login"
+    },
+    "login": {
+      "welcomeTagline": "Welcome Back",
+      "recoveryTagline": "Account Recovery",
+      "title": "Login",
+      "recoveryTitle": "Reset Access",
+      "subtitle": "Access personalized advisory, alerts, and dashboards tailored for Nepalese farmers.",
+      "recoverySubtitle": "We'll help you verify ownership and set a fresh password in a few guided steps.",
+      "emailLabel": "Gmail",
+      "passwordLabel": "Password",
+      "loginButton": "Login",
+      "forgotPassword": "Forgot Password?",
+      "newHere": "New to KrishiMitra?",
+      "createAccount": "Create account",
+      "forgotEmailIntro": "Enter the Gmail you registered with. We'll send a verification code to reset your password.",
+      "sendCode": "Send Verification Code",
+      "backToLogin": "Back to login",
+      "codeIntroPrefix": "Enter the 6-digit code sent to",
+      "codeIntroSuffix": ".",
+      "verifyCodeButton": "Verify Code",
+      "resetIntro": "Create a new password to regain access to your account.",
+      "savePasswordButton": "Save Password & Login"
+    }
+  },
+  "ourStory": {
+    "hero": {
+      "badge": "Our Story",
+      "title": "Growing Futures, One Farm at a Time",
+      "description": "KrishiMitra began with a simple belief: technology should empower farmers, not complicate their lives. Nepal's agriculture is the backbone of our nation, and our mission is to support the hands that feed it."
+    },
+    "beginning": {
+      "title": "The Beginning",
+      "paragraph1": "The idea behind KrishiMitra was born from observing the struggles that many Nepali farmers face every season. Wrong crop choices, unexpected disease outbreaks, and lack of scientific guidance often lead to heavy losses. Despite advances in technology, most digital tools feel too complex or inaccessible for everyday farmers.",
+      "question": "What if farmers had a digital friend — a true 'mitra' — that understands their soil, their crops, and their challenges?",
+      "paragraph2": "With this vision, KrishiMitra took its first steps as an academic project, but it quickly grew into something much bigger: a mission to support the hands that feed our nation."
+    },
+    "whyKrishiMitra": {
+      "title": "Why KrishiMitra?",
+      "description": "A digital companion built for Nepali farmers, combining local reality with data, AI, and compassion.",
+      "tagline": "Rooted in real field problems, designed for everyday use."
+    },
+    "problem": {
+      "title": "The Problem We Saw",
+      "description": "Nepali farmers deserve better tools. Across communities, the same challenges kept appearing:",
+      "items": [
+        "Lack of scientific crop selection.",
+        "Soil nutrient mismatch affecting yield.",
+        "Difficulty identifying crop diseases early.",
+        "Limited access to trusted advisory.",
+        "Digital solutions that are either too complex or too expensive."
+      ]
+    },
+    "solution": {
+      "title": "Our Solution",
+      "description": "KrishiMitra was designed to bridge this gap with simplicity, intelligence, and accessibility. The platform brings together modern technology and practical farming needs:",
+      "items": [
+        "AI-powered disease detection.",
+        "Smart crop recommendation based on soil inputs.",
+        "Soil analysis support using pH, NPK, and moisture.",
+        "Localized guidance for Nepali farmers.",
+        "English & Nepali language support.",
+        "A clean, simple, farmer-friendly interface."
+      ]
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "To empower every Nepali farmer with intelligent, accessible, and science-backed agricultural guidance that improves decision-making and productivity."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "To build Nepal's most trusted digital agriculture companion — one that supports farmers from seed to harvest, improving outcomes for generations to come."
+    },
+    "values": {
+      "title": "Our Values",
+      "items": [
+        {
+          "title": "Trust",
+          "description": "Farmers deserve guidance they can rely on. Every insight is rooted in data and careful design."
+        },
+        {
+          "title": "Simplicity",
+          "description": "Technology should feel friendly, not overwhelming. KrishiMitra is built for clarity and ease."
+        },
+        {
+          "title": "Innovation",
+          "description": "AI, data, and modern tools are brought straight to the field, where they can create real change."
+        },
+        {
+          "title": "Impact",
+          "description": "Better decisions, better harvest, better life. Every feature is built with impact in mind."
+        }
+      ]
+    },
+    "journey": {
+      "title": "Our Journey",
+      "items": [
+        {
+          "title": "Research & Real Stories",
+          "text": "The journey started with understanding real problems faced by farmers across different regions and farming conditions."
+        },
+        {
+          "title": "Designing the Experience",
+          "text": "Wireframes and interfaces were crafted to keep everything simple, clear, and friendly for first-time digital users."
+        },
+        {
+          "title": "Building the Intelligence",
+          "text": "AI tools and models were integrated to support crop diagnosis, soil-based advisory, and smarter recommendations."
+        },
+        {
+          "title": "Testing & Refinement",
+          "text": "The platform was refined step-by-step, shaped by feedback, iteration, and continuous learning."
+        }
+      ]
+    },
+    "meetProject": {
+      "title": "Meet the Project",
+      "paragraph1": "KrishiMitra is developed with the hope of creating real social impact through technology. What started as a Final Year Project evolved into a commitment to empower farmers with modern, accessible agricultural assistance.",
+      "question": "How can we make farming easier, smarter, and more effective?"
+    },
+    "future": {
+      "title": "The Future of KrishiMitra",
+      "description": "This is just the beginning. Ahead lies a future filled with possibilities:",
+      "items": [
+        "More crop disease detection models.",
+        "Fertilizer and pesticide recommendations.",
+        "Market price dashboards and insights.",
+        "Government schemes and subsidy guidance.",
+        "Offline and low-network support.",
+        "Voice assistant features for elderly farmers."
+      ]
+    },
+    "closingNote": {
+      "title": "A Closing Note",
+      "description": "KrishiMitra is more than a platform. It is a promise — to support the hands that feed Nepal. Thank you for being part of this journey. Together, we grow."
+    }
+  },
+  "unauthorized": {
+    "tagline": "Access Denied",
+    "title": "Unauthorized",
+    "message": "You don't have permission to view this page with your current role.",
+    "backToHome": "Back to Home",
+    "switchAccount": "Switch Account"
+  },
+  "support": {
+    "tagline": "Support",
+    "heroTitle": "We’re Here to Help",
+    "heroSubtitle": "Find answers, guides, and support to use KrishiMitra with confidence.",
+    "quickHelp": {
+      "userGuide": "User Guide",
+      "faqs": "FAQs",
+      "contactSupport": "Contact Support"
+    },
+    "faqTitle": "Frequently Asked Questions",
+    "faqs": [
+      {
+        "q": "How do I use the disease detection feature?",
+        "a": "Upload a clear photo of the affected crop. The AI analyzes it and displays possible diseases."
+      },
+      {
+        "q": "Which crops are supported in KrishiMitra?",
+        "a": "Currently Potato, Tomato, and Maize. More crops will be added soon."
+      },
+      {
+        "q": "How do I input soil information?",
+        "a": "Enter pH, NPK values, moisture levels, and additional soil parameters in the crop recommendation tool."
+      },
+      {
+        "q": "How accurate are the recommendations?",
+        "a": "The insights are based on AI models and scientific data, but should be taken as guidance—not definitive guarantees."
+      },
+      {
+        "q": "Is KrishiMitra available in Nepali?",
+        "a": "Yes, the entire UI and content are available in both Nepali and English."
+      }
+    ],
+    "contactTitle": "Contact Support",
+    "contactSubtitle": "Send us a message and we’ll get back to you as soon as possible.",
+    "form": {
+      "nameLabel": "Full Name",
+      "emailLabel": "Email Address",
+      "issueLabel": "Describe your issue",
+      "namePlaceholder": "Your Name",
+      "emailPlaceholder": "your@email.com",
+      "issuePlaceholder": "How can we help you?",
+      "submit": "Send Message"
+    },
+    "contactEmailText": "You can also reach us at",
+    "contactEmail": "Krishimitra2025@gmail.com"
+  }
+}
