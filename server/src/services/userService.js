@@ -262,4 +262,106 @@ export const resetPassword = async (email, otp, newPassword) => {
     message: "Password has been reset successfully",
   };
 };
+
+// GET USER PROFILE SERVICE
+// Returns user info along with userDetails
+export const getUserProfile = async (userId) => {
+  try {
+    // Get user from users table
+    const user = await db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, userId))
+      .limit(1);
+
+    if (user.length === 0) {
+      throw new Error("User not found");
+    }
+
+    // Get user details
+    const userDetails = await db
+      .select()
+      .from(userDetailsTable)
+      .where(eq(userDetailsTable.userId, userId))
+      .limit(1);
+
+    return {
+      success: true,
+      user: user[0],
+      userDetails: userDetails.length > 0 ? userDetails[0] : null,
+    };
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    throw error;
+  }
+};
+
+// UPDATE USER PROFILE SERVICE
+// Updates both user table (name) and userDetails table
+export const updateUserProfile = async (userId, profileData) => {
+  try {
+    const {
+      name, // Update in users table
+      phone,
+      address,
+      farmLocation,
+      bio,
+      profileImage,
+    } = profileData;
+
+    // Validate farmLocation if provided
+    const validRegions = ["Terai", "Hill", "Mountain"];
+    if (farmLocation && !validRegions.includes(farmLocation)) {
+      throw new Error(
+        `Invalid farm location. Must be one of: ${validRegions.join(", ")}`
+      );
+    }
+
+    // Update user table if name is provided
+    if (name) {
+      if (typeof name !== "string" || name.trim() === "") {
+        throw new Error("Name must be a non-empty string");
+      }
+      await db
+        .update(userTable)
+        .set({ name: name.trim() })
+        .where(eq(userTable.id, userId));
+    }
+
+    // Check if userDetails exists
+    const existingDetails = await db
+      .select()
+      .from(userDetailsTable)
+      .where(eq(userDetailsTable.userId, userId))
+      .limit(1);
+
+    const updateFields = {};
+    if (phone !== undefined) updateFields.phone = phone || null;
+    if (address !== undefined) updateFields.address = address || null;
+    if (farmLocation !== undefined) updateFields.farmLocation = farmLocation || null;
+    if (bio !== undefined) updateFields.bio = bio || null;
+    if (profileImage !== undefined) updateFields.profileImage = profileImage || null;
+    updateFields.updatedAt = new Date();
+
+    if (existingDetails.length > 0) {
+      // Update existing userDetails
+      await db
+        .update(userDetailsTable)
+        .set(updateFields)
+        .where(eq(userDetailsTable.userId, userId));
+    } else {
+      // Create new userDetails entry
+      await db.insert(userDetailsTable).values({
+        userId,
+        ...updateFields,
+      });
+    }
+
+    // Return updated profile
+    return await getUserProfile(userId);
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    throw error;
+  }
+};
   
