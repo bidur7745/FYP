@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, verifyOTP, login, forgotPassword, verifyPasswordResetOTP, resetPasswordController, userDashboard, adminDashboard, expertDashboard } from "../controllers/userController.js";
+import { registerUser, verifyOTP, login, forgotPassword, verifyPasswordResetOTP, resetPasswordController, userDashboard, adminDashboard, expertDashboard, getUserProfileController, updateUserProfileController } from "../controllers/userController.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = Router();
@@ -32,5 +32,12 @@ router.get("/admin", authenticate, authorize("admin"), adminDashboard);
 
 // EXPERT DASHBOARD - Requires authentication and expert role
 router.get("/expert", authenticate, authorize("expert"), expertDashboard);
+
+// USER PROFILE ROUTES (Protected - requires authentication)
+// Get user profile
+router.get("/profile", authenticate, getUserProfileController);
+
+// Update user profile
+router.put("/profile", authenticate, updateUserProfileController);
 
 export default router;
