@@ -1,4 +1,4 @@
-import { createUser, verifyUser, loginUser, requestPasswordReset, verifyPasswordResetOTP as verifyPasswordResetOTPService, resetPassword } from "../services/userService.js";
+import { createUser, verifyUser, loginUser, requestPasswordReset, verifyPasswordResetOTP as verifyPasswordResetOTPService, resetPassword, getUserProfile, updateUserProfile } from "../services/userService.js";
 
 export const registerUser = async (req, res) => {
     try {
@@ -297,6 +297,99 @@ export const resetPasswordController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went wrong while resetting your password.",
+      error: error.message,
+    });
+  }
+};
+
+// GET USER PROFILE CONTROLLER
+export const getUserProfileController = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await getUserProfile(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile retrieved successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Get User Profile Error:", error.message);
+
+    if (error.message.includes("User not found")) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve user profile",
+      error: error.message,
+    });
+  }
+};
+
+// UPDATE USER PROFILE CONTROLLER
+export const updateUserProfileController = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      name,
+      phone,
+      address,
+      farmLocation,
+      bio,
+      profileImage,
+    } = req.body;
+
+    // At least one field should be provided
+    if (
+      !name &&
+      phone === undefined &&
+      address === undefined &&
+      farmLocation === undefined &&
+      bio === undefined &&
+      profileImage === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one field must be provided for update",
+      });
+    }
+
+    const result = await updateUserProfile(userId, {
+      name,
+      phone,
+      address,
+      farmLocation,
+      bio,
+      profileImage,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Update User Profile Error:", error.message);
+
+    if (
+      error.message.includes("Invalid farm location") ||
+      error.message.includes("Name must be")
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update user profile",
       error: error.message,
     });
   }
