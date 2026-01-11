@@ -3,6 +3,11 @@ import { Leaf, CloudSun, ShieldCheck } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/images/assets'
 import { useLanguage } from '../context/LanguageContext'
+import {
+
+  RoadmapSection,
+  CTA,
+} from '../components/home'
 
 const heroIconMap = {
     Leaf,
@@ -117,7 +122,7 @@ const Home = () => {
             </section>
        
             <RoadmapSection />
-            <StrongCTASection />
+            <CTA/>
         </>
     )
 }
