@@ -1,16 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   HelpCircle,
   BookOpen,
   Mail,
-  MessageSquare,
   ChevronDown,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
+import { submitSupportQuery } from "../services/api";
 
 export default function Support() {
   const { content } = useLanguage();
   const support = content?.support || {};
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await submitSupportQuery({ name: name.trim(), email: email.trim(), message: message.trim() });
+      setSuccess(true);
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch (err) {
+      setError(err.message || "Failed to send message. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const quickHelpItems = [
     {
@@ -96,7 +127,19 @@ export default function Support() {
             {support.contactSubtitle || "Send us a message and we'll get back to you as soon as possible."}
           </p>
 
-          <form className="max-w-3xl mx-auto space-y-6 rounded-3xl border border-emerald-500/20 bg-slate-900/60 p-8 shadow-xl">
+          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-6 rounded-3xl border border-emerald-500/20 bg-slate-900/60 p-8 shadow-xl">
+            {error && (
+              <div className="flex items-center gap-2 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-red-300 text-sm">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-emerald-300 text-sm">
+                <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                Your message has been sent. We will get back to you soon.
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm text-slate-300 mb-1">
@@ -104,8 +147,11 @@ export default function Support() {
                 </label>
                 <input
                   type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-slate-200 focus:ring-2 focus:ring-emerald-400 outline-none"
                   placeholder={support.form?.namePlaceholder || "Your Name"}
+                  disabled={loading}
                 />
               </div>
 
@@ -115,8 +161,11 @@ export default function Support() {
                 </label>
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-slate-200 focus:ring-2 focus:ring-emerald-400 outline-none"
                   placeholder={support.form?.emailPlaceholder || "your@email.com"}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -127,16 +176,27 @@ export default function Support() {
               </label>
               <textarea
                 rows={5}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 className="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-slate-200 focus:ring-2 focus:ring-emerald-400 outline-none"
                 placeholder={support.form?.issuePlaceholder || "How can we help you?"}
-              ></textarea>
+                disabled={loading}
+              />
             </div>
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-emerald-500 py-3 text-center text-slate-900 font-semibold hover:bg-emerald-400 transition"
+              disabled={loading}
+              className="w-full rounded-xl bg-emerald-500 py-3 text-center text-slate-900 font-semibold hover:bg-emerald-400 transition disabled:opacity-70 flex items-center justify-center gap-2"
             >
-              {support.form?.submit || "Send Message"}
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                support.form?.submit || "Send Message"
+              )}
             </button>
 
             <p className="text-center text-sm text-slate-400">

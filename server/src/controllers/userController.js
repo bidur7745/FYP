@@ -1,4 +1,4 @@
-import { createUser, verifyUser, loginUser, requestPasswordReset, verifyPasswordResetOTP as verifyPasswordResetOTPService, resetPassword, getUserProfile, updateUserProfile } from "../services/userService.js";
+import { createUser, verifyUser, loginUser, requestPasswordReset, verifyPasswordResetOTP as verifyPasswordResetOTPService, resetPassword, getUserProfile, updateUserProfile, listAllUsers, listExperts, setExpertVerified, deleteUser } from "../services/userService.js";
 
 export const registerUser = async (req, res) => {
     try {
@@ -121,47 +121,7 @@ export const login = async (req, res) => {
     }
   };
 
-// Dashboard controllers for different user roles
-export const userDashboard = async (req, res) => {
-  try {
-    // This is a protected route - user is attached to req.user by auth middleware
-    return res.status(200).json({
-      success: true,
-      message: "Welcome to User Dashboard",
-      data: {
-        user: req.user,
-        dashboard: "user",
-      },
-    });
-  } catch (error) {
-    console.error("User Dashboard Error:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: "Error accessing dashboard",
-    });
-  }
-};
-
-export const adminDashboard = async (req, res) => {
-  try {
-    // This is a protected route - user is attached to req.user by auth middleware
-    return res.status(200).json({
-      success: true,
-      message: "Welcome to Admin Dashboard",
-      data: {
-        user: req.user,
-        dashboard: "admin",
-      },
-    });
-  } catch (error) {
-    console.error("Admin Dashboard Error:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: "Error accessing dashboard",
-    });
-  }
-};
-
+// Dashboard controller for expert role
 export const expertDashboard = async (req, res) => {
   try {
     // This is a protected route - user is attached to req.user by auth middleware
@@ -343,6 +303,10 @@ export const updateUserProfileController = async (req, res) => {
       farmLocation,
       bio,
       profileImage,
+      licenseImage,
+      skills,
+      education,
+      yearsOfExperience,
     } = req.body;
 
     // At least one field should be provided
@@ -352,7 +316,11 @@ export const updateUserProfileController = async (req, res) => {
       address === undefined &&
       farmLocation === undefined &&
       bio === undefined &&
-      profileImage === undefined
+      profileImage === undefined &&
+      licenseImage === undefined &&
+      skills === undefined &&
+      education === undefined &&
+      yearsOfExperience === undefined
     ) {
       return res.status(400).json({
         success: false,
@@ -367,6 +335,10 @@ export const updateUserProfileController = async (req, res) => {
       farmLocation,
       bio,
       profileImage,
+      licenseImage,
+      skills,
+      education,
+      yearsOfExperience,
     });
 
     return res.status(200).json({
@@ -394,4 +366,103 @@ export const updateUserProfileController = async (req, res) => {
     });
   }
 };
-  
+
+// LIST ALL USERS (admin only) - farmers + experts (exclude password)
+export const listAllUsersController = async (req, res) => {
+  try {
+    const users = await listAllUsers();
+    const safeUsers = users.map(({ password, ...rest }) => rest);
+    return res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      data: safeUsers,
+    });
+  } catch (error) {
+    console.error("List all users error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to list users",
+    });
+  }
+};
+
+// LIST EXPERTS (admin only)
+export const listExpertsController = async (req, res) => {
+  try {
+    const experts = await listExperts();
+    return res.status(200).json({
+      success: true,
+      message: "Experts retrieved successfully",
+      data: experts,
+    });
+  } catch (error) {
+    console.error("List experts error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to list experts",
+    });
+  }
+};
+
+// VERIFY EXPERT (admin only) - set isVerifiedExpert to true
+export const verifyExpertController = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const id = parseInt(userId, 10);
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+    const result = await setExpertVerified(id, true);
+    return res.status(200).json({
+      success: true,
+      message: "Expert verified successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Verify expert error:", error.message);
+    if (error.message.includes("User details not found")) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to verify expert",
+    });
+  }
+};
+
+// DELETE USER (admin only)
+export const deleteUserController = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const id = parseInt(userId, 10);
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+    await deleteUser(id);
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete user error:", error.message);
+    if (error.message.includes("User not found")) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete user",
+    });
+  }
+};

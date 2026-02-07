@@ -1,0 +1,79 @@
+@baseUrl = http://localhost:5002
+
+###
+GET {{baseUrl}}/api/test/weather-alerts
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/freeze
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/cold
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/heat
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/warm
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/rain
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/heavy-rain
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/drought
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/wind
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/wind-moderate
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/snow
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/freeze-forecast
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/heavy-rain-forecast
+Content-Type: application/json
+
+###
+GET {{baseUrl}}/api/test/weather-alerts/all
+Content-Type: application/json
+
+###
+POST {{baseUrl}}/api/test/weather-alerts
+Content-Type: application/json
+
+{
+  "current": {
+    "name": "Custom Location",
+    "sys": { "country": "NP" },
+    "main": {
+      "temp": 4,
+      "feels_like": 2,
+      "humidity": 80,
+      "pressure": 1013
+    },
+    "wind": { "speed": 5 },
+    "weather": [{ "main": "Rain", "description": "light rain", "id": 500 }],
+    "rain": { "1h": 8, "3h": 15 }
+  },
+  "forecast": null
+}
+

@@ -1,0 +1,131 @@
+{
+  "country": "Nepal",
+  "total_districts": 77,
+  "provinces": [
+    {
+      "province_id": 1,
+      "province_name": "Koshi",
+      "districts": [
+        "Bhojpur",
+        "Dhankuta",
+        "Ilam",
+        "Jhapa",
+        "Khotang",
+        "Morang",
+        "Okhaldhunga",
+        "Panchthar",
+        "Sankhuwasabha",
+        "Solukhumbu",
+        "Sunsari",
+        "Taplejung",
+        "Tehrathum",
+        "Udayapur"
+      ]
+    },
+    {
+      "province_id": 2,
+      "province_name": "Madhesh",
+      "districts": [
+        "Bara",
+        "Dhanusha",
+        "Mahottari",
+        "Parsa",
+        "Rautahat",
+        "Saptari",
+        "Sarlahi",
+        "Siraha"
+      ]
+    },
+    {
+      "province_id": 3,
+      "province_name": "Bagmati",
+      "districts": [
+        "Bhaktapur",
+        "Chitwan",
+        "Dhading",
+        "Dolakha",
+        "Kathmandu",
+        "Kavrepalanchok",
+        "Lalitpur",
+        "Makawanpur",
+        "Nuwakot",
+        "Ramechhap",
+        "Rasuwa",
+        "Sindhuli",
+        "Sindhupalchok"
+      ]
+    },
+    {
+      "province_id": 4,
+      "province_name": "Gandaki",
+      "districts": [
+        "Baglung",
+        "Gorkha",
+        "Kaski",
+        "Lamjung",
+        "Manang",
+        "Mustang",
+        "Myagdi",
+        "Nawalpur",
+        "Parbat",
+        "Syangja",
+        "Tanahun"
+      ]
+    },
+    {
+      "province_id": 5,
+      "province_name": "Lumbini",
+      "districts": [
+        "Arghakhanchi",
+        "Banke",
+        "Bardiya",
+        "Dang",
+        "Gulmi",
+        "Kapilvastu",
+        "Parasi",
+        "Palpa",
+        "Pyuthan",
+        "Rolpa",
+        "Rukum East",
+        "Rupandehi"
+      ]
+    },
+    {
+      "province_id": 6,
+      "province_name": "Karnali",
+      "districts": [
+        "Dailekh",
+        "Dolpa",
+        "Humla",
+        "Jajarkot",
+        "Jumla",
+        "Kalikot",
+        "Mugu",
+        "Rukum West",
+        "Salyan",
+        "Surkhet"
+      ]
+    },
+    {
+      "province_id": 7,
+      "province_name": "Sudurpashchim",
+      "districts": [
+        "Achham",
+        "Baitadi",
+        "Bajhang",
+        "Bajura",
+        "Dadeldhura",
+        "Darchula",
+        "Doti",
+        "Kailali",
+        "Kanchanpur"
+      ]
+    }
+  ],
+  "sources": [
+    "Wikipedia: List of districts of Nepal",
+    "Election Commission Nepal: Provincial Map of Nepal (PDF)",
+    "CityPopulation (CBS-referenced admin divisions)"
+  ]
+}
+

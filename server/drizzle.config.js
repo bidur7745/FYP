@@ -5,7 +5,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 export default defineConfig({
-  schema: "./src/schema/index.js",   // sql schema file (exports all schemas)
+  schema: "./src/schema/*.js",   // sql schema file (exports all schemas)
   out: "./src/DbMigration",         // Migration folder
   dialect: "postgresql",
   dbCredentials: {

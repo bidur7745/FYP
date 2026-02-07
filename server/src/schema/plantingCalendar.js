@@ -7,13 +7,10 @@ export const plantingCalendarTable = pgTable("planting_calendar", {
   cropId: integer("crop_id")
     .references(() => cropsTable.cropId, { onDelete: "cascade" })
     .notNull(),
-
-  region: text("region").notNull(), // Terai / Hill / Mountain
-  season: text("season").notNull(), // Winter / Spring / Monsoon / Autumn
-
-  sowingPeriod: text("sowing_period"), // e.g., Baishakh – Jestha
-  transplantingPeriod: text("transplanting_period"), // Optional
-  harvestingPeriod: text("harvesting_period"), // e.g., Kartik – Mangsir
-
-  notes: text("notes"), // Extra regional advice
+  region: text("region").notNull(),
+  season: text("season").notNull(), 
+  sowingPeriod: text("sowing_period"),
+  transplantingPeriod: text("transplanting_period"), 
+  harvestingPeriod: text("harvesting_period"), 
+  notes: text("notes"), 
 });

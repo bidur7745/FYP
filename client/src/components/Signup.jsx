@@ -1,8 +1,17 @@
-import  { useState } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { registerUser, verifyRegistrationOtp } from '../services/api'
 
+const Signup = () => {
+    const [step, setStep] = useState('form')
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'user', // 'user' = farmer (default), 'expert' = expert
+    })
     const [verificationCode, setVerificationCode] = useState('')
     const [status, setStatus] = useState({ type: '', message: '' })
     const [loading, setLoading] = useState(false)
@@ -27,6 +36,7 @@ import { registerUser, verifyRegistrationOtp } from '../services/api'
                 name: formData.fullName,
                 email: formData.email,
                 password: formData.password,
+                role: formData.role,
             })
             setStatus({ type: 'success', message: 'Account created. Check your email for OTP.' })
             setStep('verify')
@@ -109,6 +119,25 @@ import { registerUser, verifyRegistrationOtp } from '../services/api'
                     className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition"
                     required
                 />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {copy.signupRoleLabel || 'Sign up as'}
+                </label>
+                <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition bg-white"
+                >
+                    <option value="user">{copy.signupRoleFarmer || 'Farmer'}</option>
+                    <option value="expert">{copy.signupRoleExpert || 'Expert'}</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1.5">
+                    {formData.role === 'user'
+                        ? (copy.signupRoleFarmerDesc || 'Access crop advisory, weather, and market info.')
+                        : (copy.signupRoleExpertDesc || 'Provide advice and manage expert dashboard.')}
+                </p>
             </div>
             <div className="space-y-3 pt-2">
                 <button
@@ -208,6 +237,6 @@ import { registerUser, verifyRegistrationOtp } from '../services/api'
             {step === 'login' && renderNextStepCard()}
         </section>
     )
-
+}
 
 export default Signup

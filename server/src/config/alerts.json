@@ -1,0 +1,134 @@
+{
+  "freeze": {
+    "title": "Frost Risk – Immediate Action Required",
+    "message": "Temperature is critically low and may cause frost damage to sensitive crops.",
+    "severity": "high",
+    "icon": "ac_unit",
+    "recommendedActions": [
+      "Cover young plants and seedlings",
+      "Avoid late-evening irrigation",
+      "Monitor crops overnight for frost damage"
+    ]
+  },
+  "cold": {
+    "title": "Low Temperature Advisory",
+    "message": "Low temperature conditions may slow crop growth, especially for temperature-sensitive crops.",
+    "severity": "medium",
+    "icon": "thermostat",
+    "recommendedActions": [
+      "Monitor crop growth regularly",
+      "Protect nursery plants if possible",
+      "Delay transplanting of sensitive crops"
+    ]
+  },
+  "heat": {
+    "title": "Extreme Heat Stress Alert",
+    "message": "Very high temperature can cause heat stress and moisture loss in crops.",
+    "severity": "high",
+    "icon": "whatshot",
+    "recommendedActions": [
+      "Increase irrigation frequency",
+      "Avoid fertilizer application during peak heat",
+      "Provide shade for vulnerable crops"
+    ]
+  },
+  "warm": {
+    "title": "High Temperature Advisory",
+    "message": "Prolonged warm conditions may reduce soil moisture and affect crop productivity.",
+    "severity": "medium",
+    "icon": "wb_sunny",
+    "recommendedActions": [
+      "Ensure adequate soil moisture",
+      "Monitor crops for wilting symptoms",
+      "Irrigate during early morning or evening"
+    ]
+  },
+  "heavy-rain": {
+    "title": "Heavy Rainfall – Waterlogging Risk",
+    "message": "Heavy rainfall may lead to waterlogging and root damage.",
+    "severity": "high",
+    "icon": "thunderstorm",
+    "recommendedActions": [
+      "Clear field drainage channels",
+      "Avoid fertilizer and pesticide application",
+      "Inspect fields for standing water"
+    ]
+  },
+  "rain": {
+    "title": "Rainfall Advisory",
+    "message": "Rainfall is generally beneficial for crops but prolonged moisture may increase disease risk.",
+    "severity": "low",
+    "icon": "rainy",
+    "recommendedActions": [
+      "Monitor soil moisture levels",
+      "Avoid unnecessary irrigation",
+      "Observe crops for early disease symptoms"
+    ]
+  },
+  "drought": {
+    "title": "Drought Stress Warning",
+    "message": "Low humidity combined with warm temperature increases the risk of moisture stress.",
+    "severity": "medium",
+    "icon": "grass",
+    "recommendedActions": [
+      "Increase irrigation frequency",
+      "Apply mulching to conserve soil moisture",
+      "Avoid midday field operations"
+    ]
+  },
+  "wind": {
+    "title": "Strong Wind Alert",
+    "message": "Strong winds may cause physical damage or lodging in crops.",
+    "severity": "high",
+    "icon": "air",
+    "recommendedActions": [
+      "Secure crop supports and structures",
+      "Protect young or tall crops",
+      "Inspect fields after wind subsides"
+    ]
+  },
+  "wind-moderate": {
+    "title": "Wind Advisory",
+    "message": "Moderate wind conditions may increase soil moisture loss.",
+    "severity": "medium",
+    "icon": "air",
+    "recommendedActions": [
+      "Monitor soil moisture levels",
+      "Adjust irrigation if required",
+      "Ensure field structures are stable"
+    ]
+  },
+  "snow": {
+    "title": "Snowfall Warning",
+    "message": "Snowfall may damage crops and block access routes.",
+    "severity": "high",
+    "icon": "cloudy_snowing",
+    "recommendedActions": [
+      "Protect crops from heavy snow accumulation",
+      "Clear snow from greenhouses and pathways",
+      "Monitor crops for cold injury"
+    ]
+  },
+  "freeze-forecast": {
+    "title": "Forecasted Frost Risk",
+    "message": "Temperatures are expected to drop significantly in the next 24 hours.",
+    "severity": "high",
+    "icon": "warning",
+    "recommendedActions": [
+      "Prepare crop covers in advance",
+      "Avoid late-evening irrigation",
+      "Plan protective measures before nightfall"
+    ]
+  },
+  "heavy-rain-forecast": {
+    "title": "Heavy Rainfall Forecast",
+    "message": "Heavy rainfall is expected soon, increasing the risk of waterlogging and soil erosion.",
+    "severity": "medium",
+    "icon": "warning",
+    "recommendedActions": [
+      "Strengthen drainage systems",
+      "Delay field operations if possible",
+      "Secure loose soil and field boundaries"
+    ]
+  }
+}

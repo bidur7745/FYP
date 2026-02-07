@@ -125,35 +125,29 @@ const WeatherDashboard = () => {
         setLocationName(weatherResponse.location?.name || weatherResponse.location?.city || 'Unknown')
         setAlerts(weatherResponse.alerts || [])
 
-        // Load extended weather (hourly + daily) for graphs
+        // Load extended weather (hourly + daily) for graphs and forecast
         try {
           const extendedResponse = await getExtendedWeather(latitude, longitude, forceRefresh)
           if (extendedResponse.success) {
             setExtendedWeatherData(extendedResponse)
+            console.log('Extended weather loaded:', extendedResponse.daily?.length || 0, 'days')
+          } else {
+            console.warn('Extended weather response not successful:', extendedResponse)
           }
         } catch (extendedErr) {
           console.error('Extended weather load error:', extendedErr)
-          // Fallback to forecast if extended weather fails
-          try {
-            const forecastResponse = await getWeatherForecast(latitude, longitude, forceRefresh)
-            if (forecastResponse.success) {
-              setForecastData(forecastResponse.forecast)
-            }
-          } catch (forecastErr) {
-            console.error('Forecast load error:', forecastErr)
-            // Non-critical error, continue without forecast
-          }
         }
-
-        // Load extended weather data (hourly forecast) for graphs - will use cache if available
+        
+        // Always try to load forecast data as backup (even if extended weather succeeds)
+        // This ensures we have data even if extended weather doesn't have enough days
         try {
-          const extendedResponse = await getExtendedWeather(latitude, longitude, forceRefresh)
-          if (extendedResponse.success) {
-            setExtendedWeatherData(extendedResponse)
+          const forecastResponse = await getWeatherForecast(latitude, longitude, forceRefresh)
+          if (forecastResponse.success) {
+            setForecastData(forecastResponse.forecast)
           }
-        } catch (extendedErr) {
-          console.error('Extended weather load error:', extendedErr)
-          // Non-critical error, continue without extended data
+        } catch (forecastErr) {
+          console.error('Forecast load error:', forecastErr)
+          // Non-critical error, continue without forecast
         }
       } else {
         throw new Error(weatherResponse.message || 'Failed to load weather data')
@@ -230,7 +224,6 @@ const WeatherDashboard = () => {
     // Convert to array and get representative forecast for each day
     const dailyArray = Object.values(dailyForecasts)
       .sort((a, b) => a.date - b.date) // Sort by date
-      .slice(0, 5) // Get first 5 days
       .map((dayData) => {
         // Find the item closest to 12 PM (noon) for representative weather
         let representativeItem = dayData.items[0]
@@ -476,19 +469,123 @@ const WeatherDashboard = () => {
               </div>
             )}
 
-            {/* Forecast Section */}
-            {forecastData && forecastData.list && (() => {
-              const dailyForecasts = getDailyForecast(forecastData.list)
+            {/* 5-Day Forecast Section (Starting from Tomorrow) */}
+            {(() => {
+              // Use extendedWeatherData.daily if available (7-8 days), otherwise use forecastData (5 days)
+              let dailyForecasts = []
+              
+              // Get today's date (start of day) for comparison
+              const today = new Date()
+              today.setHours(0, 0, 0, 0)
+              
+              // Debug logging
+              if (extendedWeatherData?.daily) {
+                console.log('Extended weather daily data available:', extendedWeatherData.daily.length, 'days')
+              }
+              if (forecastData?.list) {
+                console.log('Forecast data available:', forecastData.list.length, 'items')
+              }
+              
+              // Helper function to check if a date is in the future
+              const isFutureDay = (timestamp) => {
+                const dayDate = new Date(timestamp * 1000)
+                dayDate.setHours(0, 0, 0, 0)
+                return dayDate.getTime() > today.getTime()
+              }
+              
+              if (extendedWeatherData && extendedWeatherData.daily && Array.isArray(extendedWeatherData.daily)) {
+                // Use daily forecast from One Call API (7-8 days)
+                // Filter out today and take next 7 days
+                dailyForecasts = extendedWeatherData.daily
+                  .filter((day) => isFutureDay(day.dt))
+                  .slice(0, 5) // Take exactly 5 days
+                  .map((day) => ({
+                    dt: day.dt,
+                    temp: day.temp?.day || day.temp,
+                    temp_max: day.temp?.max || day.temp?.day || day.temp,
+                    temp_min: day.temp?.min || day.temp?.day || day.temp,
+                    weather: day.weather || [],
+                    humidity: day.humidity,
+                    wind_speed: day.wind_speed,
+                    wind_deg: day.wind_deg,
+                    clouds: day.clouds,
+                    pop: day.pop,
+                    rain: day.rain,
+                    snow: day.snow,
+                  }))
+                
+                // If we have less than 5 days from extended weather, try to supplement with forecast data
+                if (dailyForecasts.length < 5 && forecastData && forecastData.list) {
+                  const forecastDays = getDailyForecast(forecastData.list)
+                    .filter((day) => isFutureDay(day.dt))
+                    .map((day) => ({
+                      dt: day.dt,
+                      temp: day.main?.temp || day.temp,
+                      temp_max: day.main?.temp_max || day.temp_max,
+                      temp_min: day.main?.temp_min || day.temp_min,
+                      weather: day.weather || [],
+                      humidity: day.main?.humidity || day.humidity,
+                      wind_speed: day.wind?.speed || day.wind_speed,
+                      wind_deg: day.wind?.deg || day.wind_deg,
+                      clouds: day.clouds?.all || day.clouds,
+                      pop: day.pop,
+                      rain: day.rain,
+                      snow: day.snow,
+                    }))
+                  
+                  // Merge forecast days that aren't already in dailyForecasts
+                  const existingDates = new Set(dailyForecasts.map(d => {
+                    const dDate = new Date(d.dt * 1000)
+                    dDate.setHours(0, 0, 0, 0)
+                    return dDate.getTime()
+                  }))
+                  
+                  forecastDays.forEach(forecastDay => {
+                    const forecastDate = new Date(forecastDay.dt * 1000)
+                    forecastDate.setHours(0, 0, 0, 0)
+                    if (!existingDates.has(forecastDate.getTime()) && dailyForecasts.length < 7) {
+                      dailyForecasts.push(forecastDay)
+                    }
+                  })
+                  
+                  // Sort by date to ensure correct order
+                  dailyForecasts.sort((a, b) => a.dt - b.dt)
+                  dailyForecasts = dailyForecasts.slice(0, 7)
+                }
+              } else if (forecastData && forecastData.list) {
+                // Fallback to 5-day forecast API - also filter out today
+                const allForecasts = getDailyForecast(forecastData.list)
+                dailyForecasts = allForecasts
+                  .filter((day) => isFutureDay(day.dt))
+                  .slice(0, 5) // Take up to 5 days (forecast API provides 5 days)
+                  .map((day) => ({
+                    dt: day.dt,
+                    temp: day.main?.temp || day.temp,
+                    temp_max: day.main?.temp_max || day.temp_max,
+                    temp_min: day.main?.temp_min || day.temp_min,
+                    weather: day.weather || [],
+                    humidity: day.main?.humidity || day.humidity,
+                    wind_speed: day.wind?.speed || day.wind_speed,
+                    wind_deg: day.wind?.deg || day.wind_deg,
+                    clouds: day.clouds?.all || day.clouds,
+                    pop: day.pop,
+                    rain: day.rain,
+                    snow: day.snow,
+                  }))
+              }
+
               return dailyForecasts.length > 0 ? (
                 <div className="bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-xl p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">5-Day Forecast</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    5-Day Forecast
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {dailyForecasts.map((item, index) => (
                       <div
                         key={index}
-                        className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/30 text-center"
+                        className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/30 text-center hover:border-emerald-500/50 transition-colors"
                       >
-                        <p className="text-slate-400 text-sm mb-2">
+                        <p className="text-slate-400 text-sm mb-2 font-medium">
                           {formatDate(item.dt)}
                         </p>
                         <div className="text-3xl mb-2">
@@ -496,11 +593,11 @@ const WeatherDashboard = () => {
                         </div>
                         <div className="mb-1">
                           <p className="text-lg font-bold text-white">
-                            {formatTemp(item.main.temp)}
+                            {formatTemp(item.temp)}
                           </p>
-                          {(item.main.temp_max && item.main.temp_min) && (
+                          {(item.temp_max && item.temp_min) && (
                             <p className="text-xs text-slate-400">
-                              {formatTemp(item.main.temp_max)} / {formatTemp(item.main.temp_min)}
+                              {formatTemp(item.temp_max)} / {formatTemp(item.temp_min)}
                             </p>
                           )}
                         </div>
@@ -510,12 +607,18 @@ const WeatherDashboard = () => {
                         <div className="flex flex-col gap-1.5 mt-2 text-xs text-slate-400">
                           <div className="flex items-center justify-center gap-1.5">
                             <Droplet size={14} />
-                            <span>{item.main.humidity}%</span>
+                            <span>{item.humidity || 0}%</span>
                           </div>
                           <div className="flex items-center justify-center gap-1.5">
                             <Wind size={14} />
-                            <span>{(item.wind?.speed * 3.6 || 0).toFixed(0)} km/h</span>
+                            <span>{((item.wind_speed || 0) * 3.6).toFixed(0)} km/h</span>
                           </div>
+                          {item.pop !== undefined && item.pop > 0 && (
+                            <div className="flex items-center justify-center gap-1.5 mt-1">
+                              <Cloud size={14} />
+                              <span>{(item.pop * 100).toFixed(0)}%</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

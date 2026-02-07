@@ -1,6 +1,6 @@
 import { db } from "../config/db.js";
 import { userTable, userDetailsTable } from "../schema/index.js";
-import { eq } from "drizzle-orm";
+import { eq, inArray, or } from "drizzle-orm";
 import { hashPassword, comparePassword, validatePassword, generateToken } from "../utils/authUtils.js";
 import { sendOTP, generateOTP, storeOTP } from "./otpService.js";
 import { sendPasswordResetOTPEmail } from "../config/email.js";
@@ -307,6 +307,10 @@ export const updateUserProfile = async (userId, profileData) => {
       farmLocation,
       bio,
       profileImage,
+      licenseImage,
+      skills,
+      education,
+      yearsOfExperience,
     } = profileData;
 
     // Validate farmLocation if provided
@@ -341,6 +345,10 @@ export const updateUserProfile = async (userId, profileData) => {
     if (farmLocation !== undefined) updateFields.farmLocation = farmLocation || null;
     if (bio !== undefined) updateFields.bio = bio || null;
     if (profileImage !== undefined) updateFields.profileImage = profileImage || null;
+    if (licenseImage !== undefined) updateFields.licenseImage = licenseImage || null;
+    if (skills !== undefined) updateFields.skills = skills || null;
+    if (education !== undefined) updateFields.education = education || null;
+    if (yearsOfExperience !== undefined) updateFields.yearsOfExperience = yearsOfExperience == null ? null : Number(yearsOfExperience);
     updateFields.updatedAt = new Date();
 
     if (existingDetails.length > 0) {
@@ -364,4 +372,116 @@ export const updateUserProfile = async (userId, profileData) => {
     throw error;
   }
 };
-  
+
+// LIST ALL USERS (admin) - farmers (role user) + experts (role expert) with their userDetails
+export const listAllUsers = async () => {
+  try {
+    const users = await db
+      .select()
+      .from(userTable)
+      .where(or(eq(userTable.role, "user"), eq(userTable.role, "expert")));
+
+    if (users.length === 0) {
+      return [];
+    }
+
+    const userIds = users.map((u) => u.id);
+    const detailsRows = await db
+      .select()
+      .from(userDetailsTable)
+      .where(inArray(userDetailsTable.userId, userIds));
+
+    const detailsMap = {};
+    detailsRows.forEach((d) => {
+      detailsMap[d.userId] = d;
+    });
+
+    const usersWithDetails = users.map((user) => ({
+      ...user,
+      userDetails: detailsMap[user.id] || null,
+    }));
+
+    return usersWithDetails;
+  } catch (error) {
+    console.error("Error listing all users:", error);
+    throw error;
+  }
+};
+
+// LIST EXPERTS (admin) - users with role expert + their userDetails
+export const listExperts = async () => {
+  try {
+    const experts = await db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.role, "expert"));
+
+    if (experts.length === 0) {
+      return { experts: [], detailsMap: {} };
+    }
+
+    const userIds = experts.map((u) => u.id);
+    const detailsRows = await db
+      .select()
+      .from(userDetailsTable)
+      .where(inArray(userDetailsTable.userId, userIds));
+
+    const detailsMap = {};
+    detailsRows.forEach((d) => {
+      detailsMap[d.userId] = d;
+    });
+
+    const expertsWithDetails = experts.map((user) => ({
+      ...user,
+      userDetails: detailsMap[user.id] || null,
+    }));
+
+    return expertsWithDetails;
+  } catch (error) {
+    console.error("Error listing experts:", error);
+    throw error;
+  }
+};
+
+// SET EXPERT VERIFIED (admin only) - set isVerifiedExpert to true/false
+export const setExpertVerified = async (userId, isVerified = true) => {
+  try {
+    const existing = await db
+      .select()
+      .from(userDetailsTable)
+      .where(eq(userDetailsTable.userId, userId))
+      .limit(1);
+
+    if (existing.length === 0) {
+      throw new Error("User details not found. User may need to complete profile first.");
+    }
+
+    await db
+      .update(userDetailsTable)
+      .set({
+        isVerifiedExpert: !!isVerified,
+        updatedAt: new Date(),
+      })
+      .where(eq(userDetailsTable.userId, userId));
+
+    return await getUserProfile(userId);
+  } catch (error) {
+    console.error("Error setting expert verified:", error);
+    throw error;
+  }
+};
+
+// DELETE USER (admin only) - delete userDetails then user
+export const deleteUser = async (userId) => {
+  try {
+    await db.delete(userDetailsTable).where(eq(userDetailsTable.userId, userId));
+    const deleted = await db.delete(userTable).where(eq(userTable.id, userId)).returning();
+    if (deleted.length === 0) {
+      throw new Error("User not found");
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw error;
+  }
+};

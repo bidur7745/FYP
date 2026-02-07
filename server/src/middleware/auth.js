@@ -59,6 +59,38 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
+// Optional auth - attaches user if token present, does not fail if no token
+export const optionalAuthenticate = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = extractToken(authHeader);
+    if (!token) {
+      return next();
+    }
+    const tokenResult = verifyToken(token);
+    if (!tokenResult.valid) {
+      return next();
+    }
+    const user = await db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, tokenResult.decoded.id))
+      .limit(1);
+    if (user.length > 0) {
+      req.user = {
+        id: user[0].id,
+        email: user[0].email,
+        name: user[0].name,
+        role: user[0].role,
+        isVerified: user[0].isVerified,
+      };
+    }
+    next();
+  } catch (error) {
+    next();
+  }
+};
+
 // Role-based authorization middleware
 export const authorize = (...allowedRoles) => {
   return (req, res, next) => {

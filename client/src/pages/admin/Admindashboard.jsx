@@ -1,11 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   LayoutDashboard, 
   Users, 
   Sprout, 
-  GraduationCap, 
-  BarChart3,
   DollarSign,
+  MessageSquare,
   LogOut,
   UserCircle
 } from 'lucide-react'
@@ -13,9 +12,9 @@ import { useNavigate } from 'react-router-dom'
 import DashboardOverview from '../../components/admin/DashboardOverview'
 import UserManagement from '../../components/admin/UserManagement'
 import CropManagement from '../../components/admin/CropManagement'
-import ExpertVerification from '../../components/admin/ExpertVerification'
-import Analytics from '../../components/admin/Analytics'
 import Subsidy from '../../components/admin/Subsidy'
+import SupportQueries from '../../components/admin/SupportQueries'
+import AdminInfo from '../../components/admin/AdminInfo'
 
 const Admindashboard = () => {
   const [activeTab, setActiveTab] = useState('overview')
@@ -24,12 +23,26 @@ const Admindashboard = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'users', label: 'Users', icon: Users },
+    { id: 'users', label: 'User Management', icon: Users },
     { id: 'crops', label: 'Crops', icon: Sprout },
-    { id: 'experts', label: 'Experts', icon: GraduationCap },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'subsidy', label: 'Government Subsidy', icon: DollarSign },
+    { id: 'queries', label: 'Queries', icon: MessageSquare },
   ]
+
+  // Listen for tab switch events from DashboardOverview
+  useEffect(() => {
+    const handleTabSwitch = (event) => {
+      const tabId = event.detail
+      if (tabId) {
+        setActiveTab(tabId)
+      }
+    }
+
+    window.addEventListener('switchTab', handleTabSwitch)
+    return () => {
+      window.removeEventListener('switchTab', handleTabSwitch)
+    }
+  }, [])
 
   const handleLogout = async () => {
     localStorage.removeItem('authToken')
@@ -41,8 +54,7 @@ const Admindashboard = () => {
   }
 
   const handleAdminInfo = () => {
-    // TODO: Implement admin info update functionality
-    console.log('Admin info clicked')
+    setActiveTab('adminInfo')
   }
 
   const renderContent = () => {
@@ -53,12 +65,12 @@ const Admindashboard = () => {
         return <UserManagement />
       case 'crops':
         return <CropManagement />
-      case 'experts':
-        return <ExpertVerification />
-      case 'analytics':
-        return <Analytics />
       case 'subsidy':
         return <Subsidy />
+      case 'queries':
+        return <SupportQueries />
+      case 'adminInfo':
+        return <AdminInfo />
       default:
         return <DashboardOverview />
     }
@@ -105,7 +117,11 @@ const Admindashboard = () => {
           <div className="border-t border-slate-700 pt-4 px-3 space-y-2">
             <button
               onClick={handleAdminInfo}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-300 hover:bg-slate-800 hover:text-white"
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                activeTab === 'adminInfo'
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+              }`}
               title="Admin Info"
             >
               <UserCircle size={20} className="flex-shrink-0" />

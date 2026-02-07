@@ -24,9 +24,10 @@ const CACHE_CONFIG = {
   '/api/weather/extended': { ttl: 60 * 60 * 1000 }, // 60 minutes
   '/api/alerts': { ttl: 2 * 60 * 1000 }, // 2 minutes (alerts need to be fresh)
   '/api/alerts/unread-count': { ttl: 1 * 60 * 1000 }, // 1 minute (count needs to be very fresh)
-  '/dashboard/user': { ttl: 5 * 60 * 1000 }, // 5 minutes
-  '/dashboard/admin': { ttl: 5 * 60 * 1000 },
   '/dashboard/expert': { ttl: 5 * 60 * 1000 },
+  '/api/government-schemes': { ttl: 5 * 60 * 1000 }, // 5 minutes cache for schemes
+  '/api/users/all': { ttl: 5 * 60 * 1000 }, // 5 minutes – admin user list (save resources)
+  '/api/users/experts': { ttl: 5 * 60 * 1000 }, // 5 minutes – experts list (save resources)
 };
 
 export const apiRequest = async (path, options = {}, requireAuth = false, useCache = false) => {
@@ -84,6 +85,7 @@ export const apiRequest = async (path, options = {}, requireAuth = false, useCac
   }
 };
 
+// Dashboard - Get dashboard data (with caching)
 export const getDashboard = (role, forceRefresh = false) => {
   if (forceRefresh) {
     const cacheKey = `/dashboard/${role}_${JSON.stringify({ method: 'GET' })}`;
@@ -92,59 +94,47 @@ export const getDashboard = (role, forceRefresh = false) => {
   return apiRequest(`/dashboard/${role}`, { method: 'GET' }, true, true);
 };
 
-export const loginUser = (payload) =>
-  apiRequest('/api/users/login', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-
+// Auth - Register user
 export const registerUser = (payload) =>
   apiRequest('/api/users/register', {
     method: 'POST',
     body: JSON.stringify(payload),
-  });
+  }, false);
 
+// Auth - Verify registration OTP
 export const verifyRegistrationOtp = (payload) =>
   apiRequest('/api/users/verify-otp', {
     method: 'POST',
     body: JSON.stringify(payload),
-  });
+  }, false);
 
+// Auth - Login user
+export const loginUser = (payload) =>
+  apiRequest('/api/users/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, false);
+
+// Auth - Request password reset OTP
 export const requestPasswordReset = (payload) =>
   apiRequest('/api/users/forgot-password', {
     method: 'POST',
     body: JSON.stringify(payload),
-  });
+  }, false);
 
+// Auth - Verify password reset OTP
 export const verifyPasswordResetOtp = (payload) =>
   apiRequest('/api/users/verify-password-reset-otp', {
     method: 'POST',
     body: JSON.stringify(payload),
-  });
+  }, false);
 
+// Auth - Reset password
 export const resetPassword = (payload) =>
   apiRequest('/api/users/reset-password', {
     method: 'POST',
     body: JSON.stringify(payload),
-  });
-
-// Crop Advisory - Admin: create crop with full details (crop + guide + calendar) (invalidate cache)
-export const createCropWithDetails = async (payload) => {
-  const result = await apiRequest('/api/crops/upload', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  }, true);
-  
-  // Invalidate all crop-related caches after creating new crop
-  const cacheKeys = [
-    `/api/crops_${JSON.stringify({ method: 'GET' })}`,
-    `/api/crops/recommended_${JSON.stringify({ method: 'GET' })}`,
-  ];
-  cacheKeys.forEach(key => removeCache(key));
-  // Note: Filter and search caches will expire naturally, or can be cleared on next use
-  
-  return result;
-};
+  }, false);
 
 // Crop Advisory - Get all crops (with caching)
 export const getAllCrops = (forceRefresh = false) => {
@@ -152,45 +142,7 @@ export const getAllCrops = (forceRefresh = false) => {
     const cacheKey = `/api/crops_${JSON.stringify({ method: 'GET' })}`;
     removeCache(cacheKey);
   }
-  // Note: This endpoint might be public, but we'll cache it anyway
-  return apiRequest('/api/crops', { method: 'GET' }, false, true);
-};
-
-// Crop Advisory - Update crop (invalidate cache on update)
-export const updateCrop = async (cropId, payload) => {
-  const result = await apiRequest(`/api/crops/${cropId}`, {
-    method: 'PUT',
-    body: JSON.stringify(payload),
-  }, true);
-  
-  // Invalidate all crop-related caches after update
-  const cacheKeys = [
-    `/api/crops_${JSON.stringify({ method: 'GET' })}`,
-    `/api/crops/recommended_${JSON.stringify({ method: 'GET' })}`,
-    `/api/plantation-guide/${cropId}_${JSON.stringify({ method: 'GET' })}`,
-    `/api/planting-calendar/${cropId}_${JSON.stringify({ method: 'GET' })}`,
-  ];
-  cacheKeys.forEach(key => removeCache(key));
-  
-  return result;
-};
-
-// Crop Advisory - Delete crop (invalidate cache on delete)
-export const deleteCrop = async (cropId) => {
-  const result = await apiRequest(`/api/crops/${cropId}`, {
-    method: 'DELETE',
-  }, true);
-  
-  // Invalidate all crop-related caches after delete
-  const cacheKeys = [
-    `/api/crops_${JSON.stringify({ method: 'GET' })}`,
-    `/api/crops/recommended_${JSON.stringify({ method: 'GET' })}`,
-    `/api/plantation-guide/${cropId}_${JSON.stringify({ method: 'GET' })}`,
-    `/api/planting-calendar/${cropId}_${JSON.stringify({ method: 'GET' })}`,
-  ];
-  cacheKeys.forEach(key => removeCache(key));
-  
-  return result;
+  return apiRequest('/api/crops', { method: 'GET' }, true, true);
 };
 
 // Crop Advisory - Get plantation guide for a crop (with caching)
@@ -234,6 +186,48 @@ export const updateUserProfile = async (payload) => {
   return result;
 };
 
+// Upload image (e.g. profile, license) - multipart, returns { url, publicId }
+export const uploadImage = async (file, folder = 'krishimitra') => {
+  const formData = new FormData();
+  formData.append('image', file);
+  if (folder) formData.append('folder', folder);
+  const token = localStorage.getItem('authToken');
+  const res = await fetch(`${API_BASE}/api/upload/image`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message || 'Upload failed');
+  return data;
+};
+
+// Admin: List experts (for verification) – cached 5 min
+export const getExperts = (forceRefresh = false) => {
+  if (forceRefresh) {
+    const cacheKey = `/api/users/experts_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  return apiRequest('/api/users/experts', { method: 'GET' }, true, true);
+};
+
+// Admin: List all users (farmers and experts) – cached 5 min
+export const getAllUsers = (forceRefresh = false) => {
+  if (forceRefresh) {
+    const cacheKey = `/api/users/all_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  return apiRequest('/api/users/all', { method: 'GET' }, true, true);
+};
+
+// Admin: Verify expert (set isVerifiedExpert = true)
+export const verifyExpert = (userId) =>
+  apiRequest(`/api/users/${userId}/verify-expert`, { method: 'PATCH' }, true);
+
+// Admin: Delete user
+export const deleteUser = (userId) =>
+  apiRequest(`/api/users/${userId}`, { method: 'DELETE' }, true);
+
 // Crop Advisory - Get recommended crops for logged-in user
 export const getRecommendedCrops = (forceRefresh = false) => {
   if (forceRefresh) {
@@ -273,121 +267,50 @@ export const searchCrops = (query, forceRefresh = false) => {
   return apiRequest(path, { method: 'GET' }, true, true);
 };
 
-// Weather Services - Get current weather by coordinates
+// Weather Services - Get current weather by coordinates (server expects POST with body)
 export const getCurrentWeather = async (latitude, longitude, forceRefresh = false) => {
   const path = '/api/weather/current';
-  // Create a normalized cache key based on coordinates (rounded to 4 decimal places for matching nearby locations)
-  const latRounded = latitude.toFixed(4);
-  const lonRounded = longitude.toFixed(4);
-  const cacheKey = `${path}_lat_${latRounded}_lon_${lonRounded}_POST`;
-  
-  if (forceRefresh) {
-    removeCache(cacheKey);
-  }
-  
-  // Check cache first if not forcing refresh
-  if (!forceRefresh) {
-    const cached = getCache(cacheKey);
-    if (cached) {
-      console.log(`[Weather Cache Hit] ${path} for coordinates (${latRounded}, ${lonRounded})`);
-      return cached;
-    }
-  }
-  
-  const result = await apiRequest(path, {
+  const options = {
     method: 'POST',
-    body: JSON.stringify({ latitude, longitude }),
-  }, true, false); // Don't use apiRequest cache, we handle it manually
-  
-  // Cache the result manually with our custom key
-  if (result.success) {
-    const config = CACHE_CONFIG[path] || {};
-    const ttl = config.ttl || 15 * 60 * 1000; // 15 minutes default
-    setCache(cacheKey, result, ttl);
-    console.log(`[Weather Cache Set] ${path} for coordinates (${latRounded}, ${lonRounded}) - TTL: ${ttl / 1000}s`);
+    body: JSON.stringify({ latitude: Number(latitude), longitude: Number(longitude) }),
+  };
+
+  if (forceRefresh) {
+    const cacheKey = `${path}_${JSON.stringify(options)}`;
+    removeCache(cacheKey);
   }
-  
-  return result;
+
+  return apiRequest(path, options, true, true);
 };
 
-// Weather Services - Get forecast by coordinates
+// Weather Services - Get weather forecast by coordinates
 export const getWeatherForecast = async (latitude, longitude, forceRefresh = false) => {
-  // Round coordinates for cache key matching
-  const latRounded = latitude.toFixed(4);
-  const lonRounded = longitude.toFixed(4);
-  const cacheKey = `/api/weather/forecast_lat_${latRounded}_lon_${lonRounded}_GET`;
-  
-  if (forceRefresh) {
-    removeCache(cacheKey);
-  }
-  
-  // Check cache first if not forcing refresh
-  if (!forceRefresh) {
-    const cached = getCache(cacheKey);
-    if (cached) {
-      console.log(`[Forecast Cache Hit] for coordinates (${latRounded}, ${lonRounded})`);
-      return cached;
-    }
-  }
-  
-  // Make API request with original coordinates (not rounded)
   const path = `/api/weather/forecast?lat=${latitude}&lon=${longitude}`;
-  const result = await apiRequest(path, { 
-    method: 'GET' 
-  }, true, false); // Don't use apiRequest cache, we handle it manually
-  
-  // Cache the result manually with our custom key
-  if (result && result.success) {
-    const config = CACHE_CONFIG['/api/weather/forecast'] || {};
-    const ttl = config.ttl || 60 * 60 * 1000; // 60 minutes default
-    setCache(cacheKey, result, ttl);
-    console.log(`[Forecast Cache Set] for coordinates (${latRounded}, ${lonRounded}) - TTL: ${ttl / 1000}s`);
-  }
-  
-  return result;
-};
-
-// Weather Services - Get extended weather (hourly + daily)
-export const getExtendedWeather = async (latitude, longitude, forceRefresh = false) => {
-  // Round coordinates for cache key matching
-  const latRounded = latitude.toFixed(4);
-  const lonRounded = longitude.toFixed(4);
-  const cacheKey = `/api/weather/extended_lat_${latRounded}_lon_${lonRounded}_GET`;
   
   if (forceRefresh) {
+    const cacheKey = `${path}_${JSON.stringify({ method: 'GET' })}`;
     removeCache(cacheKey);
   }
   
-  // Check cache first if not forcing refresh
-  if (!forceRefresh) {
-    const cached = getCache(cacheKey);
-    if (cached) {
-      console.log(`[Extended Weather Cache Hit] for coordinates (${latRounded}, ${lonRounded})`);
-      return cached;
-    }
-  }
-  
-  // Make API request with original coordinates (not rounded)
-  const path = `/api/weather/extended?lat=${latitude}&lon=${longitude}`;
-  const result = await apiRequest(path, { 
-    method: 'GET' 
-  }, true, false); // Don't use apiRequest cache, we handle it manually
-  
-  // Cache the result manually with our custom key
-  if (result && result.success) {
-    const config = CACHE_CONFIG['/api/weather/extended'] || {};
-    const ttl = config.ttl || 60 * 60 * 1000; // 60 minutes default
-    setCache(cacheKey, result, ttl);
-    console.log(`[Extended Weather Cache Set] for coordinates (${latRounded}, ${lonRounded}) - TTL: ${ttl / 1000}s`);
-  }
-  
-  return result;
+  return apiRequest(path, { method: 'GET' }, true, true);
 };
 
-// Alerts - Get user alerts
+// Weather Services - Get extended weather forecast by coordinates
+export const getExtendedWeather = async (latitude, longitude, forceRefresh = false) => {
+  const path = `/api/weather/extended?lat=${latitude}&lon=${longitude}`;
+  
+  if (forceRefresh) {
+    const cacheKey = `${path}_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  
+  return apiRequest(path, { method: 'GET' }, true, true);
+};
+
+// Alerts - Get user alerts (with caching)
 export const getUserAlerts = (filters = {}, forceRefresh = false) => {
   const queryParams = new URLSearchParams();
-  if (filters.severity) queryParams.append('severity', filters.severity);
+  if (filters.read !== undefined) queryParams.append('read', filters.read);
   if (filters.type) queryParams.append('type', filters.type);
   
   const queryString = queryParams.toString();
@@ -401,7 +324,11 @@ export const getUserAlerts = (filters = {}, forceRefresh = false) => {
   return apiRequest(path, { method: 'GET' }, true, true);
 };
 
-// Alerts - Get unread alert count
+// Alerts - Mark alert as read
+export const markAlertAsRead = (alertId) =>
+  apiRequest(`/api/alerts/${alertId}/read`, { method: 'PATCH' }, true);
+
+// Alerts - Get unread alert count (with caching)
 export const getUnreadAlertCount = (forceRefresh = false) => {
   const path = '/api/alerts/unread-count';
   
@@ -413,29 +340,11 @@ export const getUnreadAlertCount = (forceRefresh = false) => {
   return apiRequest(path, { method: 'GET' }, true, true);
 };
 
-// Alerts - Mark alert as read
-export const markAlertAsRead = async (alertId) => {
-  const result = await apiRequest(`/api/alerts/${alertId}/read`, {
-    method: 'PUT',
-  }, true, false);
-  
-  // Invalidate alerts cache after marking as read
-  const alertsCacheKey = `/api/alerts_${JSON.stringify({ method: 'GET' })}`;
-  removeCache(alertsCacheKey);
-  const unreadCacheKey = `/api/alerts/unread-count_${JSON.stringify({ method: 'GET' })}`;
-  removeCache(unreadCacheKey);
-  
-  return result;
-};
-
-// Government Schemes - Get all schemes
+// Government Schemes - Get all schemes (with caching)
 export const getAllGovernmentSchemes = (filters = {}, forceRefresh = false) => {
   const queryParams = new URLSearchParams();
-  if (filters.status) queryParams.append('status', filters.status);
-  if (filters.level) queryParams.append('level', filters.level);
-  if (filters.province) queryParams.append('province', filters.province);
-  if (filters.district) queryParams.append('district', filters.district);
-  if (filters.schemeType) queryParams.append('schemeType', filters.schemeType);
+  if (filters.category) queryParams.append('category', filters.category);
+  if (filters.region) queryParams.append('region', filters.region);
   
   const queryString = queryParams.toString();
   const path = `/api/government-schemes${queryString ? `?${queryString}` : ''}`;
@@ -445,19 +354,16 @@ export const getAllGovernmentSchemes = (filters = {}, forceRefresh = false) => {
     removeCache(cacheKey);
   }
   
-  return apiRequest(path, { method: 'GET' }, false, true);
+  return apiRequest(path, { method: 'GET' }, true, true);
 };
 
-// Government Schemes - Get scheme by ID
+// Government Schemes - Get scheme by ID (with caching)
 export const getGovernmentSchemeById = (schemeId, forceRefresh = false) => {
-  const path = `/api/government-schemes/${schemeId}`;
-  
   if (forceRefresh) {
-    const cacheKey = `${path}_${JSON.stringify({ method: 'GET' })}`;
+    const cacheKey = `/api/government-schemes/${schemeId}_${JSON.stringify({ method: 'GET' })}`;
     removeCache(cacheKey);
   }
-  
-  return apiRequest(path, { method: 'GET' }, false, true);
+  return apiRequest(`/api/government-schemes/${schemeId}`, { method: 'GET' }, true, true);
 };
 
 // Government Schemes - Search schemes
@@ -469,19 +375,15 @@ export const searchGovernmentSchemes = (query, forceRefresh = false) => {
     removeCache(cacheKey);
   }
   
-  return apiRequest(path, { method: 'GET' }, false, true);
+  return apiRequest(path, { method: 'GET' }, true, true);
 };
 
 // Government Schemes - Filter schemes
 export const getFilteredGovernmentSchemes = (filters = {}, forceRefresh = false) => {
   const queryParams = new URLSearchParams();
-  if (filters.status) queryParams.append('status', filters.status);
-  if (filters.level) queryParams.append('level', filters.level);
-  if (filters.province) queryParams.append('province', filters.province);
-  if (filters.district) queryParams.append('district', filters.district);
-  if (filters.schemeType) queryParams.append('schemeType', filters.schemeType);
-  if (filters.regionScope) queryParams.append('regionScope', filters.regionScope);
-  if (filters.localBodyType) queryParams.append('localBodyType', filters.localBodyType);
+  if (filters.category) queryParams.append('category', filters.category);
+  if (filters.region) queryParams.append('region', filters.region);
+  if (filters.eligibility) queryParams.append('eligibility', filters.eligibility);
   
   const queryString = queryParams.toString();
   const path = `/api/government-schemes/filter${queryString ? `?${queryString}` : ''}`;
@@ -491,74 +393,100 @@ export const getFilteredGovernmentSchemes = (filters = {}, forceRefresh = false)
     removeCache(cacheKey);
   }
   
-  return apiRequest(path, { method: 'GET' }, false, true);
+  return apiRequest(path, { method: 'GET' }, true, true);
 };
 
-// Government Schemes - Create scheme (Admin only)
-export const createGovernmentScheme = async (payload) => {
-  const result = await apiRequest('/api/government-schemes', {
+// Admin: Crop Management - Create crop with details
+export const createCropWithDetails = (payload) =>
+  apiRequest('/api/crops', {
     method: 'POST',
     body: JSON.stringify(payload),
-  }, true, false);
-  
-  // Invalidate schemes cache after creating
-  const cacheKeys = [
-    `/api/government-schemes_${JSON.stringify({ method: 'GET' })}`,
-    `/api/government-schemes/filter_${JSON.stringify({ method: 'GET' })}`,
-  ];
-  cacheKeys.forEach(key => removeCache(key));
-  
-  return result;
-};
+  }, true);
 
-// Government Schemes - Update scheme (Admin only)
-export const updateGovernmentScheme = async (schemeId, payload) => {
-  const result = await apiRequest(`/api/government-schemes/${schemeId}`, {
+// Admin: Crop Management - Update crop
+export const updateCrop = (cropId, payload) =>
+  apiRequest(`/api/crops/${cropId}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
-  }, true, false);
-  
-  // Invalidate schemes cache after update
-  const cacheKeys = [
-    `/api/government-schemes_${JSON.stringify({ method: 'GET' })}`,
-    `/api/government-schemes/${schemeId}_${JSON.stringify({ method: 'GET' })}`,
-    `/api/government-schemes/filter_${JSON.stringify({ method: 'GET' })}`,
-  ];
-  cacheKeys.forEach(key => removeCache(key));
-  
-  return result;
-};
+  }, true);
 
-// Government Schemes - Update scheme details (Admin only)
-export const updateGovernmentSchemeDetails = async (schemeId, payload) => {
-  const result = await apiRequest(`/api/government-schemes/${schemeId}/details`, {
-    method: 'PUT',
-    body: JSON.stringify(payload),
-  }, true, false);
-  
-  // Invalidate schemes cache after update
-  const cacheKeys = [
-    `/api/government-schemes/${schemeId}_${JSON.stringify({ method: 'GET' })}`,
-    `/api/government-schemes/${schemeId}/details_${JSON.stringify({ method: 'GET' })}`,
-  ];
-  cacheKeys.forEach(key => removeCache(key));
-  
-  return result;
-};
-
-// Government Schemes - Delete scheme (Admin only)
-export const deleteGovernmentScheme = async (schemeId) => {
-  const result = await apiRequest(`/api/government-schemes/${schemeId}`, {
+// Admin: Crop Management - Delete crop
+export const deleteCrop = (cropId) =>
+  apiRequest(`/api/crops/${cropId}`, {
     method: 'DELETE',
-  }, true, false);
-  
-  // Invalidate schemes cache after delete
-  const cacheKeys = [
-    `/api/government-schemes_${JSON.stringify({ method: 'GET' })}`,
-    `/api/government-schemes/${schemeId}_${JSON.stringify({ method: 'GET' })}`,
-    `/api/government-schemes/filter_${JSON.stringify({ method: 'GET' })}`,
-  ];
-  cacheKeys.forEach(key => removeCache(key));
-  
-  return result;
+  }, true);
+
+// Admin: Government Subsidy - Create scheme
+export const createGovernmentScheme = (payload) =>
+  apiRequest('/api/government-schemes', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, true);
+
+// Admin: Government Subsidy - Update scheme
+export const updateGovernmentScheme = (schemeId, payload) =>
+  apiRequest(`/api/government-schemes/${schemeId}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }, true);
+
+// Admin: Government Subsidy - Delete scheme
+export const deleteGovernmentScheme = (schemeId) =>
+  apiRequest(`/api/government-schemes/${schemeId}`, {
+    method: 'DELETE',
+  }, true);
+
+// Admin: Government Subsidy - Update scheme details
+export const updateGovernmentSchemeDetails = (schemeId, detailsPayload) =>
+  apiRequest(`/api/government-schemes/${schemeId}/details`, {
+    method: 'PUT',
+    body: JSON.stringify(detailsPayload),
+  }, true);
+
+// Support / Contact form - submit (optional auth: send token if logged in)
+export const submitSupportQuery = (payload) => {
+  const headers = { ...defaultHeaders, ...withAuth() };
+  return fetch(`${API_BASE}/api/support`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.success) throw new Error(data.message || 'Failed to send message');
+      return data;
+    });
 };
+
+// Support - get my queries (logged-in user)
+export const getMySupportQueries = () =>
+  apiRequest('/api/support/my-queries', { method: 'GET' }, true);
+
+// Admin: Support - list all queries
+export const getSupportQueriesList = (params = {}) => {
+  const q = new URLSearchParams(params).toString();
+  return apiRequest(`/api/support${q ? `?${q}` : ''}`, { method: 'GET' }, true);
+};
+
+// Admin: Support - reply to query
+export const replySupportQuery = (queryId, adminReply) =>
+  apiRequest(`/api/support/${queryId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ adminReply }),
+  }, true);
+
+// Notifications - list
+export const getNotifications = (limit = 50) =>
+  apiRequest(`/api/notifications?limit=${limit}`, { method: 'GET' }, true);
+
+// Notifications - unread count
+export const getUnreadNotificationCount = () =>
+  apiRequest('/api/notifications/unread-count', { method: 'GET' }, true, true);
+
+// Notifications - mark one as read
+export const markNotificationRead = (notificationId) =>
+  apiRequest(`/api/notifications/${notificationId}/read`, { method: 'PUT' }, true);
+
+// Notifications - mark all as read
+export const markAllNotificationsRead = () =>
+  apiRequest('/api/notifications/read-all', { method: 'PUT' }, true);

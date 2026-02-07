@@ -85,3 +85,39 @@ export const sendPasswordResetOTPEmail = async (email, otp, name) => {
     throw new Error("Failed to send password reset email");
   }
 };
+
+// Send support reply email (contact form response)
+export const sendSupportReplyEmail = async (toEmail, userName, originalMessage, adminReply) => {
+  const mailOptions = {
+    from: `"KrishiMitra Support" <${ENV.SMTP_USER}>`,
+    to: toEmail,
+    subject: "Re: Your support request - KrishiMitra",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2d5016;">Support Reply - KrishiMitra</h2>
+        <p>Hello ${userName},</p>
+        <p>Thank you for contacting us. Here is our response to your query.</p>
+        <div style="background-color: #f8f8f8; padding: 12px; margin: 16px 0; border-left: 4px solid #2d5016;">
+          <strong>Your message:</strong><br/>
+          <span style="color: #555;">${originalMessage.replace(/\n/g, "<br/>")}</span>
+        </div>
+        <div style="background-color: #e8f5e9; padding: 16px; margin: 16px 0; border-radius: 8px;">
+          <strong>Our reply:</strong><br/>
+          <span style="color: #1b5e20;">${adminReply.replace(/\n/g, "<br/>")}</span>
+        </div>
+        <p>If you have further questions, please submit another message from our Support page.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="color: #666; font-size: 12px;">KrishiMitra - Your farming companion.</p>
+      </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Support reply email sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Error sending support reply email:", error);
+    throw new Error("Failed to send support reply email");
+  }
+};

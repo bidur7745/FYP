@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
-
+import {
+    loginUser,
+    requestPasswordReset,
+    verifyPasswordResetOtp,
+    resetPassword,
+} from '../services/api'
 
 const Login = () => {
     const [stage, setStage] = useState('login')
@@ -26,7 +31,10 @@ const Login = () => {
             localStorage.setItem('userRole', data?.role)
             setStatus({ type: 'success', message: 'Login successful' })
 
-            const destination = `/dashboard/${data?.role || 'user'}`
+            const role = data?.role || 'user'
+            const destination = role === 'expert' 
+              ? '/dashboard/expert/profile' 
+              : `/dashboard/${role}`
             navigate(destination, { replace: true })
         } catch (error) {
             setStatus({ type: 'error', message: error.message })

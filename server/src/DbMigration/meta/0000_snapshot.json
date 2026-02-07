@@ -1,9 +1,250 @@
 {
-  "id": "5ff3a164-8610-4625-ac9d-68aba500283f",
+  "id": "e77aa165-91d7-4722-9372-2510f6789d65",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.crops": {
+      "name": "crops",
+      "schema": "",
+      "columns": {
+        "crop_id": {
+          "name": "crop_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "crop_name": {
+          "name": "crop_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crop_category": {
+          "name": "crop_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regions": {
+          "name": "regions",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "season": {
+          "name": "season",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "soil_type": {
+          "name": "soil_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "water_requirement": {
+          "name": "water_requirement",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "climate": {
+          "name": "climate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.plantation_guides": {
+      "name": "plantation_guides",
+      "schema": "",
+      "columns": {
+        "guide_id": {
+          "name": "guide_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "crop_id": {
+          "name": "crop_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "seed_preparation": {
+          "name": "seed_preparation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planting_method": {
+          "name": "planting_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "irrigation_schedule": {
+          "name": "irrigation_schedule",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvesting_tips": {
+          "name": "harvesting_tips",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "average_yield": {
+          "name": "average_yield",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "video_url": {
+          "name": "video_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spacing": {
+          "name": "spacing",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "maturity_period": {
+          "name": "maturity_period",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plantation_process": {
+          "name": "plantation_process",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "plantation_guides_crop_id_crops_crop_id_fk": {
+          "name": "plantation_guides_crop_id_crops_crop_id_fk",
+          "tableFrom": "plantation_guides",
+          "tableTo": "crops",
+          "columnsFrom": [
+            "crop_id"
+          ],
+          "columnsTo": [
+            "crop_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.planting_calendar": {
+      "name": "planting_calendar",
+      "schema": "",
+      "columns": {
+        "calendar_id": {
+          "name": "calendar_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "crop_id": {
+          "name": "crop_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "season": {
+          "name": "season",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sowing_period": {
+          "name": "sowing_period",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transplanting_period": {
+          "name": "transplanting_period",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvesting_period": {
+          "name": "harvesting_period",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "planting_calendar_crop_id_crops_crop_id_fk": {
+          "name": "planting_calendar_crop_id_crops_crop_id_fk",
+          "tableFrom": "planting_calendar",
+          "tableTo": "crops",
+          "columnsFrom": [
+            "crop_id"
+          ],
+          "columnsTo": [
+            "crop_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.userDetails": {
       "name": "userDetails",
       "schema": "",
@@ -74,8 +315,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "isVerified": {
-          "name": "isVerified",
+        "isVerifiedExpert": {
+          "name": "isVerifiedExpert",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -153,6 +394,25 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'user'"
+        },
+        "isVerified": {
+          "name": "isVerified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "verificationCode": {
+          "name": "verificationCode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verificationExpires": {
+          "name": "verificationExpires",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",

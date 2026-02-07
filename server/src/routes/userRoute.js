@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, verifyOTP, login, forgotPassword, verifyPasswordResetOTP, resetPasswordController, userDashboard, adminDashboard, expertDashboard, getUserProfileController, updateUserProfileController } from "../controllers/userController.js";
+import { registerUser, verifyOTP, login, forgotPassword, verifyPasswordResetOTP, resetPasswordController, expertDashboard, getUserProfileController, updateUserProfileController, listAllUsersController, listExpertsController, verifyExpertController, deleteUserController } from "../controllers/userController.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = Router();
@@ -24,12 +24,6 @@ router.post("/verify-password-reset-otp", verifyPasswordResetOTP);
 router.post("/reset-password", resetPasswordController);
 
 // DASHBOARD ROUTES (Protected)
-// USER DASHBOARD - Requires authentication and user role
-router.get("/user", authenticate, authorize("user"), userDashboard);
-
-// ADMIN DASHBOARD - Requires authentication and admin role
-router.get("/admin", authenticate, authorize("admin"), adminDashboard);
-
 // EXPERT DASHBOARD - Requires authentication and expert role
 router.get("/expert", authenticate, authorize("expert"), expertDashboard);
 
@@ -39,5 +33,14 @@ router.get("/profile", authenticate, getUserProfileController);
 
 // Update user profile
 router.put("/profile", authenticate, updateUserProfileController);
+
+// ADMIN: List all users (farmers + experts)
+router.get("/all", authenticate, authorize("admin"), listAllUsersController);
+// ADMIN: List experts (for verification)
+router.get("/experts", authenticate, authorize("admin"), listExpertsController);
+// ADMIN: Verify expert (set isVerifiedExpert = true)
+router.patch("/:userId/verify-expert", authenticate, authorize("admin"), verifyExpertController);
+// ADMIN: Delete user
+router.delete("/:userId", authenticate, authorize("admin"), deleteUserController);
 
 export default router;

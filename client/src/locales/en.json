@@ -14,8 +14,12 @@
             "href": "/crop-advisory"
           },
           {
-            "name": "Disease Detection",
-            "href": "/disease-detection"
+            "name": "Government Schemes",
+            "href": "/government-schemes"
+          },
+          {
+            "name": "Weather Services",
+            "href": "/weather-dashboard"
           }
         ]
       },
@@ -36,7 +40,8 @@
       "advisory": "Advisory",
       "scan": "Scan",
       "profile": "Profile"
-    }
+    },
+    "diseaseDetection": "Disease Detection"
   },
   "home": {
     "hero": {
@@ -183,7 +188,12 @@
       "verifyButton": "Verify & Go to Login",
       "editDetails": "Edit account details",
       "successMessage": "Signed up successfully. Complete your first login to enter the farmer dashboard.",
-      "successCta": "Proceed to Login"
+      "successCta": "Proceed to Login",
+      "signupRoleLabel": "Sign up as",
+      "signupRoleFarmer": "Farmer",
+      "signupRoleExpert": "Expert",
+      "signupRoleFarmerDesc": "Access crop advisory, weather, and market info.",
+      "signupRoleExpertDesc": "Provide advice and manage expert dashboard."
     },
     "login": {
       "welcomeTagline": "Welcome Back",
@@ -372,5 +382,51 @@
     },
     "contactEmailText": "You can also reach us at",
     "contactEmail": "Krishimitra2025@gmail.com"
+  },
+  "roadmap": {
+    "title": "Roadmap & Future Enhancements",
+    "items": [
+      {
+        "title": "Mobile app & offline mode",
+        "body": "Lightweight Android app with low‑network support for remote villages."
+      },
+      {
+        "title": "Voice‑based advisory",
+        "body": "Hands‑free guidance in Nepali for elderly farmers and low‑literacy users."
+      },
+      {
+        "title": "More crops & regions",
+        "body": "Expanding disease models and advisory for additional staples and high‑value crops."
+      },
+      {
+        "title": "Expert chat & cooperatives view",
+        "body": "Channels for agronomists, co‑ops, and NGOs to plug into farmer queries."
+      },
+      {
+        "title": "Satellite & remote‑sensing data",
+        "body": "Long‑term vision: stress, moisture, and growth indicators layered onto advisory."
+      }
+    ]
+  },
+  "cta": {
+    "title": "Empowering Nepali farmers starts with informed decisions.",
+    "description": "KrishiMitra brings together AI, expert knowledge, and localized data so that every farmer can see options clearly—before they commit their field.",
+    "getStarted": "Get Started",
+    "exploreServices": "Explore Services"
+  },
+  "underDevelopment": {
+    "tagline": "Coming Soon",
+    "title": "Feature Under Development",
+    "message": "This feature is currently under development. We're working to bring you this feature soon."
+  },
+  "weather": {
+    "title": "Weather Services",
+    "tagline": "Coming Soon",
+    "message": "This feature is currently under development. We're working to bring you accurate weather information and alerts soon."
+  },
+  "alerts": {
+    "title": "Alerts & Notifications",
+    "tagline": "Coming Soon",
+    "message": "This feature is currently under development. We're working to bring you real-time weather alerts and notifications soon."
   }
 }

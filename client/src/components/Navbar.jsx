@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react'
-import { Menu, X, ChevronDown, User, Home, Leaf, ScanLine } from 'lucide-react'
+import { Menu, X, ChevronDown, User, Home, Leaf, ScanLine, Bell } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/images/assets'
 import { useLanguage } from '../context/LanguageContext'
 import { tw } from '../assets/styles/styles'
+import { getUnreadAlertCount, getUnreadNotificationCount } from '../services/api'
+import AlertsModal from './AlertsModal'
 
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isServicesOpen, setIsServicesOpen] = useState(false)
+    const [unreadCount, setUnreadCount] = useState(0)
+    const [isAlertsModalOpen, setIsAlertsModalOpen] = useState(false)
     const { locale, changeLanguage, content } = useLanguage()
     const location = useLocation()
     const navigate = useNavigate()
@@ -19,6 +23,42 @@ const Navbar = () => {
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
+
+    // Fetch unread alert count when logged in
+    useEffect(() => {
+        const token = localStorage.getItem('authToken')
+        if (token) {
+            fetchUnreadCount()
+            // Refresh count every 2 minutes
+            const interval = setInterval(fetchUnreadCount, 2 * 60 * 1000)
+            return () => clearInterval(interval)
+        }
+    }, [location.pathname, isAlertsModalOpen]) // Refresh when navigating or modal closes
+
+    const fetchUnreadCount = async () => {
+        try {
+            const [alertsRes, notifRes] = await Promise.all([
+                getUnreadAlertCount(),
+                getUnreadNotificationCount().catch(() => ({ success: false, count: 0 })),
+            ])
+            const alertCount = alertsRes?.success ? (alertsRes.count || 0) : 0
+            const notifCount = notifRes?.success ? (notifRes.count || 0) : 0
+            setUnreadCount(alertCount + notifCount)
+        } catch (err) {
+            console.error('Error fetching unread count:', err)
+        }
+    }
+
+    const handleAlertsClick = (e) => {
+        e.preventDefault()
+        setIsAlertsModalOpen(true)
+    }
+
+    const handleCloseAlertsModal = () => {
+        setIsAlertsModalOpen(false)
+        // Refresh count when modal closes
+        fetchUnreadCount()
+    }
 
     const navItems = content?.nav?.items || []
     const bottomNav = content?.nav?.bottomNav || {}
@@ -37,9 +77,12 @@ const Navbar = () => {
 
     const [isProfileOpen, setIsProfileOpen] = useState(false)
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         localStorage.removeItem('authToken')
         localStorage.removeItem('userRole')
+        // Clear all cached data
+        const { clearAllCaches } = await import('../utils/cache')
+        clearAllCaches()
         setIsProfileOpen(false)
         navigate('/login')
     }
@@ -58,6 +101,7 @@ const Navbar = () => {
     const closeMobileMenu = () => setIsMobileMenuOpen(false)
 
     return (
+        <>
         <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-500 bg-transparent text-white">
 
             {/* ---------------- NAVBAR SECTION ---------------- */}
@@ -75,7 +119,7 @@ const Navbar = () => {
                     </Link>
 
                     <div className="hidden md:flex items-center">
-                        <div className="flex items-center space-x-1 rounded-full bg-black/25 backdrop-blur-sm px-2 py-1">
+                        <div className="flex items-center space-x-1 rounded-full bg-black/90 backdrop-blur-sm px-2 py-1">
                             {navItems.map((item) => {
                                 if (item.dropdown) {
                                     const dropdownActive = item.dropdown.some((sub) => isActive(sub.href))
@@ -93,7 +137,7 @@ const Navbar = () => {
                                                 <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isServicesOpen ? 'rotate-180' : ''}`} />
                                             </button>
                                             <div
-                                                className={`${tw.dropdownWrapper} overflow-hidden transition-all duration-300 ${isServicesOpen
+                                                className={`absolute top-full left-0 mt-2 w-56 bg-black backdrop-blur-xl rounded-2xl shadow-2xl border border-emerald-500/20 overflow-hidden transition-all duration-300 ${isServicesOpen
                                                     ? 'opacity-100 visible translate-y-0'
                                                     : 'opacity-0 invisible -translate-y-2'
                                                     }`}
@@ -103,12 +147,12 @@ const Navbar = () => {
                                                         key={sub.name}
                                                         to={resolveTo(sub.href)}
                                                         onClick={closeMobileMenu}
-                                                        className={`block px-5 py-3.5 text-emerald-900 hover:bg-linear-to-r hover:from-emerald-50 hover:to-green-100 hover:text-emerald-700 transition-all duration-300 group/item ${isActive(sub.href) ? 'bg-emerald-50' : ''
+                                                        className={`block px-5 py-3.5 text-white hover:bg-emerald-500/20 hover:text-emerald-300 transition-all duration-300 group/item ${isActive(sub.href) ? 'bg-emerald-500/30 text-emerald-300' : ''
                                                             }`}
                                                     >
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-medium">{sub.name}</span>
-                                                            <div className="w-0 group-hover/item:w-2 h-2 bg-green-500 rounded-full transition-all duration-300"></div>
+                                                            <div className="w-0 group-hover/item:w-2 h-2 bg-emerald-500 rounded-full transition-all duration-300"></div>
                                                         </div>
                                                     </Link>
                                                 ))}
@@ -128,11 +172,20 @@ const Navbar = () => {
                                     </Link>
                                 )
                             })}
+
+                            {/* Disease Detection (Under Construction) */}
+                            <Link
+                                to="/disease-detection"
+                                className={getLinkClasses('/disease-detection')}
+                                onClick={closeMobileMenu}
+                            >
+                                {content?.nav?.diseaseDetection || 'Disease Detection'}
+                            </Link>
                         </div>
                     </div>
 
                     <div className="hidden md:flex items-center space-x-4">
-                        <div className={tw.languageContainer}>
+                        <div className={`${tw.languageContainer} border border-black`}>
                             {languageOptions.map((option) => (
                                 <button
                                     key={option.code}
@@ -147,6 +200,22 @@ const Navbar = () => {
                             ))}
                         </div>
 
+                        {/* Notification and Profile Icons */}
+                        {token && (
+                            <button
+                                onClick={handleAlertsClick}
+                                className="relative px-3 py-1.5 bg-white rounded-lg text-black hover:text-emerald-600 transition-all duration-300 flex items-center justify-center shadow-sm"
+                                title="Notifications"
+                            >
+                                <Bell className="w-6 h-6" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full border-2 border-white flex items-center justify-center font-bold">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                            </button>
+                        )}
+
                         {token ? (
                             <div
                                 className="relative"
@@ -155,7 +224,7 @@ const Navbar = () => {
                             >
                                 <Link
                                     to={dashboardPath}
-                                    className="relative p-2 rounded-full text-white hover:text-emerald-300 transition-colors duration-300"
+                                    className="relative px-3 py-1.5 bg-white rounded-lg text-black hover:text-emerald-600 transition-all duration-300 flex items-center justify-center shadow-sm"
                                 >
                                     <User className="w-6 h-6" />
                                 </Link>
@@ -178,12 +247,12 @@ const Navbar = () => {
                                     </button>
                                 </div>
                             </div>
-                        ) : (
-                            <Link to="/signup" className={`relative overflow-hidden group/btn ${tw.joinButton}`}>
-                                <span className="relative z-10">{joinLabel}</span>
-                                <div className="absolute inset-0 bg-linear-to-r from-emerald-600 to-green-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
-                            </Link>
-                        )}
+                            ) : (
+                                <Link to="/signup" className={`relative overflow-hidden group/btn ${tw.joinButton}`}>
+                                    <span className="relative z-10">{joinLabel}</span>
+                                    <div className="absolute inset-0 bg-linear-to-r from-emerald-600 to-green-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+                                </Link>
+                            )}
                     </div>
 
                     {/* Mobile: Language flags + Hamburger */}
@@ -262,12 +331,28 @@ const Navbar = () => {
                     <div className="pt-4 space-y-3 border-t border-slate-700/50 mt-4">
                         {token ? (
                             <div className="space-y-2">
+                                <button
+                                    onClick={() => {
+                                        closeMobileMenu()
+                                        handleAlertsClick()
+                                    }}
+                                    className="w-full inline-flex justify-center items-center gap-2 px-6 py-3 text-white hover:text-emerald-300 transition-colors duration-300"
+                                >
+                                    <Bell className="w-5 h-5" />
+                                    <span>Notifications</span>
+                                    {unreadCount > 0 && (
+                                        <span className="ml-auto h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                        </span>
+                                    )}
+                                </button>
                                 <Link
                                     to={dashboardPath}
                                     onClick={() => { closeMobileMenu(); setIsProfileOpen(false) }}
                                     className="w-full inline-flex justify-center items-center gap-2 px-6 py-3 text-white hover:text-emerald-300 transition-colors duration-300"
                                 >
                                     <User className="w-5 h-5" />
+                                    <span>{dashboardLabel}</span>
                                 </Link>
                                 <button
                                     onClick={() => { closeMobileMenu(); handleLogout() }}
@@ -327,6 +412,15 @@ const Navbar = () => {
             </div>
 
         </nav>
+        {/* Alerts Modal */}
+        {token && (
+            <AlertsModal
+                isOpen={isAlertsModalOpen}
+                onClose={handleCloseAlertsModal}
+                onCountChange={fetchUnreadCount}
+            />
+        )}
+    </>
     )
 }
 

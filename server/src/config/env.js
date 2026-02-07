@@ -12,4 +12,10 @@ export const ENV ={
     SMTP_SECURE: process.env.SMTP_SECURE || "false",
     SMTP_USER: process.env.SMTP_USER,
     SMTP_PASS: process.env.SMTP_PASS,
+    // Weather API configuration
+    OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY,
+    // Cloudinary (images: profile, license)
+    CLOUDINARY_CLOUD_NAME: process.env.cloudname,
+    CLOUDINARY_API_KEY: process.env.cloudkey,
+    CLOUDINARY_API_SECRET: process.env.cloudsecret,
 };
