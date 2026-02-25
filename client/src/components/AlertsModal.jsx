@@ -64,7 +64,7 @@ const AlertsModal = ({ isOpen, onClose, onCountChange }) => {
             alert.alertId === alertId ? { ...alert, isRead: true } : alert
           )
         )
-        onCountChange?.()
+        onCountChange?.(true)
       }
     } catch (err) {
       console.error('Error marking alert as read:', err)

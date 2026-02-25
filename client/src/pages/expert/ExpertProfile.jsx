@@ -23,6 +23,7 @@ const ExpertProfile = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isEditing, setIsEditing] = useState(false)
+  const [showEditFormRejected, setShowEditFormRejected] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -70,11 +71,38 @@ const ExpertProfile = () => {
   }
 
   const profileComplete = isProfileComplete(profile)
-  const isVerifiedExpert = profile?.userDetails?.isVerifiedExpert === true
+  const verificationStatus = profile?.userDetails?.isVerifiedExpert // 'pending' | 'approved' | 'rejected'
+  const isVerifiedExpert = verificationStatus === 'approved'
 
-  // If profile is complete but not verified, show review message (no form)
-  if (profileComplete && !isVerifiedExpert) {
-    return <ExpertProfileReview />
+  // If profile is complete but rejected by admin: show edit form when they click "Update profile", else rejected message
+  if (profileComplete && verificationStatus === 'rejected') {
+    if (showEditFormRejected) {
+      return (
+        <ExpertProfileForm
+          profile={profile}
+          asPage
+          onClose={() => setShowEditFormRejected(false)}
+          onUpdate={(updatedData) => {
+            setProfile(updatedData)
+            setShowEditFormRejected(false)
+            return handleUpdate(updatedData)
+          }}
+          uploadImage={uploadImage}
+          updateUserProfile={updateUserProfile}
+        />
+      )
+    }
+    return (
+      <ExpertProfileReview
+        status="rejected"
+        onUpdateProfile={() => setShowEditFormRejected(true)}
+      />
+    )
+  }
+
+  // If profile is complete but still pending verification, show under-review message
+  if (profileComplete && verificationStatus === 'pending') {
+    return <ExpertProfileReview status="pending" />
   }
 
   // If profile is not complete, show form

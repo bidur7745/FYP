@@ -40,7 +40,9 @@ const ExpertEarnings = () => {
   }
 
   const profileComplete = isProfileComplete(profile)
-  const isVerifiedExpert = profile?.userDetails?.isVerifiedExpert === true
+  const verificationStatus = profile?.userDetails?.isVerifiedExpert
+  const isVerifiedExpert = verificationStatus === 'approved'
+  const isRejected = verificationStatus === 'rejected'
 
   // Block if profile not complete
   if (!profileComplete) {
@@ -52,7 +54,18 @@ const ExpertEarnings = () => {
     )
   }
 
-  // Block if not verified by admin
+  // Block if profile was rejected by admin
+  if (isRejected) {
+    return (
+      <ExpertProfileGate
+        title="Profile verification rejected"
+        description="Admin has declined your expert verification. Update your profile and submit again for review to access My Earning."
+        isRejected
+      />
+    )
+  }
+
+  // Block if still pending verification
   if (!isVerifiedExpert) {
     return (
       <ExpertProfileGate

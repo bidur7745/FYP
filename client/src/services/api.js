@@ -28,6 +28,8 @@ const CACHE_CONFIG = {
   '/api/government-schemes': { ttl: 5 * 60 * 1000 }, // 5 minutes cache for schemes
   '/api/users/all': { ttl: 5 * 60 * 1000 }, // 5 minutes – admin user list (save resources)
   '/api/users/experts': { ttl: 5 * 60 * 1000 }, // 5 minutes – experts list (save resources)
+  '/api/market-prices': { ttl: 10 * 60 * 1000 }, // 10 minutes – market prices
+  '/api/market-prices/crops': { ttl: 30 * 60 * 1000 }, // 30 minutes – crop list
 };
 
 export const apiRequest = async (path, options = {}, requireAuth = false, useCache = false) => {
@@ -222,11 +224,15 @@ export const getAllUsers = (forceRefresh = false) => {
 
 // Admin: Verify expert (set isVerifiedExpert = true)
 export const verifyExpert = (userId) =>
-  apiRequest(`/api/users/${userId}/verify-expert`, { method: 'PATCH' }, true);
+  apiRequest(`/api/users/${userId}/verify-expert`, { method: 'PATCH', body: JSON.stringify({ verified: true }) }, true);
 
-// Admin: Delete user
-export const deleteUser = (userId) =>
-  apiRequest(`/api/users/${userId}`, { method: 'DELETE' }, true);
+// Admin: Reject expert verification (set isVerifiedExpert = false)
+export const rejectExpert = (userId) =>
+  apiRequest(`/api/users/${userId}/verify-expert`, { method: 'PATCH', body: JSON.stringify({ verified: false }) }, true);
+
+// User/Expert: Delete own account
+export const deleteMyProfile = () =>
+  apiRequest('/api/users/me', { method: 'DELETE' }, true);
 
 // Crop Advisory - Get recommended crops for logged-in user
 export const getRecommendedCrops = (forceRefresh = false) => {
@@ -326,7 +332,7 @@ export const getUserAlerts = (filters = {}, forceRefresh = false) => {
 
 // Alerts - Mark alert as read
 export const markAlertAsRead = (alertId) =>
-  apiRequest(`/api/alerts/${alertId}/read`, { method: 'PATCH' }, true);
+  apiRequest(`/api/alerts/${alertId}/read`, { method: 'PUT' }, true);
 
 // Alerts - Get unread alert count (with caching)
 export const getUnreadAlertCount = (forceRefresh = false) => {
@@ -490,3 +496,66 @@ export const markNotificationRead = (notificationId) =>
 // Notifications - mark all as read
 export const markAllNotificationsRead = () =>
   apiRequest('/api/notifications/read-all', { method: 'PUT' }, true);
+
+// Market Prices (farmer) – latest prices with optional filters
+export const getMarketPrices = (params = {}, forceRefresh = false) => {
+  const queryParams = new URLSearchParams();
+  if (params.crop) queryParams.append('crop', params.crop);
+  if (params.market) queryParams.append('market', params.market);
+  if (params.limit) queryParams.append('limit', params.limit);
+  if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+  if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+  const path = `/api/market-prices${queryParams.toString() ? `?${queryParams}` : ''}`;
+  if (forceRefresh) {
+    const cacheKey = `${path}_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  return apiRequest(path, { method: 'GET' }, true, true);
+};
+
+// Market Prices – manually trigger scrape (Refresh button)
+export const refreshMarketPrices = () =>
+  apiRequest('/api/market-prices/scrape', { method: 'POST' }, true);
+
+// Market Prices – list crop names for dropdown
+export const getMarketPriceCrops = (forceRefresh = false) => {
+  const path = '/api/market-prices/crops';
+  if (forceRefresh) {
+    const cacheKey = `${path}_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  return apiRequest(path, { method: 'GET' }, true, true);
+};
+
+// Market Prices – prices for one crop
+export const getMarketPricesByCrop = (cropName, days = 30, forceRefresh = false) => {
+  const path = `/api/market-prices/crops/${encodeURIComponent(cropName)}?days=${days}`;
+  if (forceRefresh) {
+    const cacheKey = `${path}_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  return apiRequest(path, { method: 'GET' }, true, true);
+};
+
+// Market Prices – trends for one crop (charts)
+export const getMarketPriceTrends = (cropName, days = 30, forceRefresh = false) => {
+  const path = `/api/market-prices/crops/${encodeURIComponent(cropName)}/trends?days=${days}`;
+  if (forceRefresh) {
+    const cacheKey = `${path}_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  return apiRequest(path, { method: 'GET' }, true, true);
+};
+
+// Market Prices – statistics
+export const getMarketPriceStatistics = (params = {}, forceRefresh = false) => {
+  const queryParams = new URLSearchParams();
+  if (params.commodity) queryParams.append('commodity', params.commodity);
+  if (params.days) queryParams.append('days', params.days);
+  const path = `/api/market-prices/statistics${queryParams.toString() ? `?${queryParams}` : ''}`;
+  if (forceRefresh) {
+    const cacheKey = `${path}_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  return apiRequest(path, { method: 'GET' }, true, true);
+};

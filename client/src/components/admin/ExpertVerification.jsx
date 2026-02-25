@@ -38,7 +38,7 @@ const ExpertVerification = () => {
         setExperts((prev) =>
           prev.map((e) =>
             e.id === userId && e.userDetails
-              ? { ...e, userDetails: { ...e.userDetails, isVerifiedExpert: true } }
+              ? { ...e, userDetails: { ...e.userDetails, isVerifiedExpert: 'approved' } }
               : e
           )
         )
@@ -93,7 +93,7 @@ const ExpertVerification = () => {
               <tbody className="divide-y divide-slate-100">
                 {experts.map((expert) => {
                   const details = expert.userDetails || {}
-                  const isVerified = details.isVerifiedExpert === true
+                  const isVerified = details.isVerifiedExpert === 'approved'
                   return (
                     <tr key={expert.id} className="hover:bg-slate-50/50">
                       <td className="px-4 py-3">

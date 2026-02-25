@@ -339,6 +339,13 @@ export const updateUserProfile = async (userId, profileData) => {
       .where(eq(userDetailsTable.userId, userId))
       .limit(1);
 
+    // If expert changes license image, reset verification so admin must verify again
+    let resetVerificationForExpert = false;
+    if (licenseImage !== undefined) {
+      const [userRow] = await db.select({ role: userTable.role }).from(userTable).where(eq(userTable.id, userId)).limit(1);
+      if (userRow?.role === "expert") resetVerificationForExpert = true;
+    }
+
     const updateFields = {};
     if (phone !== undefined) updateFields.phone = phone || null;
     if (address !== undefined) updateFields.address = address || null;
@@ -349,6 +356,7 @@ export const updateUserProfile = async (userId, profileData) => {
     if (skills !== undefined) updateFields.skills = skills || null;
     if (education !== undefined) updateFields.education = education || null;
     if (yearsOfExperience !== undefined) updateFields.yearsOfExperience = yearsOfExperience == null ? null : Number(yearsOfExperience);
+    if (resetVerificationForExpert) updateFields.isVerifiedExpert = "pending";
     updateFields.updatedAt = new Date();
 
     if (existingDetails.length > 0) {
@@ -443,7 +451,7 @@ export const listExperts = async () => {
   }
 };
 
-// SET EXPERT VERIFIED (admin only) - set isVerifiedExpert to true/false
+// SET EXPERT VERIFIED (admin only) - set isVerifiedExpert to 'approved' or 'rejected'
 export const setExpertVerified = async (userId, isVerified = true) => {
   try {
     const existing = await db
@@ -456,10 +464,11 @@ export const setExpertVerified = async (userId, isVerified = true) => {
       throw new Error("User details not found. User may need to complete profile first.");
     }
 
+    const status = isVerified ? "approved" : "rejected";
     await db
       .update(userDetailsTable)
       .set({
-        isVerifiedExpert: !!isVerified,
+        isVerifiedExpert: status,
         updatedAt: new Date(),
       })
       .where(eq(userDetailsTable.userId, userId));

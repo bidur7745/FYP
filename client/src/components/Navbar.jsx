@@ -35,10 +35,10 @@ const Navbar = () => {
         }
     }, [location.pathname, isAlertsModalOpen]) // Refresh when navigating or modal closes
 
-    const fetchUnreadCount = async () => {
+    const fetchUnreadCount = async (forceRefresh = false) => {
         try {
             const [alertsRes, notifRes] = await Promise.all([
-                getUnreadAlertCount(),
+                getUnreadAlertCount(forceRefresh),
                 getUnreadNotificationCount().catch(() => ({ success: false, count: 0 })),
             ])
             const alertCount = alertsRes?.success ? (alertsRes.count || 0) : 0

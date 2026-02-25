@@ -18,7 +18,17 @@ import potato from './potato.jpg'
 import paddy from './paddy.jpg'
 import wheat from './wheat.jpg'
 import tomato from './tomato.jpeg'
-
+import diseasedetection from './diseasedetection.png'
+import diseaseBackground from './disease-background.png'
+import leavesAI from './leavesAI.webp'
+import tomatoIcon from './tomato.png'
+import potatoIcon from './potato.png'
+import maizeIcon from './maize.jpg'
+import potomaiz from './potomaiz.png'
+import cropadvisory from './cropadvisory.png'
+import schema from './schema.png'
+import weather from './weather.png'
+import market from './market.png'
 
 export const assets = {
     logo: Logo,
@@ -40,8 +50,18 @@ export const assets = {
     potato: potato,
     paddy: paddy,
     wheat: wheat,
-    tomato: tomato
-
+    tomato: tomato,
+    diseasedetection,
+    diseaseBackground,
+    leavesAI,
+    tomatoIcon,
+    potatoIcon,
+    maizeIcon,
+    potomaiz,
+    cropadvisory,
+    schema,
+    weather,
+    market
 }
 
 export default assets

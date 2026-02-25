@@ -71,7 +71,7 @@ const DashboardOverview = () => {
       const users = usersRes.success && Array.isArray(usersRes.data) ? usersRes.data : []
       const farmers = users.filter(u => u.role === 'user')
       const experts = users.filter(u => u.role === 'expert')
-      const pendingExperts = experts.filter(e => !e.userDetails?.isVerifiedExpert)
+      const pendingExperts = experts.filter(e => e.userDetails?.isVerifiedExpert === 'pending')
 
       // Process Crops Data
       const crops = cropsRes.success && Array.isArray(cropsRes.crops) ? cropsRes.crops : []

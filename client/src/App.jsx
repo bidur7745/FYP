@@ -31,9 +31,11 @@ import ExpertProfile from './pages/expert/ExpertProfile'
 import ExpertEarnings from './pages/expert/ExpertEarnings'
 import Unauthorized from './pages/Unauthorized'
 import DiseaseDetection from './pages/user/DiseaseDetection'
+import DiseaseDetectionScan from './pages/user/DiseaseDetectionScan'
 import WeatherDashboard from './pages/user/WeatherDashboard'
 import GovernmentSchemes from './pages/user/GovernmentSchemes'
 import SchemeDetails from './pages/user/SchemeDetails'
+import MarketPrices from './pages/user/MarketPrices'
 
 /** Expert portal layout: clears fixed navbar + mobile bottom nav */
 const ExpertLayout = () => (
@@ -84,8 +86,10 @@ const AppContent = () => {
             <Route path="/crop-advisory" element={<CropAdvisory/>}/>
             <Route path="/crop-advisory/:cropId" element={<CropDetails/>}/>
             <Route path="/weather-dashboard" element={<WeatherDashboard/>}/>
+            <Route path="/market-prices" element={<MarketPrices/>}/>
             <Route path="/government-schemes" element={<GovernmentSchemes/>}/>
             <Route path="/government-schemes/:schemeId" element={<SchemeDetails/>}/>
+            <Route path="/disease-detection/scan" element={<DiseaseDetectionScan/>}/>
             <Route path="/dashboard/user" element={<UserDashboard />} />
           </Route>
 
@@ -98,6 +102,11 @@ const AppContent = () => {
       {/* Admin Routes */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/dashboard/admin" element={<Admindashboard />} />
+            <Route path="/dashboard/admin/user-management" element={<Admindashboard />} />
+            <Route path="/dashboard/admin/crops" element={<Admindashboard />} />
+            <Route path="/dashboard/admin/subsidy" element={<Admindashboard />} />
+            <Route path="/dashboard/admin/queries" element={<Admindashboard />} />
+            <Route path="/dashboard/admin/admin-info" element={<Admindashboard />} />
           </Route>
 
       {/* Expert Routes – dedicated expert portal */}

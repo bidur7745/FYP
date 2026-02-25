@@ -1,4 +1,7 @@
-import activeBackend from "./config/cron.js";
+import activeBackend, {
+  runMarketPriceScrapeIfNeeded,
+  marketPriceScrapeJob,
+} from "./config/cron.js";
 import express from "express";
 import { ENV } from "./config/env.js";
 import userRoutes from "./routes/userRoute.js";
@@ -9,6 +12,7 @@ import governmentSchemeRoutes from "./routes/governmentSchemeRoute.js";
 import uploadRoutes from "./routes/uploadRoute.js";
 import supportQueriesRoutes from "./routes/supportQueriesRoute.js";
 import notificationRoutes from "./routes/notificationRoute.js";
+import marketPriceRoutes from "./routes/marketPriceRoute.js";
 import testAlertRoutes from "./test/testAlertRoute.js";
 import cors from "cors";
 
@@ -25,7 +29,10 @@ server.use(
 server.use(express.json());
 
 // Keep backend alive on production (cron job)
-if (ENV.NODE_ENV === "production") activeBackend.start();
+if (ENV.NODE_ENV === "production") {
+  activeBackend.start();
+  marketPriceScrapeJob.start();
+}
 
 // Health check route
 server.get("/", (req, res) => {
@@ -58,6 +65,7 @@ server.use("/api/upload", uploadRoutes);
 // Mount support/contact form and notifications
 server.use("/api/support", supportQueriesRoutes);
 server.use("/api/notifications", notificationRoutes);
+server.use("/api/market-prices", marketPriceRoutes);
 
 // Mount dashboard routes (protected)
 server.use("/dashboard", userRoutes);
@@ -68,6 +76,7 @@ if (ENV.NODE_ENV !== "production") {
 }
 
 // Start server
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`Server running → http://localhost:${PORT}`);
+  await runMarketPriceScrapeIfNeeded();
 });

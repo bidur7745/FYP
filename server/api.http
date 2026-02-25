@@ -44,6 +44,8 @@ Content-Type: application/json
 GET {{baseUrl}}/api/test/weather-alerts/snow
 Content-Type: application/json
 
+
+
 ###
 GET {{baseUrl}}/api/test/weather-alerts/freeze-forecast
 Content-Type: application/json

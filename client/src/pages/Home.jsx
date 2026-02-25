@@ -5,8 +5,9 @@ import { assets } from '../assets/images/assets'
 import { useLanguage } from '../context/LanguageContext'
 import {
 
-  RoadmapSection,
-  CTA,
+    FeatureCarousel,
+    RoadmapSection,
+    CTA,
 } from '../components/home'
 
 const heroIconMap = {
@@ -96,19 +97,20 @@ const Home = () => {
                                 {heroHighlights.map(({ title, description, icon }) => {
                                     const IconComponent = heroIconMap[icon] || Leaf
                                     return (
-                                    <div
-                                        key={title}
-                                        className="flex items-start space-x-4 bg-white/5 border border-white/10 rounded-2xl p-4"
-                                    >
-                                        <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500/90 to-green-400/80 shadow-lg shadow-emerald-500/30">
-                                            <IconComponent className="w-6 h-6 text-white" />
+                                        <div
+                                            key={title}
+                                            className="flex items-start space-x-4 bg-white/5 border border-white/10 rounded-2xl p-4"
+                                        >
+                                            <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500/90 to-green-400/80 shadow-lg shadow-emerald-500/30">
+                                                <IconComponent className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-lg">{title}</p>
+                                                <p className="text-sm text-gray-200">{description}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-lg">{title}</p>
-                                            <p className="text-sm text-gray-200">{description}</p>
-                                        </div>
-                                    </div>
-                                )})}
+                                    )
+                                })}
                             </div>
 
                             <div className="pt-4 border-t border-white/10">
@@ -120,9 +122,13 @@ const Home = () => {
                     </div>
                 </div>
             </section>
-       
+            <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl">
+                    <FeatureCarousel />
+                </div>
+            </div>
             <RoadmapSection />
-            <CTA/>
+            <CTA />
         </>
     )
 }

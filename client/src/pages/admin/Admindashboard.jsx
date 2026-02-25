@@ -8,7 +8,7 @@ import {
   LogOut,
   UserCircle
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import DashboardOverview from '../../components/admin/DashboardOverview'
 import UserManagement from '../../components/admin/UserManagement'
 import CropManagement from '../../components/admin/CropManagement'
@@ -17,17 +17,34 @@ import SupportQueries from '../../components/admin/SupportQueries'
 import AdminInfo from '../../components/admin/AdminInfo'
 
 const Admindashboard = () => {
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState('overview')
   const [isSidebarHovered, setIsSidebarHovered] = useState(false)
   const navigate = useNavigate()
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'users', label: 'User Management', icon: Users },
-    { id: 'crops', label: 'Crops', icon: Sprout },
-    { id: 'subsidy', label: 'Government Subsidy', icon: DollarSign },
-    { id: 'queries', label: 'Queries', icon: MessageSquare },
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: '/dashboard/admin' },
+    { id: 'users', label: 'User Management', icon: Users, path: '/dashboard/admin/user-management' },
+    { id: 'crops', label: 'Crops', icon: Sprout, path: '/dashboard/admin/crops' },
+    { id: 'subsidy', label: 'Government Subsidy', icon: DollarSign, path: '/dashboard/admin/subsidy' },
+    { id: 'queries', label: 'Queries', icon: MessageSquare, path: '/dashboard/admin/queries' },
   ]
+
+  // Sync active tab with current URL
+  useEffect(() => {
+    const path = location.pathname
+    if (path.startsWith('/dashboard/admin/user-management')) {
+      setActiveTab('users')
+    } else if (path.startsWith('/dashboard/admin/crops')) {
+      setActiveTab('crops')
+    } else if (path.startsWith('/dashboard/admin/subsidy')) {
+      setActiveTab('subsidy')
+    } else if (path.startsWith('/dashboard/admin/queries')) {
+      setActiveTab('queries')
+    } else if (path.startsWith('/dashboard/admin') && activeTab === 'overview') {
+      setActiveTab('overview')
+    }
+  }, [location.pathname])
 
   // Listen for tab switch events from DashboardOverview
   useEffect(() => {
@@ -35,6 +52,10 @@ const Admindashboard = () => {
       const tabId = event.detail
       if (tabId) {
         setActiveTab(tabId)
+        const targetTab = tabs.find((t) => t.id === tabId)
+        if (targetTab?.path) {
+          navigate(targetTab.path)
+        }
       }
     }
 
@@ -55,6 +76,7 @@ const Admindashboard = () => {
 
   const handleAdminInfo = () => {
     setActiveTab('adminInfo')
+    navigate('/dashboard/admin/admin-info')
   }
 
   const renderContent = () => {
@@ -94,7 +116,10 @@ const Admindashboard = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id)
+                    if (tab.path) navigate(tab.path)
+                  }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive
                       ? 'bg-emerald-600 text-white'

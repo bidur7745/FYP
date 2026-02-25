@@ -1,5 +1,8 @@
-import { pgTable, serial, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, pgEnum } from "drizzle-orm/pg-core";
 import { userTable } from "./user.js";
+
+// Expert verification: pending (awaiting review), approved, rejected
+export const expertVerificationStatusEnum = pgEnum("expert_verification_status", ["pending", "approved", "rejected"]);
 
 export const userDetailsTable = pgTable("userDetails", {
   id: serial("id").primaryKey(),
@@ -13,7 +16,7 @@ export const userDetailsTable = pgTable("userDetails", {
   yearsOfExperience: integer("yearsOfExperience"),
   education: text("education"),
   licenseImage: text("licenseImage"), // URL or path to license image (for experts)
-  isVerifiedExpert: boolean("isVerifiedExpert").default(false).notNull(),
+  isVerifiedExpert: expertVerificationStatusEnum("isVerifiedExpert").default("pending").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

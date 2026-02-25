@@ -1,6 +1,6 @@
 import { db } from "../config/db.js";
 import { alertsTable } from "../schema/index.js";
-import { eq, and, gt, desc } from "drizzle-orm";
+import { eq, and, gt, gte, lte, desc } from "drizzle-orm";
 
 /**
  * Create a new alert
@@ -27,6 +27,24 @@ export const createAlert = async (alertData) => {
     // Validate required fields
     if (!userId || !location || !type || !severity || !title || !message) {
       throw new Error("Missing required alert fields");
+    }
+
+    // Avoid duplicate: same user, location, type within last 60 minutes
+    const tenMinAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const existing = await db
+      .select()
+      .from(alertsTable)
+      .where(
+        and(
+          eq(alertsTable.userId, userId),
+          eq(alertsTable.location, location),
+          eq(alertsTable.type, type),
+          gte(alertsTable.createdAt, tenMinAgo)
+        )
+      )
+      .limit(1);
+    if (existing.length > 0) {
+      return existing[0];
     }
 
     const [alert] = await db
@@ -79,13 +97,22 @@ export const getUserAlerts = async (userId, filters = {}) => {
       conditions.push(eq(alertsTable.type, filters.type));
     }
 
-    const alerts = await db
+    const rows = await db
       .select()
       .from(alertsTable)
       .where(and(...conditions))
       .orderBy(desc(alertsTable.createdAt));
 
-    return alerts;
+    // Dedupe: same location + type + same minute = one logical alert (keep first, isRead if any in group is read)
+    const key = (a) =>
+      `${a.location}|${a.type}|${new Date(a.createdAt).setSeconds(0, 0)}`;
+    const seen = new Map();
+    for (const a of rows) {
+      const k = key(a);
+      if (!seen.has(k)) seen.set(k, { ...a });
+      else if (!a.isRead) seen.get(k).isRead = false; // if any in group unread, show as unread
+    }
+    return [...seen.values()];
   } catch (error) {
     console.error("Error fetching user alerts:", error);
     throw error;
@@ -105,8 +132,8 @@ export const getUnreadAlertCount = async (userId) => {
       .where(
         and(
           eq(alertsTable.userId, userId),
-          gt(alertsTable.expiresAt, new Date())
-          // Add isRead check when field is available
+          gt(alertsTable.expiresAt, new Date()),
+          eq(alertsTable.isRead, false)
         )
       );
 
@@ -118,14 +145,13 @@ export const getUnreadAlertCount = async (userId) => {
 };
 
 /**
- * Mark alert as read
+ * Mark alert as read (and all duplicates: same user, location, type, within same minute)
  * @param {number} alertId - Alert ID
  * @param {number} userId - User ID (for authorization)
  * @returns {Promise<Object>} Updated alert
  */
 export const markAlertAsRead = async (alertId, userId) => {
   try {
-    // First verify the alert belongs to the user
     const [alert] = await db
       .select()
       .from(alertsTable)
@@ -136,11 +162,23 @@ export const markAlertAsRead = async (alertId, userId) => {
       throw new Error("Alert not found or unauthorized");
     }
 
-    // Update isRead field (when available in schema)
-    // For now, we'll just return the alert
-    // TODO: Add isRead field to schema and update here
+    // Mark this alert and all duplicates (same user, location, type, within 2 min) as read
+    const from = new Date(new Date(alert.createdAt).getTime() - 2 * 60 * 1000);
+    const to = new Date(new Date(alert.createdAt).getTime() + 2 * 60 * 1000);
+    await db
+      .update(alertsTable)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(alertsTable.userId, userId),
+          eq(alertsTable.location, alert.location),
+          eq(alertsTable.type, alert.type),
+          gte(alertsTable.createdAt, from),
+          lte(alertsTable.createdAt, to)
+        )
+      );
 
-    return alert;
+    return { ...alert, isRead: true };
   } catch (error) {
     console.error("Error marking alert as read:", error);
     throw error;

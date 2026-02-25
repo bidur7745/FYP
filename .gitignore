@@ -43,4 +43,9 @@ Proposal FYP.pdf
 proposal.txt
 crop advisoory module.txt
 
+./client/node_modules/
+./server/node_modules/
+./client/src/scripts
+
+
 .cursor/

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { getExperts, getAllUsers, verifyExpert, deleteUser } from '../../services/api'
-import { Loader2, CheckCircle, XCircle, FileCheck, Users, GraduationCap, Filter, Eye, Trash2, User, X } from 'lucide-react'
+import { getExperts, getAllUsers, verifyExpert, rejectExpert } from '../../services/api'
+import { Loader2, CheckCircle, XCircle, FileCheck, Users, GraduationCap, Filter, Eye, User, X } from 'lucide-react'
 
 const UserManagement = () => {
   const [allUsers, setAllUsers] = useState([])
@@ -8,7 +8,7 @@ const UserManagement = () => {
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('all') // 'all', 'farmer', 'expert'
   const [verifyingId, setVerifyingId] = useState(null)
-  const [deletingId, setDeletingId] = useState(null)
+  const [rejectingId, setRejectingId] = useState(null)
   const [viewDetailsUser, setViewDetailsUser] = useState(null)
   const [licenseImageUrl, setLicenseImageUrl] = useState(null)
 
@@ -55,7 +55,7 @@ const UserManagement = () => {
         setAllUsers((prev) =>
           prev.map((u) =>
             u.id === userId && u.userDetails
-              ? { ...u, userDetails: { ...u.userDetails, isVerifiedExpert: true } }
+              ? { ...u, userDetails: { ...u.userDetails, isVerifiedExpert: 'approved' } }
               : u
           )
         )
@@ -68,18 +68,24 @@ const UserManagement = () => {
     }
   }
 
-  const handleDelete = async (user) => {
-    if (!window.confirm(`Are you sure you want to delete "${user.name}"? This cannot be undone.`)) return
+  const handleReject = async (userId) => {
     try {
-      setDeletingId(user.id)
-      setError('')
-      await deleteUser(user.id)
-      setAllUsers((prev) => prev.filter((u) => u.id !== user.id))
-      await loadUsers(true) // refresh cache so next load is fresh
+      setRejectingId(userId)
+      const res = await rejectExpert(userId)
+      if (res.success) {
+        setAllUsers((prev) =>
+          prev.map((u) =>
+            u.id === userId && u.userDetails
+              ? { ...u, userDetails: { ...u.userDetails, isVerifiedExpert: 'rejected' } }
+              : u
+          )
+        )
+        await loadUsers(true)
+      }
     } catch (err) {
-      setError(err.message || 'Failed to delete user')
+      setError(err.message || 'Failed to reject expert')
     } finally {
-      setDeletingId(null)
+      setRejectingId(null)
     }
   }
 
@@ -172,7 +178,9 @@ const UserManagement = () => {
                 {filteredUsers.map((user) => {
                   const details = user.userDetails || {}
                   const isExpert = user.role === 'expert'
-                  const isVerified = details.isVerifiedExpert === true
+                  const verificationStatus = details.isVerifiedExpert // 'pending' | 'approved' | 'rejected'
+                  const isVerified = verificationStatus === 'approved'
+                  const isPending = verificationStatus === 'pending'
                   return (
                     <tr key={user.id} className="hover:bg-slate-50/50">
                       <td className="px-4 py-3">
@@ -245,6 +253,10 @@ const UserManagement = () => {
                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                               <CheckCircle size={14} /> Verified
                             </span>
+                          ) : verificationStatus === 'rejected' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <XCircle size={14} /> Rejected
+                            </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                               <XCircle size={14} /> Pending
@@ -265,23 +277,25 @@ const UserManagement = () => {
                           >
                             <Eye size={14} /> View details
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(user)}
-                            disabled={deletingId === user.id}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium disabled:opacity-50"
-                          >
-                            <Trash2 size={14} /> {deletingId === user.id ? 'Deleting…' : 'Delete'}
-                          </button>
-                          {isExpert && !isVerified && (
-                            <button
-                              type="button"
-                              onClick={() => handleVerify(user.id)}
-                              disabled={verifyingId === user.id}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium disabled:opacity-50"
-                            >
-                              {verifyingId === user.id ? 'Verifying…' : 'Approve'}
-                            </button>
+                          {isExpert && isPending && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleVerify(user.id)}
+                                disabled={verifyingId === user.id || rejectingId === user.id}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium disabled:opacity-50"
+                              >
+                                {verifyingId === user.id ? 'Verifying…' : 'Approve'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleReject(user.id)}
+                                disabled={verifyingId === user.id || rejectingId === user.id}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium disabled:opacity-50"
+                              >
+                                {rejectingId === user.id ? 'Rejecting…' : 'Reject'}
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -374,7 +388,7 @@ const UserManagement = () => {
                           <button type="button" onClick={() => { setViewDetailsUser(null); setLicenseImageUrl(d.licenseImage) }} className="text-emerald-600 hover:underline">View license</button>
                         </p>
                       )}
-                      <p><span className="font-medium text-slate-600">Status:</span> {d.isVerifiedExpert ? 'Verified' : 'Pending'}</p>
+                      <p><span className="font-medium text-slate-600">Status:</span> {d.isVerifiedExpert === 'approved' ? 'Verified' : d.isVerifiedExpert === 'rejected' ? 'Rejected' : 'Pending'}</p>
                     </>
                   )}
                 </div>

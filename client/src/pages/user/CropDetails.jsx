@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, MapPin, Calendar, Droplet, Sun, Info, Video, CheckCircle2, Loader2 } from 'lucide-react'
+import { useLanguage } from '../../context/LanguageContext'
 import { getAllCrops, getPlantationGuide, getAllPlantingCalendars, getUserProfile } from '../../services/api'
 
 const CropDetails = () => {
   const { cropId } = useParams()
   const navigate = useNavigate()
+  const { content } = useLanguage()
+  const t = content?.cropDetailsPage || {}
   const [crop, setCrop] = useState(null)
   const [guide, setGuide] = useState(null)
   const [calendars, setCalendars] = useState([])
@@ -75,7 +78,7 @@ const CropDetails = () => {
       if (cropsResponse.success) {
         const foundCrop = cropsResponse.crops.find(c => c.cropId === parseInt(cropId))
         if (!foundCrop) {
-          setError('Crop not found')
+          setError(t.cropNotFound || 'Crop not found')
           setLoading(false)
           return
         }
@@ -102,7 +105,7 @@ const CropDetails = () => {
         }
       }
     } catch (err) {
-      setError(err.message || 'Failed to load crop details')
+      setError(err.message || t.loadError || 'Failed to load crop details')
     } finally {
       setLoading(false)
     }
@@ -125,12 +128,12 @@ const CropDetails = () => {
       <div className="min-h-screen bg-gradient-to-b from-slate-800 via-slate-700 to-slate-800 pt-24 pb-16 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="bg-red-900/50 border border-red-500/50 text-red-100 px-6 py-4 rounded-xl">
-            <p>{error || 'Crop not found'}</p>
+            <p>{error || t.cropNotFound || 'Crop not found'}</p>
             <button
               onClick={() => navigate('/crop-advisory')}
               className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
             >
-              Back to Crop Advisory
+              {t.backToCropAdvisory || 'Back to Crop Advisory'}
             </button>
           </div>
         </div>
@@ -157,7 +160,7 @@ const CropDetails = () => {
           className="mb-4 flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
         >
           <ArrowLeft size={20} />
-          <span>Back to Crop Advisory</span>
+          <span>{t.backToCropAdvisory || 'Back to Crop Advisory'}</span>
         </button>
 
         {/* Title and Type */}
@@ -187,14 +190,14 @@ const CropDetails = () => {
           <div className="bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-xl p-6">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <Info className="text-emerald-400" size={20} />
-              Basic Information
+              {t.basicInformation || 'Basic Information'}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               {crop.regions && crop.regions.length > 0 && (
                 <div className="p-4 bg-blue-900/30 rounded-xl border border-blue-700/30">
                   <div className="flex items-center gap-2 mb-2">
                     <MapPin className="text-blue-400" size={18} />
-                    <span className="font-semibold text-blue-100 text-sm">Regions</span>
+                    <span className="font-semibold text-blue-100 text-sm">{t.regions || 'Regions'}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {crop.regions.map((region) => (
@@ -220,7 +223,7 @@ const CropDetails = () => {
                 <div className="p-4 bg-purple-900/30 rounded-xl border border-purple-700/30">
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar className="text-purple-400" size={18} />
-                    <span className="font-semibold text-purple-100 text-sm">Season</span>
+                    <span className="font-semibold text-purple-100 text-sm">{t.season || 'Season'}</span>
                   </div>
                   <span className="px-3 py-1 bg-slate-800/50 text-purple-200 rounded-full text-xs font-medium border border-purple-600/30">
                     {crop.season}
@@ -232,7 +235,7 @@ const CropDetails = () => {
                 <div className="p-4 bg-orange-900/30 rounded-xl border border-orange-700/30">
                   <div className="flex items-center gap-2 mb-2">
                     <Sun className="text-orange-400" size={18} />
-                    <span className="font-semibold text-orange-100 text-sm">Soil Type</span>
+                    <span className="font-semibold text-orange-100 text-sm">{t.soilType || 'Soil Type'}</span>
                   </div>
                   <p className="text-gray-200 text-sm">{crop.soilType}</p>
                 </div>
@@ -242,7 +245,7 @@ const CropDetails = () => {
                 <div className="p-4 bg-cyan-900/30 rounded-xl border border-cyan-700/30">
                   <div className="flex items-center gap-2 mb-2">
                     <Droplet className="text-cyan-400" size={18} />
-                    <span className="font-semibold text-cyan-100 text-sm">Water Requirement</span>
+                    <span className="font-semibold text-cyan-100 text-sm">{t.waterRequirement || 'Water Requirement'}</span>
                   </div>
                   <p className="text-gray-200 text-sm">{crop.waterRequirement}</p>
                 </div>
@@ -252,7 +255,7 @@ const CropDetails = () => {
                 <div className="p-4 bg-green-900/30 rounded-xl border border-green-700/30 col-span-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Sun className="text-green-400" size={18} />
-                    <span className="font-semibold text-green-100 text-sm">Climate</span>
+                    <span className="font-semibold text-green-100 text-sm">{t.climate || 'Climate'}</span>
                   </div>
                   <p className="text-gray-200 text-sm">{crop.climate}</p>
                 </div>
@@ -262,7 +265,7 @@ const CropDetails = () => {
                 <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-600/30 col-span-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Info className="text-gray-400" size={18} />
-                    <span className="font-semibold text-gray-200 text-sm">Notes</span>
+                    <span className="font-semibold text-gray-200 text-sm">{t.notes || 'Notes'}</span>
                   </div>
                   <p className="text-gray-300 text-sm leading-relaxed">{crop.notes}</p>
                 </div>
@@ -278,30 +281,30 @@ const CropDetails = () => {
             <div className="bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-xl p-6">
               <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Video className="text-emerald-400" size={20} />
-                Plantation Guide
+                {t.plantationGuide || 'Plantation Guide'}
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {guide.spacing && (
                   <div className="p-4 bg-emerald-900/20 rounded-xl border border-emerald-700/30">
-                    <h4 className="font-semibold text-emerald-200 mb-1 text-sm">Spacing</h4>
+                    <h4 className="font-semibold text-emerald-200 mb-1 text-sm">{t.spacing || 'Spacing'}</h4>
                     <p className="text-gray-200 text-sm">{guide.spacing}</p>
                   </div>
                 )}
                 {guide.maturityPeriod && (
                   <div className="p-4 bg-blue-900/20 rounded-xl border border-blue-700/30">
-                    <h4 className="font-semibold text-blue-200 mb-1 text-sm">Maturity Period</h4>
+                    <h4 className="font-semibold text-blue-200 mb-1 text-sm">{t.maturityPeriod || 'Maturity Period'}</h4>
                     <p className="text-gray-200 text-sm">{guide.maturityPeriod}</p>
                   </div>
                 )}
                 {guide.seedPreparation && (
                   <div className="p-4 bg-yellow-900/20 rounded-xl border border-yellow-700/30">
-                    <h4 className="font-semibold text-yellow-200 mb-1 text-sm">Seed Preparation</h4>
+                    <h4 className="font-semibold text-yellow-200 mb-1 text-sm">{t.seedPreparation || 'Seed Preparation'}</h4>
                     <p className="text-gray-200 text-xs whitespace-pre-line leading-relaxed">{guide.seedPreparation}</p>
                   </div>
                 )}
                 {guide.plantingMethod && (
                   <div className="p-4 bg-green-900/20 rounded-xl border border-green-700/30">
-                    <h4 className="font-semibold text-green-200 mb-1 text-sm">Planting Method</h4>
+                    <h4 className="font-semibold text-green-200 mb-1 text-sm">{t.plantingMethod || 'Planting Method'}</h4>
                     <p className="text-gray-200 text-xs whitespace-pre-line leading-relaxed">{guide.plantingMethod}</p>
                   </div>
                 )}
@@ -313,19 +316,19 @@ const CropDetails = () => {
                 )}
                 {guide.harvestingTips && (
                   <div className="p-4 bg-orange-900/20 rounded-xl border border-orange-700/30">
-                    <h4 className="font-semibold text-orange-200 mb-1 text-sm">Harvesting Tips</h4>
+                    <h4 className="font-semibold text-orange-200 mb-1 text-sm">{t.harvestingTips || 'Harvesting Tips'}</h4>
                     <p className="text-gray-200 text-xs whitespace-pre-line leading-relaxed">{guide.harvestingTips}</p>
                   </div>
                 )}
                 {guide.averageYield && (
                   <div className="p-4 bg-purple-900/20 rounded-xl border border-purple-700/30">
-                    <h4 className="font-semibold text-purple-200 mb-1 text-sm">Average Yield</h4>
+                    <h4 className="font-semibold text-purple-200 mb-1 text-sm">{t.averageYield || 'Average Yield'}</h4>
                     <p className="text-gray-200 text-sm">{guide.averageYield}</p>
                   </div>
                 )}
                 {guide.plantationProcess && guide.plantationProcess.length > 0 && (
                   <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-600/30 col-span-2">
-                    <h4 className="font-semibold text-gray-200 mb-2 text-sm">Plantation Process</h4>
+                    <h4 className="font-semibold text-gray-200 mb-2 text-sm">{t.plantationProcess || 'Plantation Process'}</h4>
                     <ol className="list-decimal list-inside space-y-1 text-gray-200 text-xs">
                       {guide.plantationProcess.map((step, index) => (
                         <li key={index} className="leading-relaxed">{step}</li>
@@ -349,14 +352,14 @@ const CropDetails = () => {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <Calendar className="text-emerald-400" size={20} />
-                  Planting Calendar
+                  {t.plantingCalendar || 'Planting Calendar'}
                 </h3>
                 {hasOtherRegions && (
                   <button
                     onClick={() => setShowAllRegions(!showAllRegions)}
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg transition-colors font-medium"
                   >
-                    {showAllRegions ? 'Show Only My Region' : 'View Other Regions'}
+                    {showAllRegions ? (t.showOnlyMyRegion || 'Show Only My Region') : (t.viewOtherRegions || 'View Other Regions')}
                   </button>
                 )}
               </div>
@@ -377,7 +380,7 @@ const CropDetails = () => {
                           <span className="font-semibold text-white text-sm">{calendar.region}</span>
                           {calendar.region === userRegion && (
                             <span className="px-2 py-0.5 bg-emerald-600 text-white text-xs rounded-full font-medium">
-                              Your Region
+                              {t.yourRegion || 'Your Region'}
                             </span>
                           )}
                         </div>
@@ -396,13 +399,13 @@ const CropDetails = () => {
                         )}
                         {calendar.transplantingPeriod && (
                           <div className="bg-slate-900/50 p-3 rounded-lg">
-                            <h4 className="text-xs font-semibold text-gray-300 mb-1">Transplanting Period</h4>
+                            <h4 className="text-xs font-semibold text-gray-300 mb-1">{t.transplantingPeriod || 'Transplanting Period'}</h4>
                             <p className="text-white font-medium text-sm">{calendar.transplantingPeriod}</p>
                           </div>
                         )}
                         {calendar.harvestingPeriod && (
                           <div className="bg-slate-900/50 p-3 rounded-lg">
-                            <h4 className="text-xs font-semibold text-gray-300 mb-1">Harvesting Period</h4>
+                            <h4 className="text-xs font-semibold text-gray-300 mb-1">{t.harvestingPeriod || 'Harvesting Period'}</h4>
                             <p className="text-white font-medium text-sm">{calendar.harvestingPeriod}</p>
                           </div>
                         )}
@@ -417,7 +420,7 @@ const CropDetails = () => {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-400 text-sm">No calendar available for your region.</p>
+                  <p className="text-gray-400 text-sm">{t.noCalendarForRegion || 'No calendar available for your region.'}</p>
                 </div>
               )}
             </div>
@@ -435,7 +438,7 @@ const CropDetails = () => {
           <div className="bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-xl p-6">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <Video className="text-red-400" size={20} />
-              Video Guide
+              {t.videoGuide || 'Video Guide'}
             </h3>
             <div className="rounded-lg overflow-hidden">
               <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
@@ -444,7 +447,7 @@ const CropDetails = () => {
                   className="absolute top-0 left-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title="Plantation Guide Video"
+                  title={t.videoGuideTitle || 'Plantation Guide Video'}
                 />
               </div>
             </div>

@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, AlertCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useLanguage } from '../../context/LanguageContext'
 import { getRecommendedCrops, getFilteredCrops, searchCrops, getUserProfile } from '../../services/api'
 import CropCard from '../../components/CropCard'
 import CropFilters from '../../components/CropFilters'
 
 const CropAdvisory = () => {
   const navigate = useNavigate()
+  const { content } = useLanguage()
+  const t = content?.cropAdvisoryPage || {}
   const [userProfile, setUserProfile] = useState(null)
   const [recommendedData, setRecommendedData] = useState(null)
   const [filteredCrops, setFilteredCrops] = useState([])
@@ -61,7 +64,7 @@ const CropAdvisory = () => {
         
         // Check if farm location is set
         if (!profileResponse.data.userDetails?.farmLocation) {
-          setError('Please complete your profile and set your farm location to get personalized recommendations.')
+          setError(t.setFarmLocation || 'Please complete your profile and set your farm location to get personalized recommendations.')
           setLoading(false)
           return
         }
@@ -73,7 +76,7 @@ const CropAdvisory = () => {
       if (err.message.includes('401') || err.message.includes('token')) {
         navigate('/signup')
       } else {
-        setError(err.message || 'Failed to load crop advisory')
+        setError(err.message || t.loadError || 'Failed to load crop advisory')
       }
     } finally {
       setLoading(false)
@@ -166,13 +169,13 @@ const CropAdvisory = () => {
             <div className="flex items-start gap-3">
               <AlertCircle size={24} />
               <div>
-                <h3 className="font-semibold mb-1">Profile Incomplete</h3>
+                <h3 className="font-semibold mb-1">{t.profileIncomplete || 'Profile Incomplete'}</h3>
                 <p>{error}</p>
                 <button
                   onClick={() => navigate('/dashboard/user')}
                   className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                 >
-                  Complete Profile
+                  {t.completeProfile || 'Complete Profile'}
                 </button>
               </div>
             </div>
@@ -200,7 +203,7 @@ const CropAdvisory = () => {
                     setSearchResults(null)
                   }
                 }}
-                placeholder="Search crops by name..."
+                placeholder={t.searchPlaceholder || 'Search crops by name...'}
                 className="w-full pl-12 pr-4 py-3 bg-white border border-black text-black rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none placeholder:text-black"
               />
             </div>
@@ -208,7 +211,7 @@ const CropAdvisory = () => {
               {searchLoading ? (
                 <Loader2 className="animate-spin" size={20} />
               ) : (
-                'Search'
+                (t.search || 'Search')
               )}
             </button>
           </form>
@@ -219,10 +222,10 @@ const CropAdvisory = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-white">
-                Search Results
+                {t.searchResults || 'Search Results'}
                 {searchResults.length > 0 && (
                   <span className="text-lg font-normal text-gray-300 ml-2">
-                    ({searchResults.length} {searchResults.length === 1 ? 'crop' : 'crops'})
+                    ({searchResults.length} {searchResults.length === 1 ? (t.crop || 'crop') : (t.crops || 'crops')})
                   </span>
                 )}
               </h2>
@@ -233,7 +236,7 @@ const CropAdvisory = () => {
                 }}
                 className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
               >
-                Clear Search
+                {t.clearSearch || 'Clear Search'}
               </button>
             </div>
             {searchResults.length > 0 ? (
@@ -249,7 +252,7 @@ const CropAdvisory = () => {
               </div>
             ) : (
               <div className="bg-slate-900/60 backdrop-blur-sm rounded-xl border border-slate-700/50 p-8 text-center">
-                <p className="text-gray-300">No crops found matching "{searchQuery}"</p>
+                <p className="text-gray-300">{(t.noCropsMatching || 'No crops found matching "{query}"').replace('{query}', searchQuery)}</p>
               </div>
             )}
           </div>
@@ -263,7 +266,7 @@ const CropAdvisory = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex-1 text-center">
                     <h2 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
-                      Recommended for You
+                      {t.recommendedForYou || 'Recommended for You'}
                     </h2>
                   </div>
                   {recommendedData.perfectMatches.length > 4 && (
@@ -271,14 +274,14 @@ const CropAdvisory = () => {
                       <button
                         onClick={() => scrollRecommended('left')}
                         className="p-2 bg-slate-900/60 border border-slate-600/50 rounded-lg hover:bg-slate-800/80 transition-colors"
-                        aria-label="Scroll left"
+                        aria-label={t.scrollLeft || 'Scroll left'}
                       >
                         <ChevronLeft size={20} className="text-white" />
                       </button>
                       <button
                         onClick={() => scrollRecommended('right')}
                         className="p-2 bg-slate-900/60 border border-slate-600/50 rounded-lg hover:bg-slate-800/80 transition-colors"
-                        aria-label="Scroll right"
+                        aria-label={t.scrollRight || 'Scroll right'}
                       >
                         <ChevronRight size={20} className="text-white" />
                       </button>
@@ -306,13 +309,13 @@ const CropAdvisory = () => {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-white text-center flex-1">
-                  Other Crops That You Can Consider
+                  {t.otherCrops || 'Other Crops That You Can Consider'}
                 </h2>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className="px-4 py-2 bg-slate-900/60 border border-slate-600/50 text-white rounded-lg hover:bg-slate-800/80 transition-colors"
                 >
-                  {showFilters ? 'Hide' : 'Show'} Filters
+                  {showFilters ? (t.hideFilters || 'Hide Filters') : (t.showFilters || 'Show Filters')}
                 </button>
               </div>
               {showFilters && (
@@ -341,7 +344,7 @@ const CropAdvisory = () => {
                   </div>
                 ) : (
                   <div className="bg-slate-900/60 backdrop-blur-sm rounded-xl border border-slate-700/50 p-8 text-center">
-                    <p className="text-gray-300">No crops found matching your filters.</p>
+                    <p className="text-gray-300">{t.noCropsMatchingFilters || 'No crops found matching your filters.'}</p>
                   </div>
                 )
               ) : (
@@ -375,10 +378,10 @@ const CropAdvisory = () => {
                 <div className="bg-slate-900/60 backdrop-blur-sm rounded-xl border border-slate-700/50 p-12 text-center">
                   <AlertCircle className="mx-auto text-gray-400 mb-4" size={48} />
                   <h3 className="text-xl font-semibold text-white mb-2">
-                    No crops found
+                    {t.noCropsFound || 'No crops found'}
                   </h3>
                   <p className="text-gray-300">
-                    We couldn't find any crops matching your location and season.
+                    {t.noCropsForLocationSeason || "We couldn't find any crops matching your location and season."}
                   </p>
                 </div>
               )}

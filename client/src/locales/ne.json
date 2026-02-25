@@ -8,7 +8,8 @@
           "dropdown": [
             { "name": "बाली सल्लाह", "href": "/crop-advisory" },
             { "name": "सरकारी योजना", "href": "/government-schemes" },
-            { "name": "मौसम सेवा", "href": "/weather-dashboard" }
+            { "name": "मौसम सेवा", "href": "/weather-dashboard" },
+            { "name": "बजार मूल्य", "href": "/market-prices" }
           ]
         },
         { "name": "हाम्रो कथाः", "href": "/our-story" },
@@ -24,6 +25,96 @@
         "profile": "प्रोफाइल"
       },
       "diseaseDetection": "रोग निदान"
+    },
+    "cropAdvisoryPage": {
+      "profileIncomplete": "प्रोफाइल अपूर्ण",
+      "completeProfile": "प्रोफाइल पूरा गर्नुहोस्",
+      "setFarmLocation": "व्यक्तिगत सिफारिस पाउन आफ्नो प्रोफाइल पूरा गर्नुहोस् र खेतको स्थान सेट गर्नुहोस्।",
+      "loadError": "बाली सल्लाह लोड गर्न असफल",
+      "searchPlaceholder": "बालीको नामले खोज्नुहोस्...",
+      "search": "खोज्नुहोस्",
+      "searchResults": "खोज नतिजा",
+      "crop": "बाली",
+      "crops": "बालीहरू",
+      "clearSearch": "खोज मेट्नुहोस्",
+      "noCropsMatching": "\"{query}\" सँग मिल्ने बाली भेटिएन।",
+      "recommendedForYou": "तपाईंको लागि सिफारिस",
+      "scrollLeft": "बायाँ स्क्रोल",
+      "scrollRight": "दायाँ स्क्रोल",
+      "otherCrops": "अरू बालीहरू जुन तपाईंले विचार गर्न सक्नुहुन्छ",
+      "showFilters": "फिल्टर देखाउनुहोस्",
+      "hideFilters": "फिल्टर लुकाउनुहोस्",
+      "noCropsMatchingFilters": "तपाईंको फिल्टरसँग मिल्ने बाली भेटिएन।",
+      "noCropsFound": "बाली भेटिएन",
+      "noCropsForLocationSeason": "तपाईंको स्थान र मौसमसँग मिल्ने कुनै बाली भेटिएन।",
+      "filters": {
+        "filterCrops": "बाली फिल्टर गर्नुहोस्",
+        "clearAll": "सबै मेट्नुहोस्",
+        "region": "क्षेत्र",
+        "allRegions": "सबै क्षेत्र",
+        "season": "मौसम",
+        "allSeasons": "सबै मौसम",
+        "category": "श्रेणी",
+        "allCategories": "सबै श्रेणी",
+        "categoryPlaceholder": "जस्तै, अन्न, तरकारी"
+      }
+    },
+    "cropDetailsPage": {
+      "cropNotFound": "बाली भेटिएन",
+      "loadError": "बाली विवरण लोड गर्न असफल",
+      "backToCropAdvisory": "बाली सल्लाहमा फर्कनुहोस्",
+      "basicInformation": "आधारभूत जानकारी",
+      "regions": "क्षेत्रहरू",
+      "season": "मौसम",
+      "soilType": "माटोको प्रकार",
+      "waterRequirement": "पानीको आवश्यकता",
+      "climate": "हावापानी",
+      "notes": "नोटहरू",
+      "plantationGuide": "रोप्ने मार्गदर्शन",
+      "spacing": "दूरी",
+      "maturityPeriod": "पाक्ने अवधि",
+      "seedPreparation": "बियु तयारी",
+      "plantingMethod": "रोप्ने विधि",
+      "irrigationSchedule": "सिँचाइ समयताल",
+      "harvestingTips": "बाली कटाइ सुझाव",
+      "averageYield": "औसत उत्पादन",
+      "plantationProcess": "रोप्ने प्रक्रिया",
+      "noPlantationGuide": "यस बालीको लागि रोप्ने मार्गदर्शन उपलब्ध छैन।",
+      "plantingCalendar": "रोपाइँ पात्रो",
+      "showOnlyMyRegion": "मेरो क्षेत्र मात्र देखाउनुहोस्",
+      "viewOtherRegions": "अरू क्षेत्र हेर्नुहोस्",
+      "yourRegion": "तपाईंको क्षेत्र",
+      "sowingPeriod": "बियु रोप्ने अवधि",
+      "transplantingPeriod": "रोपाई सार्ने अवधि",
+      "harvestingPeriod": "कटाइ अवधि",
+      "noCalendarForRegion": "तपाईंको क्षेत्रको लागि पात्रो उपलब्ध छैन।",
+      "noPlantingCalendar": "यस बालीको लागि रोपाइँ पात्रो उपलब्ध छैन।",
+      "videoGuide": "भिडियो मार्गदर्शन",
+      "videoGuideTitle": "रोप्ने मार्गदर्शन भिडियो"
+    },
+    "marketPricesPage": {
+      "title": "बजार मूल्य",
+      "description": "काठमाडौँ कलिमाटी बजारको ताजा तरकारी र फलफूलको मूल्य",
+      "pricesAsOf": "मूल्य मिति",
+      "allCrops": "सबै बाली",
+      "refresh": "नवीकरण",
+      "crop": "बाली",
+      "min": "न्यून (रू.)",
+      "max": "अधिक (रू.)",
+      "avg": "औसत (रू.)",
+      "unit": "इकाई",
+      "trends": "प्रवृत्ति",
+      "noData": "मूल्य डाटा छैन। डाटा दैनिक (लगभग १० बजे) अद्यावधिक हुन्छ।",
+      "viewTrend": "प्रवृत्ति हेर्नुहोस्",
+      "showing": "देखाइएको",
+      "of": "मध्ये",
+      "page": "पृष्ठ",
+      "prevPage": "अघिल्लो पृष्ठ",
+      "nextPage": "अर्को पृष्ठ",
+      "trendTitle": "३० दिने प्रवृत्ति:",
+      "noTrendData": "यस बालीको प्रवृत्ति डाटा छैन।",
+      "date": "मिति",
+      "loadError": "बजार मूल्य लोड गर्न असफल"
     },
   
     "home": {
@@ -65,7 +156,63 @@
         { "label": "उत्पादन वृद्धि सम्भावना", "value": "+३०–५०%" },
         { "label": "अनुदान/योजना समेटिएको", "value": "७०+" },
         { "label": "वर्षामा निर्भर खेती", "value": "८०%" }
-      ]
+      ],
+
+      "features": {
+        "ctaLabel": "खोज्नुहोस्",
+        "cards": [
+          {
+            "place": "बाली मार्गदर्शन",
+            "title": "बाली",
+            "title2": "सल्लाह",
+            "description": "तराई, पहाड र हिमाली क्षेत्रका लागि रोपाइँ, दूरी र आगत सल्लाह। तपाईंको बालीको लागि कार्यान्वयन योग्य सुझाव।",
+            "href": "/crop-advisory",
+            "icon": "Leaf",
+            "gradient": "from-emerald-800 to-green-900",
+            "image": "cropadvisory"
+          },
+          {
+            "place": "मौसम र चेतावनी",
+            "title": "मौसम",
+            "title2": "ड्यासबोर्ड",
+            "description": "बाली, पशुधन र भण्डारण गरिएको फसल सुरक्षित राख्न समयमै मौसम र विपद् चेतावनी।",
+            "href": "/weather-dashboard",
+            "icon": "CloudSun",
+            "gradient": "from-sky-800 to-emerald-900",
+            "image": "weather"
+          },
+          {
+            "place": "बजार डाटा",
+            "title": "बजार",
+            "title2": "मूल्य",
+            "description": "पारदर्शी र अद्यावधिक बजार मूल्य र प्रवृत्ति—सही समयमा र सही ठाउँमा बिक्री गर्नुहोस्।",
+            "href": "/market-prices",
+            "icon": "TrendingUp",
+            "gradient": "from-amber-800 to-orange-900",
+            "image": "market"
+          },
+          {
+            "place": "सरकारी सहयोग",
+            "title": "सरकारी",
+            "title2": "योजनाहरू",
+            "description": "एकै ठाउँमा अनुदान र योजनाहरू पत्ता लगाउनुहोस्। पात्रता र किसान सहयोगका लागि आवेदन।",
+            "href": "/government-schemes",
+            "icon": "Landmark",
+            "gradient": "from-violet-800 to-purple-900",
+            "image": "schema"
+          },
+          {
+            "place": "AI निदान",
+            "title": "रोग",
+            "title2": "पहिचान",
+            "description": "तस्बिर अपलोड गर्नुहोस्—तुरुन्त AI आधारित कीरा र रोग निदान र उपचारका चरणहरू।",
+            "href": "/disease-detection",
+            "icon": "ShieldCheck",
+            "gradient": "from-teal-800 to-emerald-900",
+            "image": "diseasedetection"
+          }
+        ]
+      }
     },
 
     "footer": {
@@ -369,6 +516,30 @@
     "description": "कृषिमित्रले AI, विशेषज्ञ ज्ञान, र स्थानीय डाटालाई एकै ठाउँमा ल्याउँछ ताकि हरेक किसानले आफ्नो खेतमा प्रतिबद्ध हुनु अघि विकल्पहरू स्पष्ट रूपमा देख्न सकुन्।",
     "getStarted": "सुरु गर्नुहोस्",
     "exploreServices": "सेवाहरू अन्वेषण गर्नुहोस्"
+  },
+  "diseaseDetection": {
+    "info": {
+      "howItWorksTitle": "यसले कसरी काम गर्छ",
+      "step1Title": "पात जाँच",
+      "step1Desc": "प्रणालीले पहिले छवि पात हो कि होईन भनेर जाँच गर्छ। पात नभएका छविहरू (वस्तु, मानिस, मात्र माटो आदि) स्पष्ट सन्देशसहित अस्वीकार गरिन्छ।",
+      "step2Title": "रोग निदान",
+      "step2Desc": "छवि पातको रूपमा स्वीकृत भएमात्र मोडेलले बाली र अवस्था (रोग वा स्वस्थ) विश्वास स्कोरसहित अनुमान गर्छ।",
+      "step3Title": "नतिजा",
+      "step3Desc": "तपाईंलाई \"पात होईन\" सन्देश वा अनुमानित बाली, अवस्था र विश्वास देखिन्छ।",
+      "whatModelTitle": "मोडेलले के के पहिचान गर्छ",
+      "tomatoTitle": "गोलभेडा (पात)",
+      "tomatoConditions": "जीवाणु दाग, अर्ली ब्लाइट, लेट ब्लाइट, पात मोल्ड, सेप्टोरिया पात दाग, स्पाइडर माइट्स, टार्गेट स्पट, टमाटर मोजेक भाइरस, टमाटर पहेंलो पात कर्ल भाइरस, स्वस्थ",
+      "potatoTitle": "आलु (पात)",
+      "potatoConditions": "अर्ली ब्लाइट, लेट ब्लाइट, जीवाणु संक्रमण, नेमाटोड, कीरा, स्वस्थ",
+      "maizeTitle": "मकै (पात)",
+      "maizeConditions": "ब्लाइट, कमन रस्ट, ग्रे लिफ स्पट, स्वस्थ",
+      "tipsTitle": "राम्रो नतिजाका लागि सुझाव",
+      "tip1": "पातको स्पष्ट, उज्यालो फोटो प्रयोग गर्नुहोस् (साधारण पृष्ठभूमिमा)।",
+      "tip2": "बाली गोलभेडा, आलु वा मकै मध्ये एक हुनुपर्छ; अरू बाली समर्थित छैनन्।",
+      "tip3": "धुंधला वा पात नभएका छविहरू अस्वीकार गरिन्छ; यो अपेक्षित छ र नतिजा विश्वसनीय राख्छ।",
+      "ctaLine": "तत्काल AI आधारित निदान पाउन र मोडेलले के पहिचान गर्छ र गर्दैन भन्ने थाहा पाउन पातको स्पष्ट फोटो अपलोड गर्नुहोस्।",
+      "ctaButton": "निदान सुरु गर्नुहोस्"
+    }
   },
   "underDevelopment": {
     "tagline": "चाँडै आउँदैछ",

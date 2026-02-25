@@ -20,6 +20,10 @@
           {
             "name": "Weather Services",
             "href": "/weather-dashboard"
+          },
+          {
+            "name": "Market Prices",
+            "href": "/market-prices"
           }
         ]
       },
@@ -42,6 +46,96 @@
       "profile": "Profile"
     },
     "diseaseDetection": "Disease Detection"
+  },
+  "cropAdvisoryPage": {
+    "profileIncomplete": "Profile Incomplete",
+    "completeProfile": "Complete Profile",
+    "setFarmLocation": "Please complete your profile and set your farm location to get personalized recommendations.",
+    "loadError": "Failed to load crop advisory",
+    "searchPlaceholder": "Search crops by name...",
+    "search": "Search",
+    "searchResults": "Search Results",
+    "crop": "crop",
+    "crops": "crops",
+    "clearSearch": "Clear Search",
+    "noCropsMatching": "No crops found matching \"{query}\"",
+    "recommendedForYou": "Recommended for You",
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right",
+    "otherCrops": "Other Crops That You Can Consider",
+    "showFilters": "Show Filters",
+    "hideFilters": "Hide Filters",
+    "noCropsMatchingFilters": "No crops found matching your filters.",
+    "noCropsFound": "No crops found",
+    "noCropsForLocationSeason": "We couldn't find any crops matching your location and season.",
+    "filters": {
+      "filterCrops": "Filter Crops",
+      "clearAll": "Clear All",
+      "region": "Region",
+      "allRegions": "All Regions",
+      "season": "Season",
+      "allSeasons": "All Seasons",
+      "category": "Category",
+      "allCategories": "All Categories",
+      "categoryPlaceholder": "e.g., Cereal, Vegetable"
+    }
+  },
+  "cropDetailsPage": {
+    "cropNotFound": "Crop not found",
+    "loadError": "Failed to load crop details",
+    "backToCropAdvisory": "Back to Crop Advisory",
+    "basicInformation": "Basic Information",
+    "regions": "Regions",
+    "season": "Season",
+    "soilType": "Soil Type",
+    "waterRequirement": "Water Requirement",
+    "climate": "Climate",
+    "notes": "Notes",
+    "plantationGuide": "Plantation Guide",
+    "spacing": "Spacing",
+    "maturityPeriod": "Maturity Period",
+    "seedPreparation": "Seed Preparation",
+    "plantingMethod": "Planting Method",
+    "irrigationSchedule": "Irrigation Schedule",
+    "harvestingTips": "Harvesting Tips",
+    "averageYield": "Average Yield",
+    "plantationProcess": "Plantation Process",
+    "noPlantationGuide": "No plantation guide available for this crop.",
+    "plantingCalendar": "Planting Calendar",
+    "showOnlyMyRegion": "Show Only My Region",
+    "viewOtherRegions": "View Other Regions",
+    "yourRegion": "Your Region",
+    "sowingPeriod": "Sowing Period",
+    "transplantingPeriod": "Transplanting Period",
+    "harvestingPeriod": "Harvesting Period",
+    "noCalendarForRegion": "No calendar available for your region.",
+    "noPlantingCalendar": "No planting calendar available for this crop.",
+    "videoGuide": "Video Guide",
+    "videoGuideTitle": "Plantation Guide Video"
+  },
+  "marketPricesPage": {
+    "title": "Market Prices",
+    "description": "Latest vegetable and fruit prices from Kalimati market (Kathmandu)",
+    "pricesAsOf": "Prices as of",
+    "allCrops": "All crops",
+    "refresh": "Refresh",
+    "crop": "Crop",
+    "min": "Min (Rs.)",
+    "max": "Max (Rs.)",
+    "avg": "Avg (Rs.)",
+    "unit": "Unit",
+    "trends": "Trends",
+    "noData": "No price data. Data is updated daily (around 10 AM).",
+    "viewTrend": "View trend",
+    "showing": "Showing",
+    "of": "of",
+    "page": "Page",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "trendTitle": "30-day trend:",
+    "noTrendData": "No trend data for this crop.",
+    "date": "Date",
+    "loadError": "Failed to load market prices"
   },
   "home": {
     "hero": {
@@ -94,7 +188,62 @@
         "label": "Weather Reliance",
         "value": "80% rain-fed"
       }
-    ]
+    ],
+    "features": {
+      "ctaLabel": "Explore",
+      "cards": [
+        {
+          "place": "Crop guidance",
+          "title": "CROP",
+          "title2": "ADVISORY",
+          "description": "Region-based sowing, spacing, and input guidance for Terai, Hill, and Mountain belts. Get actionable advice for your crops.",
+          "href": "/crop-advisory",
+          "icon": "Leaf",
+          "gradient": "from-emerald-800 to-green-900",
+          "image": "cropadvisory"
+        },
+        {
+          "place": "Climate & alerts",
+          "title": "WEATHER",
+          "title2": "DASHBOARD",
+          "description": "Real-time weather and disaster alerts to protect crops, livestock, and stored harvest. Plan with confidence.",
+          "href": "/weather-dashboard",
+          "icon": "CloudSun",
+          "gradient": "from-sky-800 to-emerald-900",
+          "image": "weather"
+        },
+        {
+          "place": "Market data",
+          "title": "MARKET",
+          "title2": "PRICES",
+          "description": "Transparent, up-to-date market prices and trends so you can sell at the right time and place.",
+          "href": "/market-prices",
+          "icon": "TrendingUp",
+          "gradient": "from-amber-800 to-orange-900",
+          "image": "market"
+        },
+        {
+          "place": "Government support",
+          "title": "GOVERNMENT",
+          "title2": "SCHEMES",
+          "description": "Discover subsidies and schemes in one place. See eligibility and how to apply for farmer support.",
+          "href": "/government-schemes",
+          "icon": "Landmark",
+          "gradient": "from-violet-800 to-purple-900",
+          "image": "schema"
+        },
+        {
+          "place": "AI diagnostics",
+          "title": "DISEASE",
+          "title2": "DETECTION",
+          "description": "Upload a photo for instant AI-based pest and disease diagnostics with safety and treatment steps.",
+          "href": "/disease-detection",
+          "icon": "ShieldCheck",
+          "gradient": "from-teal-800 to-emerald-900",
+          "image": "diseasedetection"
+        }
+      ]
+    }
   },
   "footer": {
     "subheading": "Smart digital agriculture assistant connecting Nepali farmers with expert guidance, weather insights, and AI-powered support.",
@@ -413,6 +562,30 @@
     "description": "KrishiMitra brings together AI, expert knowledge, and localized data so that every farmer can see options clearly—before they commit their field.",
     "getStarted": "Get Started",
     "exploreServices": "Explore Services"
+  },
+  "diseaseDetection": {
+    "info": {
+      "howItWorksTitle": "How it works",
+      "step1Title": "Leaf check",
+      "step1Desc": "The system first checks if the image is a plant leaf. Non-leaf images (objects, people, soil, etc.) are prompted to upload a proper leaf photo.",
+      "step2Title": "Disease diagnosis",
+      "step2Desc": "Once the image is accepted as a leaf, the model predicts the crop and its condition (diseased or healthy) with a confidence score.",
+      "step3Title": "Result",
+      "step3Desc": "You receive either a \"leaf / not a leaf\" message or the predicted plant, condition name, and confidence score.",
+      "whatModelTitle": "What the model can detect",
+      "tomatoTitle": "Tomato (Golbera)",
+      "tomatoConditions": "Bacterial spot, Early blight, Late blight, Leaf mold, Septoria leaf spot, Spider mites, Target spot, Tomato mosaic virus, Pest, Healthy",
+      "potatoTitle": "Potato (Aalu)",
+      "potatoConditions": "Early blight, Late blight, Bacterial infection, Nematodes, Pest, Healthy",
+      "maizeTitle": "Maize (Makai)",
+      "maizeConditions": "Blight, Common rust, Gray leaf spot, Healthy",
+      "tipsTitle": "Tips for best results",
+      "tip1": "Take a close-up photo of the leaf (preferably against a simple background).",
+      "tip2": "Crop out human body parts. Flowers or mature plants are okay as long as leaves are clearly visible.",
+      "tip3": "Blurry or non-leaf images will be rejected to keep results reliable.",
+      "ctaLine": "Upload a clear photo of a plant leaf to get an instant AI-based diagnosis and know what the model can and can't detect.",
+      "ctaButton": "Start detection"
+    }
   },
   "underDevelopment": {
     "tagline": "Coming Soon",

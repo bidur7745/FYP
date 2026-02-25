@@ -404,7 +404,8 @@ export const listExpertsController = async (req, res) => {
   }
 };
 
-// VERIFY EXPERT (admin only) - set isVerifiedExpert to true
+// VERIFY / REJECT EXPERT (admin only) - set isVerifiedExpert to true or false
+// PATCH body: { verified: true } to approve, { verified: false } to reject
 export const verifyExpertController = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -415,10 +416,11 @@ export const verifyExpertController = async (req, res) => {
         message: "Invalid user ID",
       });
     }
-    const result = await setExpertVerified(id, true);
+    const verified = req.body?.verified !== false; // default true for backward compatibility
+    const result = await setExpertVerified(id, verified);
     return res.status(200).json({
       success: true,
-      message: "Expert verified successfully",
+      message: verified ? "Expert verified successfully" : "Expert verification rejected",
       data: result,
     });
   } catch (error) {
@@ -432,6 +434,30 @@ export const verifyExpertController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to verify expert",
+    });
+  }
+};
+
+// DELETE OWN PROFILE (authenticated user deletes their own account)
+export const deleteMyProfileController = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await deleteUser(userId);
+    return res.status(200).json({
+      success: true,
+      message: "Your account has been deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete my profile error:", error.message);
+    if (error.message.includes("User not found")) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete account",
     });
   }
 };

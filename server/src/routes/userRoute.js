@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, verifyOTP, login, forgotPassword, verifyPasswordResetOTP, resetPasswordController, expertDashboard, getUserProfileController, updateUserProfileController, listAllUsersController, listExpertsController, verifyExpertController, deleteUserController } from "../controllers/userController.js";
+import { registerUser, verifyOTP, login, forgotPassword, verifyPasswordResetOTP, resetPasswordController, expertDashboard, getUserProfileController, updateUserProfileController, listAllUsersController, listExpertsController, verifyExpertController, deleteMyProfileController, deleteUserController } from "../controllers/userController.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = Router();
@@ -33,6 +33,9 @@ router.get("/profile", authenticate, getUserProfileController);
 
 // Update user profile
 router.put("/profile", authenticate, updateUserProfileController);
+
+// Delete own account (must be before /:userId)
+router.delete("/me", authenticate, deleteMyProfileController);
 
 // ADMIN: List all users (farmers + experts)
 router.get("/all", authenticate, authorize("admin"), listAllUsersController);

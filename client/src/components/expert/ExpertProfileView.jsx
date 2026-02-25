@@ -1,12 +1,33 @@
 import React, { useState } from 'react'
-import { ArrowLeft, Edit, User, Phone, MapPin, FileText, GraduationCap, Briefcase, Award, CheckCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Edit, User, Phone, MapPin, FileText, GraduationCap, Briefcase, Award, CheckCircle, Trash2, Loader2 } from 'lucide-react'
+import { deleteMyProfile } from '../../services/api'
 
 /**
  * Read-only view of expert profile details - shown when profile is approved.
  */
 const ExpertProfileView = ({ profile, onEdit }) => {
+  const navigate = useNavigate()
   const userDetails = profile?.userDetails || {}
   const user = profile?.user || {}
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleDeleteMyProfile = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This cannot be undone and all your data will be removed.')) return
+    try {
+      setDeleting(true)
+      setError('')
+      await deleteMyProfile()
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('userRole')
+      navigate('/login', { replace: true })
+    } catch (err) {
+      setError(err.message || 'Failed to delete account')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -39,7 +60,7 @@ const ExpertProfileView = ({ profile, onEdit }) => {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <h1 className="text-2xl font-bold text-slate-800">{user?.name || 'Expert'}</h1>
-                {profile?.userDetails?.isVerifiedExpert && (
+                {profile?.userDetails?.isVerifiedExpert === 'approved' && (
                   <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
                     <CheckCircle size={14} /> Verified Expert
                   </div>
@@ -132,6 +153,24 @@ const ExpertProfileView = ({ profile, onEdit }) => {
               </div>
             </div>
           )}
+
+          {/* Danger zone: Delete my profile */}
+          <div className="pt-6 mt-6 border-t border-slate-200">
+            <h2 className="text-lg font-semibold text-red-600 mb-2">Danger zone</h2>
+            <p className="text-slate-600 text-sm mb-3">
+              Permanently delete your expert account and all associated data. Only you can delete your profile.
+            </p>
+            {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+            <button
+              type="button"
+              onClick={handleDeleteMyProfile}
+              disabled={deleting}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium disabled:opacity-50"
+            >
+              {deleting ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
+              {deleting ? 'Deleting…' : 'Delete my profile'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

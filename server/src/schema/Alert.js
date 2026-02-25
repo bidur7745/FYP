@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, jsonb, real, integer, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, jsonb, real, integer, boolean, pgEnum } from "drizzle-orm/pg-core";
 import { userTable } from "./user.js";
 
 // Enum for alert type
@@ -41,5 +41,6 @@ export const alertsTable = pgTable("alerts", {
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
 });
 
