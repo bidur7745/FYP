@@ -44,8 +44,11 @@ export const apiRequest = async (path, options = {}, requireAuth = false, useCac
     }
   }
 
+  const isFormData =
+    typeof FormData !== 'undefined' && options.body instanceof FormData;
+
   const headers = {
-    ...defaultHeaders,
+    ...(isFormData ? {} : defaultHeaders),
     ...(requireAuth ? withAuth() : {}),
     ...(options.headers || {}),
   };
@@ -558,4 +561,15 @@ export const getMarketPriceStatistics = (params = {}, forceRefresh = false) => {
     removeCache(cacheKey);
   }
   return apiRequest(path, { method: 'GET' }, true, true);
+};
+
+// Disease Detection – run prediction (proxy to FastAPI via backend)
+export const predictDisease = (file, crop) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('crop', crop);
+  return apiRequest('/api/disease/predict', {
+    method: 'POST',
+    body: formData,
+  }, true, false);
 };

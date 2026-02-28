@@ -13,6 +13,7 @@ import uploadRoutes from "./routes/uploadRoute.js";
 import supportQueriesRoutes from "./routes/supportQueriesRoute.js";
 import notificationRoutes from "./routes/notificationRoute.js";
 import marketPriceRoutes from "./routes/marketPriceRoute.js";
+import diseaseRoutes from "./routes/diseaseRoute.js";
 import testAlertRoutes from "./test/testAlertRoute.js";
 import cors from "cors";
 
@@ -66,6 +67,7 @@ server.use("/api/upload", uploadRoutes);
 server.use("/api/support", supportQueriesRoutes);
 server.use("/api/notifications", notificationRoutes);
 server.use("/api/market-prices", marketPriceRoutes);
+server.use("/api/disease", diseaseRoutes);
 
 // Mount dashboard routes (protected)
 server.use("/dashboard", userRoutes);

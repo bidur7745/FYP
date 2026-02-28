@@ -6,6 +6,7 @@ export const ENV ={
     NODE_ENV: process.env.NODE_ENV,
     JWT_SECRET: process.env.JWT_SECRET,
     FRONTEND_URL: process.env.FRONTEND_URL,
+    DISEASE_API_BASE_URL: process.env.DISEASE_API_BASE_URL,
     // Email configuration
     SMTP_HOST: process.env.SMTP_HOST,
     SMTP_PORT: parseInt(process.env.SMTP_PORT) || 587,

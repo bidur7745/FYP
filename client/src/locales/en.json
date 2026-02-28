@@ -563,6 +563,35 @@
     "getStarted": "Get Started",
     "exploreServices": "Explore Services"
   },
+  "subscription": {
+    "title": "Plans for Every Farmer",
+    "subtitle": "Start free with Basic. Upgrade to Premium for expert verification and unlimited support.",
+    "basicLabel": "Basic",
+    "basicPrice": "Free",
+    "basicPriceNote": "Forever",
+    "basicFeatures": [
+      "Crop advisory & planting calendar",
+      "Weather & disaster alerts",
+      "Market prices & trends",
+      "Government schemes",
+      "AI disease detection (limited scans)",
+      "Support queries"
+    ],
+    "premiumLabel": "Premium",
+    "premiumPrice": "Rs. 1,999",
+    "premiumPricePeriod": "/month",
+    "premiumPriceNote": "Expert support & more",
+    "premiumFeatures": [
+      "Everything in Basic",
+      "Verify predictions with expert",
+      "Unlimited expert chat",
+      "Higher disease scan limit",
+      "Priority support"
+    ],
+    "getStarted": "Get Started",
+    "upgradeToPremium": "Upgrade to Premium",
+    "popularBadge": "Popular"
+  },
   "diseaseDetection": {
     "info": {
       "howItWorksTitle": "How it works",
@@ -578,13 +607,42 @@
       "potatoTitle": "Potato (Aalu)",
       "potatoConditions": "Early blight, Late blight, Bacterial infection, Nematodes, Pest, Healthy",
       "maizeTitle": "Maize (Makai)",
-      "maizeConditions": "Blight, Common rust, Gray leaf spot, Healthy",
+      "maizeConditions": "Blight, Common rust, Gray leaf spot, MSV (Maize Streak Virus), MLB (Maize Lethal Necrosis), Healthy",
       "tipsTitle": "Tips for best results",
       "tip1": "Take a close-up photo of the leaf (preferably against a simple background).",
       "tip2": "Crop out human body parts. Flowers or mature plants are okay as long as leaves are clearly visible.",
       "tip3": "Blurry or non-leaf images will be rejected to keep results reliable.",
       "ctaLine": "Upload a clear photo of a plant leaf to get an instant AI-based diagnosis and know what the model can and can't detect.",
       "ctaButton": "Start detection"
+    },
+    "scan": {
+      "title": "Disease Detection Scan",
+      "subtitle": "Upload a clear leaf photo and choose the crop type. In the next step, we'll send the image to the AI microservice for diagnosis.",
+      "backToInfo": "← Back to information page",
+      "upload": "Upload",
+      "required": "Required",
+      "dragDrop": "Drag & drop leaf image",
+      "orClick": "or click to select file",
+      "acceptedFormats": "Accepted formats: JPG, PNG, HEIC · Maximum file size: 4 MB",
+      "cropType": "Crop type",
+      "analyzing": "Analyzing...",
+      "scanLeaf": "Scan leaf",
+      "previewValidation": "Preview & Validation",
+      "noImageSelected": "No image selected. Choose a leaf photo to see a preview here.",
+      "confidence": "Confidence",
+      "crop": "Crop",
+      "leafCheck": "Leaf check",
+      "category": "Category",
+      "className": "Class name",
+      "generalName": "General name",
+      "scientificName": "Scientific name",
+      "confidencePercent": "Confidence percentage",
+      "errorUnsupportedFormat": "Unsupported format. Use JPG, PNG, or HEIC.",
+      "errorFileTooLarge": "File too large. Maximum 4 MB.",
+      "errorAnalyzeFailed": "Failed to analyze leaf image",
+      "detected": "Detected",
+      "removeFile": "Remove file",
+      "download": "Download"
     }
   },
   "underDevelopment": {

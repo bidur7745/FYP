@@ -4,9 +4,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/images/assets'
 import { useLanguage } from '../context/LanguageContext'
 import {
-
     FeatureCarousel,
     RoadmapSection,
+    Subscription,
     CTA,
 } from '../components/home'
 
@@ -122,12 +122,17 @@ const Home = () => {
                     </div>
                 </div>
             </section>
-            <div className="w-full px-4 sm:px-6 lg:px-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 pt-12">
                 <div className="mx-auto max-w-7xl">
                     <FeatureCarousel />
                 </div>
             </div>
             <RoadmapSection />
+            <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl">
+                    <Subscription />
+                </div>
+            </div>
             <CTA />
         </>
     )

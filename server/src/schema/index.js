@@ -10,3 +10,5 @@ export { schemeDetailsTable } from "./schemeDetails.js";
 export { supportQueriesTable } from "./supportQueries.js";
 export { notificationsTable } from "./notifications.js";
 export { marketPricesTable } from "./marketPrices.js";
+export { diseasePredictionsTable } from "./diseasePredictions.js";
+export { diseaseTreatmentsTable } from "./diseaseTreatments.js";

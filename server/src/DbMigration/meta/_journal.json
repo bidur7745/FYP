@@ -15,6 +15,13 @@
       "when": 1771839695550,
       "tag": "0001_cute_captain_universe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772109920180,
+      "tag": "0002_stiff_black_tom",
+      "breakpoints": true
     }
   ]
 }

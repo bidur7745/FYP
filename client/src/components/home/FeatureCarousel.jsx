@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { gsap } from 'gsap'
-import { Leaf, CloudSun, ShieldCheck, TrendingUp, Landmark, ChevronLeft, ChevronRight, Bookmark } from 'lucide-react'
+import { Leaf, CloudSun, ShieldCheck, TrendingUp, Landmark, Bookmark } from 'lucide-react'
 import { useLanguage } from '../../context/LanguageContext'
 import { assets } from '../../assets/images/assets'
 
 const iconMap = { Leaf, CloudSun, ShieldCheck, TrendingUp, Landmark }
 
 const ease = 'sine.inOut'
-const scale = 0.6
+const scale = 0.95
 const cardWidth = Math.round(200 * scale)
 const cardHeight = Math.round(300 * scale)
 const gap = Math.round(40 * scale)
@@ -58,10 +58,10 @@ const FeatureCarousel = () => {
 
     const section = sectionRef.current
     const sectionWidth = section.offsetWidth || (typeof window !== 'undefined' ? window.innerWidth : 1200)
-    const sectionHeight = section.offsetHeight || (typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.6) : 480)
-    const offsetTopLocal = sectionHeight - 215
+    const sectionHeight = section.offsetHeight || (typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.8) : 600)
+    const offsetTopLocal = sectionHeight - 320
     const stackWidth = 200 + (n - 1) * (cardWidth + gap)
-    const offsetLeftLocal = sectionWidth - stackWidth - 80
+    const offsetLeftLocal = Math.max(Math.round(sectionWidth * 0.52), sectionWidth - stackWidth - 24)
 
     function runStepAnimation() {
       const [active, ...rest] = orderRef.current
@@ -189,7 +189,7 @@ const FeatureCarousel = () => {
         onComplete: () => {
           gsap.set('.feature-indicator', { scaleX: 1, transformOrigin: 'left' })
           if (stepRef.current) stepRef.current()
-          loopTimeoutRef.current = setTimeout(loop, 3200)
+          loopTimeoutRef.current = setTimeout(loop, 5000)
         }
       })
     }
@@ -319,9 +319,10 @@ const FeatureCarousel = () => {
     const [active, ...rest] = newOrder
     const section = sectionRef.current
     const sectionWidth = section?.offsetWidth ?? window.innerWidth
-    const sectionHeight = section?.offsetHeight ?? Math.round(window.innerHeight * 0.6)
-    const offsetTopLocal = sectionHeight - 215
-    const offsetLeftLocal = sectionWidth - (200 + (n - 1) * (cardWidth + gap)) - 80
+    const sectionHeight = section?.offsetHeight ?? Math.round(window.innerHeight * 0.8)
+    const offsetTopLocal = sectionHeight - 320
+    const stackWidthLocal = 200 + (n - 1) * (cardWidth + gap)
+    const offsetLeftLocal = Math.max(Math.round(sectionWidth * 0.52), sectionWidth - stackWidthLocal - 24)
     rest.forEach((i, index) => {
       gsap.to(getCard(i), {
         x: offsetLeftLocal + index * (cardWidth + gap),
@@ -353,7 +354,7 @@ const FeatureCarousel = () => {
       ease
     })
     gsap.to('.feature-progress-foreground', { width: progressMax * (1 / n) * (active + 1), ease })
-    if (loopRef.current) loopTimeoutRef.current = setTimeout(loopRef.current, 3200)
+    if (loopRef.current) loopTimeoutRef.current = setTimeout(loopRef.current, 5000)
   }
 
   const handleNext = () => {
@@ -382,9 +383,10 @@ const FeatureCarousel = () => {
     const prv = rest[rest.length - 1]
     const section = sectionRef.current
     const sectionWidth = section?.offsetWidth ?? window.innerWidth
-    const sectionHeight = section?.offsetHeight ?? Math.round(window.innerHeight * 0.6)
-    const offsetTopLocal = sectionHeight - 215
-    const offsetLeftLocal = sectionWidth - (200 + (n - 1) * (cardWidth + gap)) - 80
+    const sectionHeight = section?.offsetHeight ?? Math.round(window.innerHeight * 0.8)
+    const offsetTopLocal = sectionHeight - 320
+    const stackWidthLocal = 200 + (n - 1) * (cardWidth + gap)
+    const offsetLeftLocal = Math.max(Math.round(sectionWidth * 0.52), sectionWidth - stackWidthLocal - 24)
     gsap.to(getCard(active), {
       x: 0,
       y: 0,
@@ -427,7 +429,7 @@ const FeatureCarousel = () => {
       })
     })
     gsap.to('.feature-progress-foreground', { width: progressMax * (1 / n) * (active + 1), ease })
-    if (loopRef.current) loopTimeoutRef.current = setTimeout(loopRef.current, 3200)
+    if (loopRef.current) loopTimeoutRef.current = setTimeout(loopRef.current, 5000)
   }
 
   const handleCta = (href) => {
@@ -444,8 +446,8 @@ const FeatureCarousel = () => {
       ref={sectionRef}
       className="feature-carousel relative w-full overflow-hidden rounded-xl font-['Inter']"
       style={{
-        minHeight: '60vh',
-        height: '60vh',
+        minHeight: '80vh',
+        height: '80vh',
         backgroundColor: 'rgb(15 23 42)',
         boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
       }}
@@ -454,19 +456,21 @@ const FeatureCarousel = () => {
 
       <div ref={demoRef} id="feature-demo" className="absolute left-0 top-0 h-full w-full">
         {cardsData.map((item, index) => {
-          const imgSrc = item.image && assets[item.image] ? assets[item.image] : null
+          const rawAsset = item.image ? assets[item.image] : null
+          const imgSrc = typeof rawAsset === 'string' ? rawAsset : rawAsset?.default ?? null
           return (
             <div
               key={index}
               id={`feature-card-${index}`}
               className="feature-card absolute left-0 top-0 bg-cover bg-center shadow-lg"
               style={{
-                backgroundImage: imgSrc ? `url(${imgSrc})` : undefined,
-                background: imgSrc ? undefined : `linear-gradient(to bottom right, rgb(4 120 87), rgb(20 83 45))`
+                backgroundImage: imgSrc ? `url(${imgSrc})` : `linear-gradient(to bottom right, rgb(4 120 87), rgb(20 83 45))`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
               }}
             >
               <div
-                className={`absolute inset-0 ${imgSrc ? 'bg-black/40' : `bg-gradient-to-br ${item.gradient || 'from-emerald-800 to-green-900'}`}`}
+                className={`absolute inset-0 ${imgSrc ? 'bg-black/30' : `bg-gradient-to-br ${item.gradient || 'from-emerald-800 to-green-900'}`}`}
                 aria-hidden
               />
             </div>
@@ -488,20 +492,22 @@ const FeatureCarousel = () => {
 
       <div
         id="feature-details-even"
-        className="feature-details absolute left-2 top-12 z-[22] text-white sm:left-6 md:left-8"
+        className="feature-details absolute left-0 top-0 bottom-0 z-[22] flex flex-col justify-between text-white pl-4 pr-4 sm:pl-6 md:pl-8 pb-8 max-w-xl"
       >
-        <div className="place-box h-6 overflow-hidden">
-          <div className="feature-detail-text pt-2 text-sm" style={{ transform: 'translateY(0)' }}>{evenItem.place}</div>
-          <div className="mt-0.5 h-0.5 w-4 rounded-full bg-white" aria-hidden />
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="place-box h-6 overflow-hidden">
+            <div className="feature-detail-text pt-2 text-sm" style={{ transform: 'translateY(0)' }}>{evenItem.place}</div>
+            <div className="mt-0.5 h-0.5 w-4 rounded-full bg-white" aria-hidden />
+          </div>
+          <div className="title-box-1 mt-0.5 h-12 overflow-hidden">
+            <div className="feature-detail-title-1 text-2xl font-semibold sm:text-3xl md:text-4xl" style={{ fontFamily: 'Oswald, sans-serif' }}>{evenItem.title}</div>
+          </div>
+          <div className="title-box-2 mt-0.5 h-12 overflow-hidden">
+            <div className="feature-detail-title-2 text-2xl font-semibold sm:text-3xl md:text-4xl" style={{ fontFamily: 'Oswald, sans-serif' }}>{evenItem.title2}</div>
+          </div>
+          <p className="feature-detail-desc mt-2 max-w-xs text-sm leading-snug text-white/90 md:max-w-sm md:text-base">{evenItem.description}</p>
         </div>
-        <div className="title-box-1 mt-0.5 h-12 overflow-hidden">
-          <div className="feature-detail-title-1 text-2xl font-semibold sm:text-3xl md:text-4xl" style={{ fontFamily: 'Oswald, sans-serif' }}>{evenItem.title}</div>
-        </div>
-        <div className="title-box-2 mt-0.5 h-12 overflow-hidden">
-          <div className="feature-detail-title-2 text-2xl font-semibold sm:text-3xl md:text-4xl" style={{ fontFamily: 'Oswald, sans-serif' }}>{evenItem.title2}</div>
-        </div>
-        <p className="feature-detail-desc mt-2 max-w-xs text-[10px] leading-tight text-white/90 md:max-w-sm">{evenItem.description}</p>
-        <div className="feature-detail-cta mt-3 flex items-center gap-2">
+        <div className="feature-detail-cta mt-4 flex items-center gap-2 shrink-0">
           <button
             type="button"
             className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-white transition hover:bg-emerald-400"
@@ -512,7 +518,7 @@ const FeatureCarousel = () => {
           <button
             type="button"
             onClick={() => handleCta(evenItem.href)}
-            className="rounded-full border border-white/80 bg-transparent px-3 py-1 text-[10px] font-medium uppercase text-white transition hover:bg-white/10"
+            className="rounded-full border-2 border-white/80 bg-transparent px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-emerald-500 hover:border-emerald-500"
           >
             {ctaLabel}
           </button>
@@ -521,20 +527,22 @@ const FeatureCarousel = () => {
 
       <div
         id="feature-details-odd"
-        className="feature-details absolute left-2 top-12 z-[12] text-white sm:left-6 md:left-8"
+        className="feature-details absolute left-0 top-0 bottom-0 z-[12] flex flex-col justify-between text-white pl-4 pr-4 sm:pl-6 md:pl-8 pb-8 max-w-xl"
       >
-        <div className="place-box h-6 overflow-hidden">
-          <div className="feature-detail-text pt-2 text-sm" style={{ transform: 'translateY(0)' }}>{oddItem.place}</div>
-          <div className="mt-0.5 h-0.5 w-4 rounded-full bg-white" aria-hidden />
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="place-box h-6 overflow-hidden">
+            <div className="feature-detail-text pt-2 text-sm" style={{ transform: 'translateY(0)' }}>{oddItem.place}</div>
+            <div className="mt-0.5 h-0.5 w-4 rounded-full bg-white" aria-hidden />
+          </div>
+          <div className="title-box-1 mt-0.5 h-12 overflow-hidden">
+            <div className="feature-detail-title-1 text-2xl font-semibold sm:text-3xl md:text-4xl" style={{ fontFamily: 'Oswald, sans-serif' }}>{oddItem.title}</div>
+          </div>
+          <div className="title-box-2 mt-0.5 h-12 overflow-hidden">
+            <div className="feature-detail-title-2 text-2xl font-semibold sm:text-3xl md:text-4xl" style={{ fontFamily: 'Oswald, sans-serif' }}>{oddItem.title2}</div>
+          </div>
+          <p className="feature-detail-desc mt-2 max-w-xs text-sm leading-snug text-white/90 md:max-w-sm md:text-base">{oddItem.description}</p>
         </div>
-        <div className="title-box-1 mt-0.5 h-12 overflow-hidden">
-          <div className="feature-detail-title-1 text-2xl font-semibold sm:text-3xl md:text-4xl" style={{ fontFamily: 'Oswald, sans-serif' }}>{oddItem.title}</div>
-        </div>
-        <div className="title-box-2 mt-0.5 h-12 overflow-hidden">
-          <div className="feature-detail-title-2 text-2xl font-semibold sm:text-3xl md:text-4xl" style={{ fontFamily: 'Oswald, sans-serif' }}>{oddItem.title2}</div>
-        </div>
-        <p className="feature-detail-desc mt-2 max-w-xs text-[10px] leading-tight text-white/90 md:max-w-sm">{oddItem.description}</p>
-        <div className="feature-detail-cta mt-3 flex items-center gap-2">
+        <div className="feature-detail-cta mt-4 flex items-center gap-2 shrink-0">
           <button
             type="button"
             className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-white transition hover:bg-emerald-400"
@@ -545,7 +553,7 @@ const FeatureCarousel = () => {
           <button
             type="button"
             onClick={() => handleCta(oddItem.href)}
-            className="rounded-full border border-white/80 bg-transparent px-3 py-1 text-[10px] font-medium uppercase text-white transition hover:bg-white/10"
+            className="rounded-full border-2 border-white/80 bg-transparent px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-emerald-500 hover:border-emerald-500"
           >
             {ctaLabel}
           </button>
@@ -556,23 +564,7 @@ const FeatureCarousel = () => {
         id="feature-pagination"
         className="feature-pagination absolute left-0 top-0 z-[60] flex items-center"
       >
-        <button
-          type="button"
-          onClick={handlePrev}
-          className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white/30 text-white/80 transition hover:border-white/50 hover:text-white"
-          aria-label="Previous"
-        >
-          <ChevronLeft className="h-4 w-4" strokeWidth={2} />
-        </button>
-        <button
-          type="button"
-          onClick={handleNext}
-          className="ml-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white/30 text-white/80 transition hover:border-white/50 hover:text-white"
-          aria-label="Next"
-        >
-          <ChevronRight className="h-4 w-4" strokeWidth={2} />
-        </button>
-        <div className="feature-progress-sub ml-3 flex h-8 w-full max-w-[250px] items-center">
+        <div className="feature-progress-sub flex h-8 w-full max-w-[250px] items-center">
           <div className="feature-progress-background h-0.5 w-full max-w-[250px] bg-white/20">
             <div className="feature-progress-foreground h-0.5 bg-emerald-500" style={{ width: progressMax * (1 / n) * ((order[0] ?? 0) + 1) }} />
           </div>
