@@ -22,6 +22,20 @@
       "when": 1772109920180,
       "tag": "0002_stiff_black_tom",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772348799730,
+      "tag": "0003_parched_wendell_vaughn",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772390107235,
+      "tag": "0004_odd_hannibal_king",
+      "breakpoints": true
     }
   ]
 }

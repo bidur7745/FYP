@@ -76,10 +76,12 @@ const UserDashboard = () => {
 
   const getCurrentSeason = () => {
     const month = new Date().getMonth() + 1
-    if (month >= 12 || month <= 2) return 'Winter'
-    if (month >= 3 && month <= 5) return 'Spring'
-    if (month >= 6 && month <= 9) return 'Monsoon'
-    return 'Autumn'
+    if (month === 1 || month === 2) return 'Winter'         // Shishir
+    if (month === 3 || month === 4) return 'Spring'         // Basanta
+    if (month === 5 || month === 6) return 'Summer'         // Grishma
+    if (month === 7 || month === 8) return 'Rainy'          // Barsha
+    if (month === 9 || month === 10) return 'Autumn'        // Sharad
+    return 'Pre-winter'                                     // Hemanta (Nov-Dec)
   }
 
   const completion = calculateProfileCompletion()

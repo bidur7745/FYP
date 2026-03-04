@@ -407,7 +407,7 @@ export const getFilteredGovernmentSchemes = (filters = {}, forceRefresh = false)
 
 // Admin: Crop Management - Create crop with details
 export const createCropWithDetails = (payload) =>
-  apiRequest('/api/crops', {
+  apiRequest('/api/crops/upload', {
     method: 'POST',
     body: JSON.stringify(payload),
   }, true);
@@ -573,3 +573,49 @@ export const predictDisease = (file, crop) => {
     body: formData,
   }, true, false);
 };
+
+// Disease catalog – list or get by crop+class (public, optional lang=en|ne)
+export const getDiseaseCatalog = (params = {}) => {
+  const searchParams = new URLSearchParams(params).toString();
+  const path = searchParams ? `/api/disease/catalog?${searchParams}` : '/api/disease/catalog';
+  return apiRequest(path, { method: 'GET' }, false, true);
+};
+
+export const getDiseaseByCropAndClass = (crop, className, lang) => {
+  const params = new URLSearchParams({ crop, className });
+  if (lang) params.set('lang', lang);
+  return apiRequest(`/api/disease/catalog/by?${params}`, { method: 'GET' }, false, true);
+};
+
+// Disease treatments – fetch (farmer only; auth required)
+export const getDiseaseTreatments = (params = {}) => {
+  const searchParams = new URLSearchParams(params).toString();
+  const path = searchParams ? `/api/disease/treatments?${searchParams}` : '/api/disease/treatments';
+  return apiRequest(path, { method: 'GET' }, true, false);
+};
+
+// Admin – disease catalog CRUD (auth required)
+export const adminGetDiseases = (params = {}) => {
+  const searchParams = new URLSearchParams(params).toString();
+  const path = searchParams ? `/api/disease/catalog?${searchParams}` : '/api/disease/catalog';
+  return apiRequest(path, { method: 'GET' }, true, false);
+};
+export const adminCreateDisease = (payload) =>
+  apiRequest('/api/disease/catalog', { method: 'POST', body: JSON.stringify(payload) }, true);
+export const adminUpdateDisease = (id, payload) =>
+  apiRequest(`/api/disease/catalog/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }, true);
+export const adminDeleteDisease = (id) =>
+  apiRequest(`/api/disease/catalog/${id}`, { method: 'DELETE' }, true);
+
+// Admin – treatments CRUD (auth required)
+export const adminGetTreatments = (params = {}) => {
+  const searchParams = new URLSearchParams(params).toString();
+  const path = searchParams ? `/api/disease/treatments/list?${searchParams}` : '/api/disease/treatments/list';
+  return apiRequest(path, { method: 'GET' }, true, false);
+};
+export const adminCreateTreatment = (payload) =>
+  apiRequest('/api/disease/treatments', { method: 'POST', body: JSON.stringify(payload) }, true);
+export const adminUpdateTreatment = (id, payload) =>
+  apiRequest(`/api/disease/treatments/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }, true);
+export const adminDeleteTreatment = (id) =>
+  apiRequest(`/api/disease/treatments/${id}`, { method: 'DELETE' }, true);

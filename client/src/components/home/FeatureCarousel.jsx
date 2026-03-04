@@ -7,7 +7,7 @@ import { assets } from '../../assets/images/assets'
 
 const iconMap = { Leaf, CloudSun, ShieldCheck, TrendingUp, Landmark }
 
-const ease = 'sine.inOut'
+const ease = 'power2.inOut'
 const scale = 0.95
 const cardWidth = Math.round(200 * scale)
 const cardHeight = Math.round(300 * scale)
@@ -71,24 +71,26 @@ const FeatureCarousel = () => {
 
       gsap.set(getCard(prv), { zIndex: 10 })
       gsap.set(getCard(active), { zIndex: 20 })
-      gsap.to(getCard(prv), { scale: 1.5, ease })
+      gsap.to(getCard(prv), { scale: 1.5, duration: 0.4, ease })
 
       gsap.to(getCardContent(active), {
         y: offsetTopLocal + cardHeight - 10,
         opacity: 0,
-        duration: 0.3,
+        duration: 0.5,
         ease
       })
-      gsap.to(getSliderItem(active), { x: 0, ease })
-      gsap.to(getSliderItem(prv), { x: -numberSize, ease })
+      gsap.to(getSliderItem(active), { x: 0, duration: 0.5, ease })
+      gsap.to(getSliderItem(prv), { x: -numberSize, duration: 0.5, ease })
       gsap.to('.feature-progress-foreground', {
         width: progressMax * (1 / n) * (active + 1),
+        duration: 0.6,
         ease
       })
 
       gsap.to(getCard(active), {
         x: 0,
         y: 0,
+        duration: 0.7,
         ease,
         width: sectionWidth,
         height: sectionHeight,
@@ -130,18 +132,20 @@ const FeatureCarousel = () => {
             y: offsetTopLocal,
             width: cardWidth,
             height: cardHeight,
+            duration: 0.5,
             ease,
-            delay: 0.1 * (index + 1)
+            delay: 0.08 * (index + 1)
           })
           gsap.to(getCardContent(i), {
             x: xNew,
             y: offsetTopLocal + cardHeight - cardContentOffset,
             opacity: 1,
             zIndex: 40,
+            duration: 0.5,
             ease,
-            delay: 0.1 * (index + 1)
+            delay: 0.08 * (index + 1)
           })
-          gsap.to(getSliderItem(i), { x: (index + 1) * numberSize, ease })
+          gsap.to(getSliderItem(i), { x: (index + 1) * numberSize, duration: 0.5, ease })
         }
       })
     }
@@ -161,12 +165,12 @@ const FeatureCarousel = () => {
 
       const detailsActive = nowEven ? '#feature-details-even' : '#feature-details-odd'
       gsap.set(detailsActive, { zIndex: 22 })
-      gsap.to(detailsActive, { opacity: 1, delay: 0.4, ease })
-      gsap.to(`${detailsActive} .feature-detail-text`, { y: 0, delay: 0.1, duration: 0.7, ease })
-      gsap.to(`${detailsActive} .feature-detail-title-1`, { y: 0, delay: 0.15, duration: 0.7, ease })
-      gsap.to(`${detailsActive} .feature-detail-title-2`, { y: 0, delay: 0.15, duration: 0.7, ease })
-      gsap.to(`${detailsActive} .feature-detail-desc`, { y: 0, delay: 0.3, duration: 0.4, ease })
-      gsap.to(`${detailsActive} .feature-detail-cta`, { y: 0, delay: 0.35, duration: 0.4, ease })
+      gsap.to(detailsActive, { opacity: 1, delay: 0.3, duration: 0.5, ease })
+      gsap.to(`${detailsActive} .feature-detail-text`, { y: 0, delay: 0.15, duration: 0.8, ease })
+      gsap.to(`${detailsActive} .feature-detail-title-1`, { y: 0, delay: 0.2, duration: 0.8, ease })
+      gsap.to(`${detailsActive} .feature-detail-title-2`, { y: 0, delay: 0.2, duration: 0.8, ease })
+      gsap.to(`${detailsActive} .feature-detail-desc`, { y: 0, delay: 0.35, duration: 0.5, ease })
+      gsap.to(`${detailsActive} .feature-detail-cta`, { y: 0, delay: 0.4, duration: 0.5, ease })
       gsap.set(detailsEvenRef.current ? '#feature-details-odd' : '#feature-details-even', { zIndex: 12 })
 
       stepTimeoutRef.current = setTimeout(runStepAnimation, 0)
@@ -176,14 +180,14 @@ const FeatureCarousel = () => {
     function loop() {
       gsap.to('.feature-indicator', {
         scaleX: 1,
-        duration: 2,
+        duration: 2.2,
         ease,
         transformOrigin: 'left'
       })
       gsap.to('.feature-indicator', {
         scaleX: 0,
-        duration: 0.8,
-        delay: 0.3,
+        duration: 1,
+        delay: 0.4,
         ease,
         transformOrigin: 'right',
         onComplete: () => {
@@ -247,31 +251,34 @@ const FeatureCarousel = () => {
 
       gsap.set('.feature-indicator', { scaleX: 0, transformOrigin: 'left' })
 
-      const startDelay = 0.6
+      const startDelay = 0.7
       gsap.to('.feature-cover', {
         x: sectionWidth + 400,
-        delay: 0.5,
+        delay: 0.4,
+        duration: 0.8,
         ease,
         onComplete: () => {
           setTimeout(() => {
-            gsap.to(getCard(active), { ease })
+            gsap.to(getCard(active), { duration: 0.6, ease })
             rest.forEach((i, index) => {
               gsap.to(getCard(i), {
                 x: offsetLeftLocal + index * (cardWidth + gap),
                 zIndex: 30,
-                delay: 0.05 * index + startDelay,
+                duration: 0.5,
+                delay: 0.08 * index + startDelay,
                 ease
               })
               gsap.to(getCardContent(i), {
                 x: offsetLeftLocal + index * (cardWidth + gap),
                 zIndex: 40,
                 y: offsetTopLocal + cardHeight - cardContentOffset,
-                delay: 0.05 * index + startDelay,
+                duration: 0.5,
+                delay: 0.08 * index + startDelay,
                 ease
               })
             })
-            gsap.to('#feature-pagination', { y: 0, opacity: 1, ease, delay: startDelay })
-            gsap.to(detailsActive, { opacity: 1, x: 0, ease, delay: startDelay })
+            gsap.to('#feature-pagination', { y: 0, opacity: 1, duration: 0.5, ease, delay: startDelay })
+            gsap.to(detailsActive, { opacity: 1, x: 0, duration: 0.5, ease, delay: startDelay })
             loopTimeoutRef.current = setTimeout(loop, 500)
           }, 500)
         }
@@ -353,7 +360,7 @@ const FeatureCarousel = () => {
       duration: 0.5,
       ease
     })
-    gsap.to('.feature-progress-foreground', { width: progressMax * (1 / n) * (active + 1), ease })
+    gsap.to('.feature-progress-foreground', { width: progressMax * (1 / n) * (active + 1), duration: 0.6, ease })
     if (loopRef.current) loopTimeoutRef.current = setTimeout(loopRef.current, 5000)
   }
 
@@ -373,7 +380,7 @@ const FeatureCarousel = () => {
     if (stepTimeoutRef.current) clearTimeout(stepTimeoutRef.current)
     const detailsActive = nowEven ? '#feature-details-even' : '#feature-details-odd'
     gsap.set(detailsActive, { zIndex: 22 })
-    gsap.to(detailsActive, { opacity: 1, duration: 0.4, ease })
+    gsap.to(detailsActive, { opacity: 1, duration: 0.5, ease })
     gsap.set(`${detailsActive} .feature-detail-text`, { y: 0 })
     gsap.set(`${detailsActive} .feature-detail-title-1`, { y: 0 })
     gsap.set(`${detailsActive} .feature-detail-title-2`, { y: 0 })
@@ -394,7 +401,7 @@ const FeatureCarousel = () => {
       height: sectionHeight,
       borderRadius: 0,
       zIndex: 20,
-      duration: 0.5,
+      duration: 0.7,
       ease
     })
     gsap.set(getCard(prv), {
@@ -428,7 +435,7 @@ const FeatureCarousel = () => {
         ease
       })
     })
-    gsap.to('.feature-progress-foreground', { width: progressMax * (1 / n) * (active + 1), ease })
+    gsap.to('.feature-progress-foreground', { width: progressMax * (1 / n) * (active + 1), duration: 0.6, ease })
     if (loopRef.current) loopTimeoutRef.current = setTimeout(loopRef.current, 5000)
   }
 

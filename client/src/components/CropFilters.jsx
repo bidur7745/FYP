@@ -6,7 +6,7 @@ const CropFilters = ({ filters, onFilterChange, onClearFilters }) => {
   const { content } = useLanguage()
   const f = content?.cropAdvisoryPage?.filters || {}
   const regions = ['Terai', 'Hill', 'Mountain']
-  const seasons = ['Winter', 'Spring', 'Monsoon', 'Autumn']
+  const seasons = ['Spring', 'Summer', 'Rainy', 'Autumn', 'Pre-winter', 'Winter']
 
   const hasActiveFilters = filters.region || filters.season || filters.category
 

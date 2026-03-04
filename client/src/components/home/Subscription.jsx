@@ -96,7 +96,7 @@ const Subscription = () => {
               ))}
             </ul>
             <Link
-              to="/login"
+              to="/premium"
               className="mt-8 block w-full py-3.5 rounded-xl bg-emerald-600 text-white font-semibold text-center shadow-lg shadow-emerald-500/25 hover:bg-emerald-500 transition-all duration-200"
             >
               {sub.upgradeToPremium || 'Upgrade to Premium'}

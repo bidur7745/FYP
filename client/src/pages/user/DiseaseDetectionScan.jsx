@@ -1,24 +1,19 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { predictDisease } from '../../services/api'
+import { UserCheck, Loader2, AlertCircle, Upload, Leaf, Shield, Lock, Download, MoreVertical } from 'lucide-react'
+import { predictDisease, getDiseaseTreatments, getDiseaseByCropAndClass } from '../../services/api'
 import { useLanguage } from '../../context/LanguageContext'
-import diseaseCatalogEn from '../../locales/disease_catalog_en.json'
-import diseaseCatalogNe from '../../locales/disease_catalog_ne.json'
+import { openDiagnosisReportPdf } from '../../utils/diagnosisReportPdf'
 
-// Leaf + upload icon for drag-drop zone
+const reportTabs = [
+  { id: 'overview', labelKey: 'overview', icon: Leaf },
+  { id: 'prevention', labelKey: 'prevention', icon: Shield },
+  { id: 'treatment', labelKey: 'treatment', icon: Lock },
+]
+
 const LeafUploadIcon = () => (
-  <div className="relative">
-    <div className="w-16 h-16 rounded-lg bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-      <svg viewBox="0 0 48 48" className="w-10 h-10 text-emerald-400" fill="currentColor">
-        <path d="M24 4c-2 6-6 10-12 12 6 2 10 6 12 12 2-6 6-10 12-12-6-2-10-6-12-12z" opacity="0.9" />
-        <path d="M24 20l-4 8h8l-4-8z" opacity="0.6" />
-      </svg>
-      <span className="absolute -top-1 -right-1 text-emerald-400">
-        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M7 17L17 7M17 7h-8M17 7v8" />
-        </svg>
-      </span>
-    </div>
+  <div className="w-16 h-16 rounded-lg bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center">
+    <Leaf className="w-10 h-10 text-emerald-400" />
   </div>
 )
 
@@ -36,32 +31,58 @@ const normalizeClassName = (str) => {
 }
 
 /**
- * Look up disease from catalog by crop + ML output (className).
- * Handles className variations: Bacterial_spot, Bacterial spot, bacterial_spot, etc.
+ * Map ML predicted className → disease_treatments.class_name (same names as DB export).
+ * Single source of truth aligned with disease_treatments table.
  */
-const getDiseaseFromCatalog = (crop, mlClass, locale) => {
-  const catalog = locale === 'ne' ? diseaseCatalogNe : diseaseCatalogEn
-  const cropData = catalog.crops?.find((c) => c.cropKey === crop)
-  if (!cropData?.diseases) return null
+const ML_TO_DB_CLASSNAME = {
+  maize: {
+    Blight: 'Blight',
+    Common_Rust: 'Common_rust',
+    Gray_Leaf_Spot: 'Gray_leaf_spot',
+    Healthy: 'Healthy',
+    MSV: 'MSV',
+    MLB: 'MLB',
+  },
+  tomato: {
+    'Tomato___Bacterial_spot': 'Bacterial_spot',
+    'Tomato___Early_blight': 'Early_blight',
+    'Tomato___Late_blight': 'Late_blight',
+    'Tomato___Leaf_Mold': 'Leaf_mold',
+    'Tomato___Septoria_leaf_spot': 'Septoria_leaf_spot',
+    'Tomato___Spider_mites Two-spotted_spider_mite': 'Spider_mites',
+    'Tomato___Target_Spot': 'Target_spot',
+    'Tomato___Tomato_Yellow_Leaf_Curl_Virus': 'Tomato_Yellow_Leaf_Curl_Virus',
+    'Tomato___Tomato_mosaic_virus': 'Tomato_mosaic_virus',
+    'Tomato___healthy': 'Healthy',
+  },
+  potato: {
+    'Potato__Bacteria': 'Bacterial_infection',
+    'Potato__Nematode': 'Nematodes',
+    'Potato__Pest': 'Pest',
+    'Potato___Early_blight': 'Early_blight',
+    'Potato___Late_blight': 'Late_blight',
+    'Potato___healthy': 'Healthy',
+  },
+}
 
-  const normalized = normalizeClassName(mlClass)
-  const diseases = cropData.diseases
-
-  // Exact match (case-insensitive, underscore normalized)
-  const exact = diseases.find((d) => normalizeClassName(d.className) === normalized)
-  if (exact) return exact
-
-  // Partial match: ML returns "Bacterial spot" vs catalog "Bacterial_spot"
-  const partial = diseases.find(
-    (d) =>
-      normalized.includes(normalizeClassName(d.className)) ||
-      normalizeClassName(d.className).includes(normalized)
-  )
-  if (partial) return partial
-
-  // Fallback: compare without underscores (e.g. "Bacterialspot" vs "Bacterial_spot")
-  const noUnderscore = (s) => normalizeClassName(s).replace(/_/g, '')
-  return diseases.find((d) => noUnderscore(d.className) === noUnderscore(mlClass)) || null
+function mlClassNameToDb(mlClass, crop) {
+  if (!mlClass || !crop) return mlClass
+  const map = ML_TO_DB_CLASSNAME[crop]
+  if (!map) return mlClass
+  if (map[mlClass]) return map[mlClass]
+  // Fallback: strip crop prefix and normalize to DB convention
+  let stripped = mlClass
+    .replace(/^Tomato___/i, '')
+    .replace(/^Potato___/i, '')
+    .replace(/^Potato__/i, '')
+  if (stripped !== mlClass) {
+    stripped = stripped.replace(/\s+.*$/, '') // "Spider_mites Two-spotted_spider_mite" -> "Spider_mites"
+    if (/^healthy$/i.test(stripped)) return 'Healthy'
+    if (/^bacteria$/i.test(stripped) && crop === 'potato') return 'Bacterial_infection'
+    if (/^nematode$/i.test(stripped) && crop === 'potato') return 'Nematodes'
+    return stripped
+  }
+  return mlClass
 }
 
 const DiseaseDetectionScan = () => {
@@ -76,14 +97,51 @@ const DiseaseDetectionScan = () => {
   const [result, setResult] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef(null)
+  const [treatment, setTreatment] = useState(null)
+  const [treatmentLoading, setTreatmentLoading] = useState(false)
+  const [treatmentError, setTreatmentError] = useState('')
+  const [showDiagnosis, setShowDiagnosis] = useState(false)
+  const [reportTab, setReportTab] = useState('overview')
+  const [catalogDisease, setCatalogDisease] = useState(null)
 
   const MAX_FILE_SIZE = 4 * 1024 * 1024 // 4 MB
+  const lang = locale === 'ne' ? 'ne' : 'en'
 
-  const catalog = locale === 'ne' ? diseaseCatalogNe : diseaseCatalogEn
-  const cropOptions = catalog.crops ?? [
-    { cropKey: 'tomato', cropName: 'Tomato (Golbera)' },
-    { cropKey: 'potato', cropName: 'Potato (Aalu)' },
-    { cropKey: 'maize', cropName: 'Maize (Makai)' }
+  // Fetch disease catalog (name, category, symptoms) from API when we have a result
+  useEffect(() => {
+    if (!result?.crop || !(result?.predictedDisease || result?.class)) {
+      setCatalogDisease(null)
+      return
+    }
+    const predictedClass = result.predictedDisease || result.class
+    const dbClassName = mlClassNameToDb(predictedClass, selectedCrop)
+    setCatalogDisease(null)
+    const tryFetch = (crop, className) =>
+      getDiseaseByCropAndClass(crop, className, lang).then((res) => res?.success && res?.data ? res.data : null)
+    tryFetch(selectedCrop, dbClassName).then((data) => {
+      if (data) return setCatalogDisease(data)
+      if (dbClassName !== predictedClass) {
+        return tryFetch(selectedCrop, predictedClass).then((d) => d && setCatalogDisease(d))
+      }
+    }).catch(() => {})
+  }, [result?.crop, result?.predictedDisease, result?.class, selectedCrop, lang])
+
+  // Auto-fetch treatment when we have a successful result so Diagnosis Report can show full data
+  useEffect(() => {
+    if (!result?.success || !(result?.predictedDisease || result?.class)) return
+    const predictedClass = result.predictedDisease || result.class
+    const dbClassName = mlClassNameToDb(predictedClass, selectedCrop)
+    getDiseaseTreatments({ crop: selectedCrop, className: dbClassName, lang })
+      .then((res) => {
+        if (res?.success && res?.data) setTreatment(res.data)
+      })
+      .catch(() => {})
+  }, [result?.success, result?.predictedDisease, result?.class, selectedCrop, locale])
+
+  const cropOptions = [
+    { cropKey: 'tomato', cropName: locale === 'ne' ? 'टमाटर (Golbera)' : 'Tomato (Golbera)' },
+    { cropKey: 'potato', cropName: locale === 'ne' ? 'आलु (Aalu)' : 'Potato (Aalu)' },
+    { cropKey: 'maize', cropName: locale === 'ne' ? 'मकै (Makai)' : 'Maize (Makai)' },
   ]
 
   const validateFile = (f) => {
@@ -154,12 +212,38 @@ const DiseaseDetectionScan = () => {
     a.click()
   }
 
+  const handleSaveAsPdf = () => {
+    if (!result) return
+    openDiagnosisReportPdf({
+      title: diseaseNameDisplay || displayName,
+      diseaseNameDisplay,
+      displayName,
+      cropLabel,
+      categoryLabel,
+      severityLabel,
+      confidencePercent,
+      descriptionLabel,
+      symptomsLabel,
+      preventiveMeasures: treatment?.preventive_measure,
+      treatments: treatment?.treatment,
+      recommendedMedicines: Array.isArray(treatment?.recommended_medicine)
+        ? treatment.recommended_medicine
+        : treatment?.recommended_medicine
+        ? [treatment.recommended_medicine]
+        : [],
+      imageUrl: previewUrl || null,
+    })
+  }
+
   const handleScan = async () => {
     if (!file) return
     try {
       setLoading(true)
       setError('')
       setResult(null)
+      setTreatment(null)
+      setTreatmentError('')
+      setShowDiagnosis(false)
       const data = await predictDisease(file, selectedCrop)
       setResult(data)
     } catch (err) {
@@ -169,171 +253,146 @@ const DiseaseDetectionScan = () => {
     }
   }
 
+  const handleSeeDiagnosis = async () => {
+    const predictedClass = result?.predictedDisease || result?.class
+    if (!predictedClass) return
+    const dbClassName = mlClassNameToDb(predictedClass, selectedCrop)
+    const lang = locale === 'ne' ? 'ne' : 'en'
+    setTreatmentLoading(true)
+    setTreatmentError('')
+    setTreatment(null)
+    setShowDiagnosis(true)
+    try {
+      const res = await getDiseaseTreatments({
+        crop: selectedCrop,
+        className: dbClassName,
+        lang
+      })
+      if (res?.success && res?.data) setTreatment(res.data)
+      else setTreatmentError(scanT.errorNoTreatment || 'No treatment data found for this diagnosis.')
+    } catch (err) {
+      setTreatmentError(err?.message || scanT.loginToViewTreatment || 'Please log in as a farmer to view treatment and preventive measures.')
+    } finally {
+      setTreatmentLoading(false)
+    }
+  }
+
+  const renderList = (arr, className = '') => {
+    if (!arr) return null
+    const items = Array.isArray(arr) ? arr : [arr]
+    if (items.length === 0) return null
+    return (
+      <ul className={`list-disc list-inside space-y-1 text-sm text-slate-300 ${className}`}>
+        {items.filter(Boolean).map((item, i) => (
+          <li key={i}>{item}</li>
+        ))}
+      </ul>
+    )
+  }
+
   const confidence = result?.diseaseConfidence != null ? Number(result.diseaseConfidence) : null
   const confidencePercent = confidence != null ? Math.round(confidence * 100) : null
   const isErrorState = !!error || (result && !result.success)
 
   const predictedClass = result?.predictedDisease || result?.class
-  const catalogDisease = getDiseaseFromCatalog(result?.crop, predictedClass, locale)
   const displayName =
-    catalogDisease?.generalName || result?.generalName || predictedClass || scanT.detected || 'Detected'
+    catalogDisease?.general_name || result?.generalName || predictedClass || scanT.detected || 'Detected'
+
+  const diseaseNameDisplay = (catalogDisease?.class_name ?? predictedClass ?? '')
+    .replace(/_/g, ' ')
+    .toUpperCase()
+  // Try to infer category when DB category is missing
+  const inferCategory = () => {
+    if (catalogDisease?.category) return catalogDisease.category
+    const name = (catalogDisease?.class_name || predictedClass || '').toLowerCase()
+    if (!name) return null
+    if (name.includes('bacterial')) return 'Bacterial'
+    if (name.includes('rust')) return 'Fungal'
+    if (name.includes('blight') || name.includes('spot') || name.includes('leaf_mold') || name.includes('septoria') || name.includes('target')) {
+      return 'Fungal'
+    }
+    if (name.includes('virus') || name.includes('mosaic') || name.includes('streak')) return 'Viral'
+    if (name.includes('nematode')) return 'Nematode'
+    if (name.includes('mite') || name.includes('pest') || name.includes('moth')) return 'Insect'
+    return null
+  }
+
+  const categoryLabel = inferCategory() || '-'
+  const severityLabel = treatment?.severity_level || (confidencePercent != null ? `${confidencePercent}%` : '-')
+  const descriptionLabel = treatment?.disease_desc ?? catalogDisease?.symptoms ?? '-'
+  const symptomsLabel = catalogDisease?.symptoms ?? treatment?.disease_desc ?? '-'
+  const cropLabel = cropOptions.find(c => c.cropKey === selectedCrop)?.cropName ?? selectedCrop
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 bg-[#0a0f0a] text-slate-100 overflow-hidden relative">
-      {/* Background subtle pattern */}
-      <div className="fixed inset-0 pointer-events-none opacity-30">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 2px 2px, rgba(16,185,129,0.15) 1px, transparent 0)',
-            backgroundSize: '24px 24px'
-          }}
-        />
-      </div>
-
+      <div className="fixed inset-0 pointer-events-none opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(16,185,129,0.15) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
       <div className="max-w-6xl mx-auto relative z-10">
-        <div className="flex items-start justify-between gap-4 mb-8">
+        <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-white">
               {scanT.title || 'Disease Detection Scan'}
             </h1>
             <p className="text-slate-400 mt-2 max-w-xl">
-              {scanT.subtitle ||
-                "Upload a clear leaf photo and choose the crop type. In the next step, we'll send the image to the AI microservice for diagnosis."}
+              {scanT.subtitle || 'Upload a leaf photo and choose the crop type. Our AI model will analyze it to identify diseases and recommend treatment.'}
             </p>
           </div>
-          <Link
-            to="/disease-detection"
-            className="hidden md:inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
-          >
+          <Link to="/disease-detection" className="hidden md:inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 text-sm font-medium">
             {scanT.backToInfo || '← Back to information page'}
           </Link>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Left: Upload panel */}
+          {/* Left: Upload */}
           <div className="rounded-2xl border border-emerald-500/30 bg-slate-900/40 backdrop-blur-xl p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)]">
             <div className="flex items-center gap-2 mb-4">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-5 h-5 text-emerald-400"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              <span className="text-sm font-semibold text-slate-200">
-                {scanT.upload || 'Upload'}
-              </span>
-              <span
-                className="w-2 h-2 rounded-full bg-amber-500 shrink-0"
-                title={scanT.required || 'Required'}
-              />
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center">
+                <Upload className="w-4 h-4 text-emerald-400" />
+              </div>
+              <span className="text-sm font-semibold text-slate-200">{scanT.upload || 'Upload'}</span>
             </div>
 
             <label
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
-              className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 cursor-pointer transition-all ${
-                isDragging
-                  ? 'border-emerald-400 bg-emerald-500/10'
-                  : 'border-emerald-500/50 hover:border-emerald-400/70 hover:bg-slate-800/30'
+              className={`block rounded-xl border-2 border-dashed overflow-hidden bg-slate-950/80 min-h-[280px] cursor-pointer transition-all ${
+                isDragging ? 'border-emerald-400 bg-emerald-500/10' : 'border-emerald-500/50 hover:border-emerald-400/70 hover:bg-slate-800/30'
               }`}
             >
-              <LeafUploadIcon />
-              <span className="text-base font-semibold text-white">
-                {scanT.dragDrop || 'Drag & drop leaf image'}
-              </span>
-              <span className="text-sm text-slate-400">
-                {scanT.orClick || 'or click to select file'}
-              </span>
-              <span className="text-xs text-slate-500">
-                {scanT.acceptedFormats ||
-                  'Accepted formats: JPG, PNG, HEIC · Maximum file size: 4 MB'}
-              </span>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/heic"
-                className="hidden"
-                onChange={handleFileChange}
-              />
+              {previewUrl ? (
+                <img src={previewUrl} alt="Leaf" className="w-full h-full min-h-[280px] object-contain" />
+              ) : (
+                <div className="min-h-[280px] flex flex-col items-center justify-center gap-2 p-6">
+                  <LeafUploadIcon />
+                  <span className="text-slate-400 text-sm">{scanT.dragDrop || 'Drag & drop leaf image'}</span>
+                  <span className="text-slate-500 text-xs">{scanT.orClick || 'or click to select'}</span>
+                </div>
+              )}
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/jpg,image/png,image/heic" className="hidden" onChange={handleFileChange} />
             </label>
 
             {file && (
-              <div className="mt-4 flex items-center gap-2 rounded-lg bg-slate-800/60 border border-slate-700/60 px-3 py-2.5">
-                <span className="flex-1 text-sm text-slate-200 truncate" title={file.name}>
-                  {file.name}
-                </span>
-                <button
-                  type="button"
-                  className="p-1.5 text-slate-400 hover:text-emerald-400 rounded transition-colors"
-                  title={`${(file.size / 1024).toFixed(1)} KB · ${file.type}`}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 16v-4M12 8h.01" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  className="p-1.5 text-slate-400 hover:text-red-400 rounded transition-colors"
-                  title={scanT.removeFile || 'Remove file'}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                    <line x1="10" y1="11" x2="10" y2="17" />
-                    <line x1="14" y1="11" x2="14" y2="17" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDownloadFile}
-                  className="p-1.5 text-slate-400 hover:text-emerald-400 rounded transition-colors"
-                  title={scanT.download || 'Download'}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                  </svg>
+              <div className="mt-3 flex items-center gap-2 text-slate-400 text-sm">
+                <span className="flex-1 truncate" title={file.name}>{file.name}</span>
+                <button type="button" onClick={handleDownloadFile} className="p-1.5 hover:text-emerald-400 rounded" title={scanT.download}><Download className="w-4 h-4" /></button>
+                <button type="button" onClick={handleRemoveFile} className="p-1.5 hover:text-red-400 rounded" title={scanT.removeFile}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
                 </button>
               </div>
             )}
 
+            {loading && <p className="mt-2 text-sm text-emerald-400">{scanT.analyzing || 'Analyzing leaf photo...'}</p>}
+            {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+
             <div className="mt-4">
-              <label className="block text-sm font-medium text-slate-200 mb-2">
-                {scanT.cropType || 'Crop type'}
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">{scanT.cropType || 'Crop type'} *</label>
               <select
                 value={selectedCrop}
                 onChange={(e) => setSelectedCrop(e.target.value)}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800/60 px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 focus:border-emerald-500/50"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800/60 px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
               >
                 {cropOptions.map((opt) => (
-                  <option key={opt.cropKey} value={opt.cropKey}>
-                    {opt.cropName}
-                  </option>
+                  <option key={opt.cropKey} value={opt.cropKey}>{opt.cropName}</option>
                 ))}
               </select>
             </div>
@@ -342,105 +401,188 @@ const DiseaseDetectionScan = () => {
               type="button"
               disabled={!file || loading}
               onClick={handleScan}
-              className={`mt-6 w-full py-3.5 rounded-xl font-semibold text-white transition-all ${
-                file && !loading
-                  ? 'bg-emerald-500 hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_24px_rgba(16,185,129,0.5)]'
-                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-              }`}
+              className="mt-6 w-full py-3.5 rounded-xl font-semibold text-white bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             >
-              {loading ? (scanT.analyzing || 'Analyzing...') : (scanT.scanLeaf || 'Scan leaf')}
+              {scanT.scanLeaf || 'Scan leaf'}
             </button>
+
+            {file && previewUrl && (
+              <div className="mt-4 pt-4 border-t border-slate-700/60 flex items-center gap-3">
+                <img src={previewUrl} alt="" className="w-14 h-14 rounded-lg object-cover border border-slate-600" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-300 truncate">{file.name}</p>
+                  <p className="text-xs text-slate-500">{scanT.cropType || 'Crop type'}: {cropOptions.find(c => c.cropKey === selectedCrop)?.cropName ?? selectedCrop}</p>
+                </div>
+                <button type="button" onClick={handleDownloadFile} className="p-2 text-slate-400 hover:text-emerald-400 rounded-lg"><Download className="w-4 h-4" /></button>
+              </div>
+            )}
           </div>
 
-          {/* Right: Preview & Validation panel */}
-          <div className="rounded-2xl border border-emerald-500/30 bg-slate-900/40 backdrop-blur-xl p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)]">
-            <div className="flex items-center gap-2 mb-4">
+          {/* Right: Diagnosis Report */}
+          <div
+            id="diagnosis-report"
+            className="rounded-2xl border border-emerald-500/30 bg-slate-900/40 backdrop-blur-xl p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)]"
+          >
+            <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-semibold text-slate-200">
-                {scanT.previewValidation || 'Preview & Validation'}
+                {scanT.diagnosisReport ?? 'Diagnosis Report'}
               </span>
+              <button type="button" className="p-1.5 text-slate-400 hover:text-white rounded"><MoreVertical className="w-4 h-4" /></button>
             </div>
 
-            <div className="rounded-xl overflow-hidden bg-slate-950/80 border border-slate-700/50 min-h-[200px] flex items-center justify-center">
-              {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="Leaf preview"
-                  className="w-full max-h-80 object-contain"
-                />
-              ) : (
+            {!result ? (
+              <div className="rounded-xl overflow-hidden bg-slate-950/80 border border-slate-700/50 min-h-[320px] flex items-center justify-center">
                 <p className="text-sm text-slate-500 text-center px-4">
-                  {scanT.noImageSelected ||
-                    'No image selected. Choose a leaf photo to see a preview here.'}
+                  {scanT.noImageSelected || 'No image selected. Upload and scan a leaf photo to see the diagnosis here.'}
                 </p>
-              )}
-            </div>
-
-            {confidencePercent != null && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-sm mb-1.5">
-                  <span className={isErrorState ? 'text-red-400' : 'text-slate-300'}>
-                    {scanT.confidence || 'Confidence'}
-                  </span>
-                  <span
-                    className={
-                      isErrorState ? 'text-red-400 font-medium' : 'text-emerald-400 font-medium'
-                    }
-                  >
-                    {confidencePercent}%
-                  </span>
-                </div>
-                <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      isErrorState ? 'bg-red-500' : 'bg-emerald-500'
-                    }`}
-                    style={{ width: `${Math.min(confidencePercent, 100)}%` }}
-                  />
-                </div>
               </div>
-            )}
-
-            {error && (
-              <div className="mt-4 p-4 rounded-xl border border-red-500/50 bg-red-500/10">
-                <p className="text-sm text-red-300">{error}</p>
-                <div className="mt-2 h-0.5 rounded-full bg-red-500/30" />
-              </div>
-            )}
-
-            {result && result.success && !error && (
-              <div className="mt-4 p-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5 space-y-1.5">
-                <p className="text-slate-300 text-sm">
-                  <span className="text-slate-400">{scanT.className || 'Class name'}:</span>{' '}
-                  <span className="font-medium text-slate-100">
-                    {catalogDisease?.className ?? predictedClass ?? '-'}
-                  </span>
-                </p>
-                <p className="text-slate-300 text-sm">
-                  <span className="text-slate-400">{scanT.generalName || 'General name'}:</span>{' '}
-                  <span className="font-medium text-emerald-300">{displayName}</span>
-                </p>
-                <p className="text-slate-300 text-sm">
-                  <span className="text-slate-400">{scanT.category || 'Category'}:</span>{' '}
-                  <span className="font-medium text-slate-100">
-                    {catalogDisease?.category ?? '-'}
-                  </span>
-                </p>
-                <p className="text-slate-300 text-sm">
-                  <span className="text-slate-400">{scanT.scientificName || 'Scientific name'}:</span>{' '}
-                  <span className="italic text-slate-200">
-                    {catalogDisease?.scientificName ?? '-'}
-                  </span>
-                </p>
-                <p className="text-slate-300 text-sm pt-1">
-                  <span className="text-slate-400">{scanT.confidencePercent || 'Confidence percentage'}:</span>{' '}
-                  <span className="font-medium text-emerald-400">{confidencePercent}%</span>
-                </p>
-                {result.leafCheck && (
-                  <p className="text-slate-500 text-xs mt-1.5 pt-1 border-t border-slate-600/50">
-                    {scanT.leafCheck || 'Leaf check'}: {result.leafCheck.class} (
-                    {Math.round((result.leafCheck.confidence ?? 0) * 100)}%)
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-xl font-bold text-white tracking-tight">{diseaseNameDisplay || displayName}</h2>
+                  <p className="text-sm text-slate-400 mt-1">
+                    {displayName}
+                    {cropLabel ? ` • ${cropLabel}` : ''}
                   </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    {categoryLabel}
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    {severityLabel}
+                  </span>
+                </div>
+                {confidencePercent != null && (
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-slate-400">{scanT.confidence || 'Confidence'}: {confidencePercent}%</span>
+                    <div className="relative w-12 h-12 rounded-full border-2 border-slate-600 flex items-center justify-center">
+                      <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" strokeWidth="3" className="text-slate-700" />
+                        <circle
+                          cx="18" cy="18" r="16"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeDasharray={`${(confidencePercent / 100) * 100.5} ${100.5 - (confidencePercent / 100) * 100.5}`}
+                          className={isErrorState ? 'text-red-500' : 'text-emerald-500'}
+                        />
+                      </svg>
+                      <span className={`absolute text-xs font-semibold ${isErrorState ? 'text-red-400' : 'text-emerald-400'}`}>{confidencePercent}%</span>
+                    </div>
+                  </div>
                 )}
+                <div className="flex gap-1 border-b border-slate-700 pb-2">
+                  {reportTabs.map((tab) => {
+                    const Icon = tab.icon
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setReportTab(tab.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-sm font-medium transition-colors ${
+                          reportTab === tab.id
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 border-b-0 -mb-0.5'
+                            : 'text-slate-400 hover:text-slate-200 border border-transparent'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {scanT[tab.labelKey] ?? tab.labelKey}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="min-h-[190px] text-[0.95rem] md:text-base text-slate-200">
+                  {reportTab === 'overview' && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="rounded-xl bg-slate-900/80 border border-slate-700/80 px-4 py-3">
+                          <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">{scanT.category || 'Category'}</p>
+                          <p className="text-sm md:text-[0.95rem] font-medium text-emerald-300">{categoryLabel}</p>
+                        </div>
+                        <div className="rounded-xl bg-slate-900/80 border border-slate-700/80 px-4 py-3">
+                          <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">{scanT.severityLevel || 'Severity'}</p>
+                          <p className="text-base md:text-lg font-semibold text-amber-300">{severityLabel}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 mb-1">{scanT.description || 'Description'}:</p>
+                        <p className="leading-relaxed">{descriptionLabel}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 mb-1">{scanT.symptoms || 'Symptoms'}:</p>
+                        <p className="leading-relaxed">{symptomsLabel}</p>
+                      </div>
+                      {treatment?.preventive_measure && (Array.isArray(treatment.preventive_measure) ? treatment.preventive_measure.length > 0 : treatment.preventive_measure) && (
+                        <div>
+                          <p className="text-slate-500 mb-1">{scanT.preventiveMeasures || 'Preventive measures'}</p>
+                          {renderList(treatment.preventive_measure)}
+                        </div>
+                      )}
+                      {treatment?.recommended_medicine && (Array.isArray(treatment.recommended_medicine) ? treatment.recommended_medicine.length > 0 : treatment.recommended_medicine) && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {(Array.isArray(treatment.recommended_medicine) ? treatment.recommended_medicine : [treatment.recommended_medicine]).map((m, i) => (
+                            <span key={i} className="px-2.5 py-1 rounded-lg bg-slate-700/60 text-slate-200 text-xs">{m}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {reportTab === 'prevention' && (
+                    <div>
+                      {treatment?.preventive_measure && (Array.isArray(treatment.preventive_measure) ? treatment.preventive_measure.length > 0 : treatment.preventive_measure)
+                        ? renderList(treatment.preventive_measure)
+                        : <p className="text-slate-500">{scanT.noPrevention ?? 'No preventive measures available.'}</p>}
+                    </div>
+                  )}
+                  {reportTab === 'treatment' && (
+                    <div className="space-y-3">
+                      {treatment?.treatment && (Array.isArray(treatment.treatment) ? treatment.treatment.length > 0 : treatment.treatment)
+                        ? renderList(treatment.treatment)
+                        : <p className="text-slate-500">{scanT.noTreatment ?? 'No treatment details available.'}</p>}
+                      {treatment?.recommended_medicine && (Array.isArray(treatment.recommended_medicine) ? treatment.recommended_medicine.length > 0 : treatment.recommended_medicine) && (
+                        <div className="pt-2">
+                          <p className="text-slate-500 mb-1.5">{scanT.recommendedMedicine || 'Recommended medicine'}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {(Array.isArray(treatment.recommended_medicine) ? treatment.recommended_medicine : [treatment.recommended_medicine]).map((m, i) => (
+                              <span key={i} className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs">{m}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {treatmentLoading && (
+                  <div className="flex items-center gap-2 text-slate-400 text-sm py-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {scanT.loadingTreatment || 'Loading treatment...'}
+                  </div>
+                )}
+                {treatmentError && !treatmentLoading && (
+                  <div className="flex items-start gap-2 text-amber-300 text-sm py-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{treatmentError}</span>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-700">
+                  <button
+                    type="button"
+                    disabled={!result}
+                    onClick={handleSaveAsPdf}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 text-white font-semibold text-sm md:text-base hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    {scanT.saveAsPdf ?? 'Save as PDF'}
+                  </button>
+                  <Link
+                    to="/disease-detection/verify-with-expert"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-emerald-500/60 text-emerald-400 bg-transparent font-semibold text-sm md:text-base hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <UserCheck className="w-4 h-4" />
+                    {scanT.verifyWithExpert || 'Verify with expert'}
+                  </Link>
+                </div>
               </div>
             )}
           </div>

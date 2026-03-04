@@ -5,7 +5,46 @@ import { getCurrentSeason } from "../utils/seasonUtils.js";
 
 // Centralized validation constants
 export const REGIONS = ["Terai", "Hill", "Mountain"];
-export const SEASONS = ["Winter", "Spring", "Monsoon", "Autumn"];
+
+
+export const SEASONS = [
+  "Spring",
+  "Summer",
+  "Rainy",
+  "Autumn",
+  "Pre-winter",
+  "Winter",
+];
+
+/**
+ * Normalize a season string to one of the canonical SEASONS.
+ * Accepts old labels like "Monsoon" and Nepali names like "Basanta", "Barsha".
+ */
+export const normalizeSeason = (season) => {
+  if (!season) return null;
+  const raw = String(season).trim();
+  if (!raw) return null;
+  const lower = raw.toLowerCase();
+
+  // Nepali Ritu names
+  if (lower.includes("basanta")) return "Spring";
+  if (lower.includes("grishma") || lower.includes("grisma")) return "Summer";
+  if (lower.includes("barsha") || lower.includes("barsa")) return "Rainy";
+  if (lower.includes("sharad")) return "Autumn";
+  if (lower.includes("hemanta")) return "Pre-winter";
+  if (lower.includes("shishir")) return "Winter";
+
+  // Old four-season labels
+  if (lower === "monsoon") return "Rainy";
+
+  // Already canonical?
+  if (SEASONS.includes(raw)) return raw;
+
+  const capitalized = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  if (SEASONS.includes(capitalized)) return capitalized;
+
+  return raw;
+};
 
 /**
  * Infer season from Nepali month names in a period string
@@ -15,26 +54,36 @@ export const SEASONS = ["Winter", "Spring", "Monsoon", "Autumn"];
 export const inferSeasonFromMonths = (period) => {
   if (!period || typeof period !== "string") return null;
 
-  const periodLower = period.toLowerCase();
+  const p = period.toLowerCase();
 
-  // Monsoon: Asar (June-July), Shrawan (July-August)
-  if (periodLower.includes("asar") || periodLower.includes("shrawan")) {
-    return "Monsoon";
+  // Basanta (Spring): Chaitra, Baisakh
+  if (p.includes("chaitra") || p.includes("chaitra") || p.includes("baisakh")) {
+    return "Spring";
   }
 
-  // Autumn: Kartik (October-November), Mangsir (November-December)
-  if (periodLower.includes("kartik") || periodLower.includes("mangsir")) {
+  // Grishma (Summer): Jestha, Ashad
+  if (p.includes("jestha") || p.includes("jeshtha") || p.includes("jesth") || p.includes("ashad") || p.includes("asad") || p.includes("ashadh")) {
+    return "Summer";
+  }
+
+  // Barsha (Rainy): Shrawan, Bhadra
+  if (p.includes("shrawan") || p.includes("saun") || p.includes("shravan") || p.includes("bhadra")) {
+    return "Rainy";
+  }
+
+  // Sharad (Autumn): Ashoj, Asoj, Ashwin, Kartik
+  if (p.includes("ashoj") || p.includes("asoj") || p.includes("ashwin") || p.includes("aswin") || p.includes("kartik")) {
     return "Autumn";
   }
 
-  // Winter: Magh (January-February), Falgun (February-March)
-  if (periodLower.includes("magh") || periodLower.includes("falgun")) {
-    return "Winter";
+  // Hemanta (Pre-winter): Mangsir, Poush
+  if (p.includes("mangsir") || p.includes("mangsir") || p.includes("mangshir") || p.includes("poush") || p.includes("paush")) {
+    return "Pre-winter";
   }
 
-  // Spring: Chaitra (March-April), Baisakh (April-May)
-  if (periodLower.includes("chaitra") || periodLower.includes("baisakh")) {
-    return "Spring";
+  // Shishir (Winter): Magh, Falgun
+  if (p.includes("magh") || p.includes("falgun")) {
+    return "Winter";
   }
 
   return null;
@@ -109,11 +158,14 @@ export const getCropsByLocation = async (region) => {
  */
 export const getCropsBySeason = async (season) => {
   try {
-    if (!SEASONS.includes(season)) {
+    const normalizedSeason = normalizeSeason(season);
+    if (!normalizedSeason || !SEASONS.includes(normalizedSeason)) {
       throw new Error(`Invalid season: ${season}. Must be one of: ${SEASONS.join(", ")}`);
     }
 
-    const crops = await db
+    // Use planting calendar seasons instead of crops.season.
+    // Any crop that has at least one planting_calendar entry for this season is included.
+    const rows = await db
       .select({
         cropId: cropsTable.cropId,
         cropName: cropsTable.cropName,
@@ -125,11 +177,27 @@ export const getCropsBySeason = async (season) => {
         climate: cropsTable.climate,
         notes: cropsTable.notes,
         imageUrl: cropsTable.imageUrl,
+        calendarSeason: plantingCalendarTable.season,
       })
       .from(cropsTable)
-      .where(eq(cropsTable.season, season));
+      .innerJoin(
+        plantingCalendarTable,
+        and(
+          eq(plantingCalendarTable.cropId, cropsTable.cropId),
+          eq(plantingCalendarTable.season, normalizedSeason)
+        )
+      );
 
-    return crops;
+    // Deduplicate by cropId in case multiple calendar rows exist for the same crop/season.
+    const byId = new Map();
+    for (const row of rows) {
+      if (!byId.has(row.cropId)) {
+        const { calendarSeason, ...crop } = row;
+        byId.set(row.cropId, crop);
+      }
+    }
+
+    return Array.from(byId.values());
   } catch (error) {
     console.error("Error fetching crops by season:", error);
     throw error;
@@ -147,11 +215,13 @@ export const getCropsByLocationAndSeason = async (region, season) => {
     if (!REGIONS.includes(region)) {
       throw new Error(`Invalid region: ${region}. Must be one of: ${REGIONS.join(", ")}`);
     }
-    if (!SEASONS.includes(season)) {
+    const normalizedSeason = normalizeSeason(season);
+    if (!normalizedSeason || !SEASONS.includes(normalizedSeason)) {
       throw new Error(`Invalid season: ${season}. Must be one of: ${SEASONS.join(", ")}`);
     }
 
-    const crops = await db
+    // Use planting calendar seasons tied to a specific region.
+    const rows = await db
       .select({
         cropId: cropsTable.cropId,
         cropName: cropsTable.cropName,
@@ -163,16 +233,30 @@ export const getCropsByLocationAndSeason = async (region, season) => {
         climate: cropsTable.climate,
         notes: cropsTable.notes,
         imageUrl: cropsTable.imageUrl,
+        calendarSeason: plantingCalendarTable.season,
+        calendarRegion: plantingCalendarTable.region,
       })
       .from(cropsTable)
-      .where(
+      .innerJoin(
+        plantingCalendarTable,
         and(
-          sql`${cropsTable.regions} @> ARRAY[${region}]::text[]`,
-          eq(cropsTable.season, season)
+          eq(plantingCalendarTable.cropId, cropsTable.cropId),
+          eq(plantingCalendarTable.region, region),
+          eq(plantingCalendarTable.season, normalizedSeason)
         )
-      );
+      )
+      // Ensure crop itself is tagged as suitable for this region.
+      .where(sql`${cropsTable.regions} @> ARRAY[${region}]::text[]`);
 
-    return crops;
+    const byId = new Map();
+    for (const row of rows) {
+      if (!byId.has(row.cropId)) {
+        const { calendarSeason, calendarRegion, ...crop } = row;
+        byId.set(row.cropId, crop);
+      }
+    }
+
+    return Array.from(byId.values());
   } catch (error) {
     console.error("Error fetching crops by location and season:", error);
     throw error;
@@ -193,16 +277,21 @@ export const getRecommendedCropsForUser = async (userRegion, currentSeason = nul
 
     const season = currentSeason || getCurrentSeason();
 
-    // get perfect matches
+    // Perfect matches: crops that have planting calendar entries
+    // for both the user's region and the current season.
     const perfectMatches = await getCropsByLocationAndSeason(userRegion, season);
 
-    // get location-only matches 
+    // Location-only matches: crops suitable for the region, regardless of season,
+    // excluding ones already in perfectMatches.
     const allLocationCrops = await getCropsByLocation(userRegion);
+    const perfectIds = new Set(perfectMatches.map((c) => c.cropId));
     const locationMatches = allLocationCrops.filter(
-      (crop) => crop.season !== season
+      (crop) => !perfectIds.has(crop.cropId)
     );
 
-    // get season-only matches
+    // Season-only matches: crops that have planting calendar entries
+    // for the current season (any region), but are not primarily grown
+    // in the user's region.
     const allSeasonCrops = await getCropsBySeason(season);
     const seasonMatches = allSeasonCrops.filter(
       (crop) => !crop.regions.includes(userRegion)
@@ -277,9 +366,28 @@ export const getFilteredCrops = async (filters = {}) => {
       conditions.push(sql`${cropsTable.regions} @> ARRAY[${region}]::text[]`);
     }
 
-    // filter by season
-    if (season && SEASONS.includes(season)) {
-      conditions.push(eq(cropsTable.season, season));
+    // filter by season using planting calendar seasons
+    const normalizedSeason = season ? normalizeSeason(season) : null;
+    if (normalizedSeason && SEASONS.includes(normalizedSeason)) {
+      // If region is also provided, restrict calendar season to that region.
+      if (region && REGIONS.includes(region)) {
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM planting_calendar pc
+            WHERE pc.crop_id = ${cropsTable.cropId}
+              AND pc.region = ${region}
+              AND pc.season = ${normalizedSeason}
+          )`
+        );
+      } else {
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM planting_calendar pc
+            WHERE pc.crop_id = ${cropsTable.cropId}
+              AND pc.season = ${normalizedSeason}
+          )`
+        );
+      }
     }
 
     // filter by category
@@ -350,7 +458,8 @@ export const createCrop = async (cropData) => {
     }
 
     // validate season
-    if (!SEASONS.includes(season)) {
+    const normalizedSeason = normalizeSeason(season);
+    if (!normalizedSeason || !SEASONS.includes(normalizedSeason)) {
       throw new Error(`Invalid season. Must be one of: ${SEASONS.join(", ")}`);
     }
 
@@ -360,7 +469,7 @@ export const createCrop = async (cropData) => {
       .values({
         cropName,
         regions,
-        season,
+        season: normalizedSeason,
         cropCategory: cropCategory || null,
         soilType: soilType || null,
         waterRequirement: waterRequirement || null,
@@ -425,12 +534,13 @@ export const updateCrop = async (cropId, cropData) => {
 
     // validate and add season if provided
     if (season !== undefined) {
-      if (!SEASONS.includes(season)) {
+      const normalizedSeason = normalizeSeason(season);
+      if (!normalizedSeason || !SEASONS.includes(normalizedSeason)) {
         throw new Error(
           `Invalid season. Must be one of: ${SEASONS.join(", ")}`
         );
       }
-      updateFields.season = season;
+      updateFields.season = normalizedSeason;
     }
 
     // optional fields - only update if provided
@@ -700,7 +810,9 @@ export const createPlantingCalendarForCrop = async (cropId, calendarEntries) => 
         finalSeason = inferSeasonFromMonths(sowingPeriod);
       }
 
-      if (finalSeason && !SEASONS.includes(finalSeason)) {
+      const normalizedSeason = finalSeason ? normalizeSeason(finalSeason) : null;
+
+      if (normalizedSeason && !SEASONS.includes(normalizedSeason)) {
         throw new Error(
           `Invalid season in planting calendar: ${finalSeason}. Must be one of: ${SEASONS.join(", ")}`
         );
@@ -710,7 +822,7 @@ export const createPlantingCalendarForCrop = async (cropId, calendarEntries) => 
       return {
         cropId,
         region,
-        season: finalSeason || null,
+        season: normalizedSeason || null,
         sowingPeriod: sowingPeriod || null,
         transplantingPeriod: transplantingPeriod || null,
         harvestingPeriod: harvestingPeriod || null,

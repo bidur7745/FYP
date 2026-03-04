@@ -11,4 +11,5 @@ export { supportQueriesTable } from "./supportQueries.js";
 export { notificationsTable } from "./notifications.js";
 export { marketPricesTable } from "./marketPrices.js";
 export { diseasePredictionsTable } from "./diseasePredictions.js";
+export { diseasesTable } from "./diseases.js";
 export { diseaseTreatmentsTable } from "./diseaseTreatments.js";

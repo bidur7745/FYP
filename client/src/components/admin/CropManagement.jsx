@@ -200,8 +200,8 @@ const CropManagement = () => {
 
     setShowAddForm(false)
 
-      // Refresh crops list
-      const response = await getAllCrops()
+      // Refresh crops list (force cache refresh)
+      const response = await getAllCrops(true)
       if (response.success && response.crops) {
         setCrops(response.crops)
       }
@@ -275,7 +275,7 @@ const CropManagement = () => {
       setIsSubmitting(true)
       await deleteCrop(cropId)
 
-      const response = await getAllCrops()
+      const response = await getAllCrops(true)
       if (response.success && response.crops) {
         setCrops(response.crops)
       }
@@ -325,10 +325,12 @@ const CropManagement = () => {
                 </label>
                 <select required value={formData.season} onChange={(e) => setFormData({ ...formData, season: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                   <option value="">Select Season</option>
-                  <option value="Winter">Winter</option>
-                  <option value="Spring">Spring</option>
-                  <option value="Monsoon">Monsoon</option>
-                  <option value="Autumn">Autumn</option>
+                  <option value="Spring">Spring (Basanta)</option>
+                  <option value="Summer">Summer (Grishma)</option>
+                  <option value="Rainy">Rainy (Barsha)</option>
+                  <option value="Autumn">Autumn (Sharad)</option>
+                  <option value="Pre-winter">Pre-winter (Hemanta)</option>
+                  <option value="Winter">Winter (Shishir)</option>
                 </select>
               </div>
               <div>
@@ -608,10 +610,12 @@ const CropManagement = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">Select Season</option>
-                    <option value="Winter">Winter</option>
-                    <option value="Spring">Spring</option>
-                    <option value="Monsoon">Monsoon</option>
-                    <option value="Autumn">Autumn</option>
+                    <option value="Spring">Spring (Basanta)</option>
+                    <option value="Summer">Summer (Grishma)</option>
+                    <option value="Rainy">Rainy (Barsha)</option>
+                    <option value="Autumn">Autumn (Sharad)</option>
+                    <option value="Pre-winter">Pre-winter (Hemanta)</option>
+                    <option value="Winter">Winter (Shishir)</option>
                   </select>
                 </div>
                 <div>
@@ -757,10 +761,12 @@ const CropManagement = () => {
           className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
         >
           <option value="all">All Seasons</option>
-          <option value="Winter">Winter</option>
-          <option value="Spring">Spring</option>
-          <option value="Monsoon">Monsoon</option>
-          <option value="Autumn">Autumn</option>
+          <option value="Spring">Spring (Basanta)</option>
+          <option value="Summer">Summer (Grishma)</option>
+          <option value="Rainy">Rainy (Barsha)</option>
+          <option value="Autumn">Autumn (Sharad)</option>
+          <option value="Pre-winter">Pre-winter (Hemanta)</option>
+          <option value="Winter">Winter (Shishir)</option>
         </select>
       </div>
 

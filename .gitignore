@@ -45,7 +45,9 @@ crop advisoory module.txt
 
 ./client/node_modules/
 ./server/node_modules/
-./client/src/scripts
+server/src/scripts/
 
 
 .cursor/
+sub
+subscription-plan.md

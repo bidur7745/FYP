@@ -1,5 +1,5 @@
 import { uploadToCloudinary } from "../services/uploadService.js";
-import { callDiseasePredict, saveDiseasePrediction } from "../services/diseaseService.js";
+import { callDiseasePredict, saveDiseasePrediction } from "../services/diseasePredictionService.js";
 
 /**
  * POST /api/disease/predict

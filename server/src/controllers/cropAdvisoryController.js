@@ -71,10 +71,11 @@ export const createCropController = async (req, res) => {
     }
 
     // Validate season
-    if (!["Winter", "Spring", "Monsoon", "Autumn"].includes(season)) {
+    // Basic validation; service layer will normalize season further
+    if (!season || typeof season !== "string") {
       return res.status(400).json({
         success: false,
-        message: "Invalid season. Must be one of: Winter, Spring, Monsoon, Autumn",
+        message: "Invalid season.",
       });
     }
 
@@ -179,13 +180,6 @@ export const updateCropController = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Regions must be a non-empty array.",
-      });
-    }
-
-    if (!["Winter", "Spring", "Monsoon", "Autumn"].includes(season)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid season. Must be one of: Winter, Spring, Monsoon, Autumn",
       });
     }
 
