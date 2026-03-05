@@ -177,6 +177,42 @@ export const getUserProfile = (forceRefresh = false) => {
   return apiRequest('/api/users/profile', { method: 'GET' }, true, true);
 };
 
+// Subscription - Get current user's subscription
+export const getSubscription = (forceRefresh = false) => {
+  if (forceRefresh) {
+    const cacheKey = `/api/subscription_${JSON.stringify({ method: 'GET' })}`;
+    removeCache(cacheKey);
+  }
+  return apiRequest('/api/subscription', { method: 'GET' }, true, forceRefresh ? false : true);
+};
+
+// Subscription - Initiate Khalti payment (returns payment_url)
+export const createSubscription = () =>
+  apiRequest('/api/subscription', { method: 'POST' }, true, false);
+
+// Subscription - Verify payment after Khalti redirect (pidx from URL, amount in paisa)
+export const verifySubscription = (payload) =>
+  apiRequest('/api/subscription/verify', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, false);
+
+// Subscription - Cancel (at period end)
+export const cancelSubscription = () =>
+  apiRequest('/api/subscription/cancel', { method: 'POST' }, true, false);
+
+// Subscription - Admin: list all subscriptions (admin only)
+export const getAdminSubscriptions = (params = {}) => {
+  const qs = new URLSearchParams()
+  if (params.limit) qs.set('limit', params.limit)
+  const path = qs.toString() ? `/api/subscription/admin?${qs}` : '/api/subscription/admin'
+  return apiRequest(path, { method: 'GET' }, true, false)
+}
+
+// Subscription - Admin: stats (premium user count, revenue, premiumUserIds)
+export const getAdminSubscriptionStats = () =>
+  apiRequest('/api/subscription/admin/stats', { method: 'GET' }, true, false)
+
 // User Profile - Update user profile (invalidate cache on update)
 export const updateUserProfile = async (payload) => {
   const result = await apiRequest('/api/users/profile', {

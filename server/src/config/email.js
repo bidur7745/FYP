@@ -121,3 +121,62 @@ export const sendSupportReplyEmail = async (toEmail, userName, originalMessage, 
     throw new Error("Failed to send support reply email");
   }
 };
+
+export const sendSubscriptionActivatedEmail = async (email, userName, plan, expiresAt) => {
+  const expiresStr = expiresAt ? new Date(expiresAt).toLocaleDateString("en-IN", { dateStyle: "long" }) : "";
+  const mailOptions = {
+    from: `"KrishiMitra" <${ENV.SMTP_USER}>`,
+    to: email,
+    subject: "Welcome to Premium - KrishiMitra",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2d5016;">Welcome to Premium!</h2>
+        <p>Hello ${userName},</p>
+        <p>Your Premium subscription is now active. Thank you for supporting KrishiMitra.</p>
+        <div style="background-color: #e8f5e9; padding: 16px; margin: 16px 0; border-radius: 8px;">
+          <p style="margin: 0;"><strong>Plan:</strong> ${plan || "Premium Monthly"}</p>
+          ${expiresStr ? `<p style="margin: 8px 0 0 0;"><strong>Access until:</strong> ${expiresStr}</p>` : ""}
+        </div>
+        <p>You now have access to expert verification, priority support, higher scan limits, and more. Cancel anytime from your account.</p>
+        <p><a href="${ENV.FRONTEND_URL || "https://krishimitra.com"}/dashboard/user" style="color: #2d5016;">Go to Dashboard</a></p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="color: #666; font-size: 12px;">KrishiMitra - Your farming companion.</p>
+      </div>
+    `,
+  };
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Subscription activated email sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Error sending subscription activated email:", error);
+    throw new Error("Failed to send subscription email");
+  }
+};
+
+export const sendSubscriptionCancelledEmail = async (email, userName, expiresAt) => {
+  const expiresStr = expiresAt ? new Date(expiresAt).toLocaleDateString("en-IN", { dateStyle: "long" }) : "";
+  const mailOptions = {
+    from: `"KrishiMitra" <${ENV.SMTP_USER}>`,
+    to: email,
+    subject: "Subscription cancelled - KrishiMitra",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2d5016;">Subscription cancelled</h2>
+        <p>Hello ${userName},</p>
+        <p>Your Premium subscription has been cancelled as requested.</p>
+        ${expiresStr ? `<p>You will continue to have Premium access until <strong>${expiresStr}</strong>. After that, you can resubscribe anytime.</p>` : ""}
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="color: #666; font-size: 12px;">KrishiMitra - Your farming companion.</p>
+      </div>
+    `,
+  };
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Subscription cancelled email sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Error sending subscription cancelled email:", error);
+    throw new Error("Failed to send subscription cancelled email");
+  }
+};

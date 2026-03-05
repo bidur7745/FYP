@@ -14,6 +14,7 @@ import supportQueriesRoutes from "./routes/supportQueriesRoute.js";
 import notificationRoutes from "./routes/notificationRoute.js";
 import marketPriceRoutes from "./routes/marketPriceRoute.js";
 import diseaseRoutes from "./routes/diseaseRoute.js";
+import subscriptionRoutes from "./routes/subscriptionRoute.js";
 import testAlertRoutes from "./test/testAlertRoute.js";
 import cors from "cors";
 
@@ -68,6 +69,7 @@ server.use("/api/support", supportQueriesRoutes);
 server.use("/api/notifications", notificationRoutes);
 server.use("/api/market-prices", marketPriceRoutes);
 server.use("/api/disease", diseaseRoutes);
+server.use("/api/subscription", subscriptionRoutes);
 
 // Mount dashboard routes (protected)
 server.use("/dashboard", userRoutes);

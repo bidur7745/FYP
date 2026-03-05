@@ -51,3 +51,4 @@ server/src/scripts/
 .cursor/
 sub
 subscription-plan.md
+CHAT_IMPLEMENTATION_PLAN.md

@@ -13,3 +13,7 @@ export { marketPricesTable } from "./marketPrices.js";
 export { diseasePredictionsTable } from "./diseasePredictions.js";
 export { diseasesTable } from "./diseases.js";
 export { diseaseTreatmentsTable } from "./diseaseTreatments.js";
+export {
+  subscriptionsTable,
+  subscriptionStatusEnum,
+} from "./subscriptions.js";

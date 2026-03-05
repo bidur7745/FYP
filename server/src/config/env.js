@@ -19,4 +19,9 @@ export const ENV ={
     CLOUDINARY_CLOUD_NAME: process.env.cloudname,
     CLOUDINARY_API_KEY: process.env.cloudkey,
     CLOUDINARY_API_SECRET: process.env.cloudsecret,
+    // Khalti (subscription) – sandbox for academic/testing; get secret from https://test-admin.khalti.com
+    KHALTI_SECRET_KEY: process.env.KHALTI_SECRET_KEY,
+    KHALTI_EPAYMENT_INITIATE_URL: process.env.KHALTI_EPAYMENT_INITIATE_URL || "https://dev.khalti.com/api/v2/epayment/initiate/",
+    KHALTI_VERIFY_URL: process.env.KHALTI_VERIFY_URL || "https://dev.khalti.com/api/v2/payment/verify/",
+    PREMIUM_AMOUNT_PAISA: parseInt(process.env.PREMIUM_AMOUNT_PAISA, 10) || 199900, // Rs 1999
 };

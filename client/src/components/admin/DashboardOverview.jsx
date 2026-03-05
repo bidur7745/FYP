@@ -7,9 +7,11 @@ import {
   TrendingUp,
   ArrowRight,
   User,
-  GraduationCap
+  GraduationCap,
+  Crown,
+  Banknote
 } from 'lucide-react'
-import { getAllUsers, getAllCrops, getAllGovernmentSchemes } from '../../services/api'
+import { getAllUsers, getAllCrops, getAllGovernmentSchemes, getAdminSubscriptionStats } from '../../services/api'
 import { getCache, setCache } from '../../utils/cache'
 import UserGrowthChart from './analytics/UserGrowthChart'
 import CropsByCategoryChart from './analytics/CropsByCategoryChart'
@@ -31,6 +33,8 @@ const DashboardOverview = () => {
     totalCrops: 0,
     totalSchemes: 0,
     activeSchemes: 0,
+    premiumUserCount: 0,
+    totalRevenue: 0,
   })
 
   // Raw data for charts
@@ -61,10 +65,11 @@ const DashboardOverview = () => {
       }
 
       // Fetch all data in parallel (using cache from API)
-      const [usersRes, cropsRes, schemesRes] = await Promise.all([
+      const [usersRes, cropsRes, schemesRes, subscriptionStatsRes] = await Promise.all([
         getAllUsers(false).catch(() => ({ success: false, data: [] })),
         getAllCrops(false).catch(() => ({ success: false, crops: [] })),
-        getAllGovernmentSchemes({}, false).catch(() => ({ success: false, schemes: [] }))
+        getAllGovernmentSchemes({}, false).catch(() => ({ success: false, schemes: [] })),
+        getAdminSubscriptionStats().catch(() => ({ success: false, premiumUserCount: 0, totalRevenue: 0, premiumUserIds: [] }))
       ])
 
       // Process Users Data
@@ -85,6 +90,9 @@ const DashboardOverview = () => {
       setCropsData(crops)
       setSchemesData(schemes)
 
+      const premiumUserCount = subscriptionStatsRes?.success ? (subscriptionStatsRes.premiumUserCount ?? 0) : 0
+      const totalRevenue = subscriptionStatsRes?.success ? (subscriptionStatsRes.totalRevenue ?? 0) : 0
+
       const dashboardStats = {
         totalUsers: users.length,
         totalFarmers: farmers.length,
@@ -93,6 +101,8 @@ const DashboardOverview = () => {
         totalCrops: crops.length,
         totalSchemes: schemes.length,
         activeSchemes: activeSchemes.length,
+        premiumUserCount,
+        totalRevenue,
       }
 
       // Cache the processed dashboard stats and raw data for charts
@@ -171,7 +181,7 @@ const DashboardOverview = () => {
       </div>
 
       {/* Main Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <StatCard
           icon={Users}
           title="Total Users"
@@ -180,6 +190,28 @@ const DashboardOverview = () => {
           color="blue"
           onClick={() => {
             const event = new CustomEvent('switchTab', { detail: 'users' })
+            window.dispatchEvent(event)
+          }}
+        />
+        <StatCard
+          icon={Crown}
+          title="Premium Users"
+          value={stats.premiumUserCount}
+          subtitle="Active subscription"
+          color="amber"
+          onClick={() => {
+            const event = new CustomEvent('switchTab', { detail: 'subscriptions' })
+            window.dispatchEvent(event)
+          }}
+        />
+        <StatCard
+          icon={Banknote}
+          title="Subscription Revenue"
+          value={typeof stats.totalRevenue === 'number' ? `Rs ${stats.totalRevenue.toLocaleString('en-IN')}` : 'Rs 0'}
+          subtitle="Total from subscriptions"
+          color="emerald"
+          onClick={() => {
+            const event = new CustomEvent('switchTab', { detail: 'subscriptions' })
             window.dispatchEvent(event)
           }}
         />

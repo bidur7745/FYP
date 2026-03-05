@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getUserProfile } from '../../services/api'
+import { getUserProfile, getSubscription } from '../../services/api'
 import ProfileCompletion from '../../components/user/ProfileCompletion'
 import OverviewTab from '../../components/user/OverviewTab'
 import ProfileTab from '../../components/user/ProfileTab'
@@ -19,6 +19,7 @@ const UserDashboard = () => {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
+  const [isPremium, setIsPremium] = useState(false)
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -29,6 +30,7 @@ const UserDashboard = () => {
 
   useEffect(() => {
     fetchUserProfile()
+    fetchSubscriptionStatus()
   }, [])
 
   const fetchUserProfile = async (forceRefresh = false) => {
@@ -53,6 +55,15 @@ const UserDashboard = () => {
     } finally {
       setLoading(false)
       setIsRefreshing(false)
+    }
+  }
+
+  const fetchSubscriptionStatus = async () => {
+    try {
+      const data = await getSubscription(true)
+      setIsPremium(!!data?.active)
+    } catch {
+      setIsPremium(false)
     }
   }
 
@@ -92,9 +103,24 @@ const UserDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab userProfile={userProfile} isProfileComplete={isProfileComplete} completion={completion} getCurrentSeason={getCurrentSeason} onCompleteProfile={() => setShowProfileModal(true)} />
+        return (
+          <OverviewTab
+            userProfile={userProfile}
+            isProfileComplete={isProfileComplete}
+            completion={completion}
+            getCurrentSeason={getCurrentSeason}
+            onCompleteProfile={() => setShowProfileModal(true)}
+          />
+        )
       case 'profile':
-        return <ProfileTab userProfile={userProfile} profileImage={profileImage} onEdit={() => setShowProfileModal(true)} />
+        return (
+          <ProfileTab
+            userProfile={userProfile}
+            profileImage={profileImage}
+            onEdit={() => setShowProfileModal(true)}
+            isPremium={isPremium}
+          />
+        )
       case 'queries':
         return <QueriesTab />
       case 'settings':

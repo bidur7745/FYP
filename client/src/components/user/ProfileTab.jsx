@@ -1,18 +1,17 @@
 import React from 'react'
-import { User, MapPin, Phone, Home, Edit, Award, GraduationCap, Briefcase } from 'lucide-react'
+import { User, MapPin, Phone, Home, Edit, Award, GraduationCap, Briefcase, Sparkles } from 'lucide-react'
 
-const ProfileTab = ({ userProfile, profileImage, onEdit }) => {
+const ProfileTab = ({ userProfile, profileImage, onEdit, isPremium }) => {
   return (
     <div className="space-y-6 pt-4 pb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-slate-100">Profile Information</h2>
-        <button
-          onClick={onEdit}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
-        >
-          <Edit size={18} />
-          Edit Profile
-        </button>
+        {isPremium && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/40 text-emerald-300 text-xs font-semibold uppercase tracking-wide">
+            <Sparkles className="h-3.5 w-3.5" />
+            Pro
+          </span>
+        )}
       </div>
 
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 overflow-hidden">
@@ -150,6 +149,17 @@ const ProfileTab = ({ userProfile, profileImage, onEdit }) => {
               </div>
             </div>
           )}
+        </div>
+
+        <div className="px-6 pb-5 pt-3 border-t border-slate-700 bg-slate-900/40 flex justify-end">
+          <button
+            type="button"
+            onClick={() => onEdit && onEdit()}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-500 transition-colors"
+          >
+            <Edit size={16} />
+            Edit Profile
+          </button>
         </div>
       </div>
     </div>

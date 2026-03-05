@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { getExperts, getAllUsers, verifyExpert, rejectExpert } from '../../services/api'
-import { Loader2, CheckCircle, XCircle, FileCheck, Users, GraduationCap, Filter, Eye, User, X } from 'lucide-react'
+import { getExperts, getAllUsers, verifyExpert, rejectExpert, getAdminSubscriptionStats } from '../../services/api'
+import { Loader2, CheckCircle, XCircle, FileCheck, Users, GraduationCap, Filter, Eye, User, X, Crown } from 'lucide-react'
 
 const UserManagement = () => {
   const [allUsers, setAllUsers] = useState([])
@@ -11,6 +11,17 @@ const UserManagement = () => {
   const [rejectingId, setRejectingId] = useState(null)
   const [viewDetailsUser, setViewDetailsUser] = useState(null)
   const [licenseImageUrl, setLicenseImageUrl] = useState(null)
+  const [premiumUserIds, setPremiumUserIds] = useState(new Set())
+
+  useEffect(() => {
+    getAdminSubscriptionStats()
+      .then((r) => {
+        if (r?.success && Array.isArray(r.premiumUserIds)) {
+          setPremiumUserIds(new Set(r.premiumUserIds))
+        }
+      })
+      .catch(() => setPremiumUserIds(new Set()))
+  }, [])
 
   const loadUsers = async (forceRefresh = false) => {
     try {
@@ -181,6 +192,7 @@ const UserManagement = () => {
                   const verificationStatus = details.isVerifiedExpert // 'pending' | 'approved' | 'rejected'
                   const isVerified = verificationStatus === 'approved'
                   const isPending = verificationStatus === 'pending'
+                  const isPro = premiumUserIds.has(user.id)
                   return (
                     <tr key={user.id} className="hover:bg-slate-50/50">
                       <td className="px-4 py-3">
@@ -197,7 +209,15 @@ const UserManagement = () => {
                             </div>
                           )}
                           <div>
-                            <div className="font-medium text-slate-800">{user.name}</div>
+                            <div className="font-medium text-slate-800 flex items-center gap-2 flex-wrap">
+                              {user.name}
+                              {isPro && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300" title="Premium subscriber">
+                                  <Crown className="w-3.5 h-3.5" />
+                                  Pro
+                                </span>
+                              )}
+                            </div>
                             <div className="text-sm text-slate-500">{user.email}</div>
                             {details.phone && (
                               <div className="text-xs text-slate-400">{details.phone}</div>
@@ -356,6 +376,7 @@ const UserManagement = () => {
               const u = viewDetailsUser
               const d = u.userDetails || {}
               const isExpert = u.role === 'expert'
+              const isPro = premiumUserIds.has(u.id)
               return (
                 <div className="space-y-4 text-sm">
                   <div className="flex items-center gap-3">
@@ -367,7 +388,15 @@ const UserManagement = () => {
                       </div>
                     )}
                     <div>
-                      <p className="font-semibold text-slate-800">{u.name}</p>
+                      <p className="font-semibold text-slate-800 flex items-center gap-2 flex-wrap">
+                        {u.name}
+                        {isPro && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                            <Crown className="w-3.5 h-3.5" />
+                            Pro
+                          </span>
+                        )}
+                      </p>
                       <p className="text-slate-500">{u.email}</p>
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${isExpert ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
                         {isExpert ? 'Expert' : 'Farmer'}

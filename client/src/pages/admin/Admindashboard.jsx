@@ -8,7 +8,7 @@ import {
   LogOut,
   UserCircle,
   Leaf,
-  Stethoscope
+  CreditCard
 } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import DashboardOverview from '../../components/admin/DashboardOverview'
@@ -17,8 +17,8 @@ import CropManagement from '../../components/admin/CropManagement'
 import Subsidy from '../../components/admin/Subsidy'
 import SupportQueries from '../../components/admin/SupportQueries'
 import AdminInfo from '../../components/admin/AdminInfo'
-import DiseaseManagement from '../../components/admin/DiseaseManagement'
-import TreatmentManagement from '../../components/admin/TreatmentManagement'
+import DiseaseAndTreatmentManagement from '../../components/admin/DiseaseAndTreatmentManagement'
+import SubscriptionManagement from '../../components/admin/SubscriptionManagement'
 
 const Admindashboard = () => {
   const location = useLocation()
@@ -30,9 +30,9 @@ const Admindashboard = () => {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: '/dashboard/admin' },
     { id: 'users', label: 'User Management', icon: Users, path: '/dashboard/admin/user-management' },
     { id: 'crops', label: 'Crops', icon: Sprout, path: '/dashboard/admin/crops' },
-    { id: 'diseases', label: 'Diseases', icon: Leaf, path: '/dashboard/admin/diseases' },
-    { id: 'treatments', label: 'Treatments', icon: Stethoscope, path: '/dashboard/admin/treatments' },
+    { id: 'diseases', label: 'Diseases & Treatments', icon: Leaf, path: '/dashboard/admin/diseases' },
     { id: 'subsidy', label: 'Government Subsidy', icon: DollarSign, path: '/dashboard/admin/subsidy' },
+    { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, path: '/dashboard/admin/subscriptions' },
     { id: 'queries', label: 'Queries', icon: MessageSquare, path: '/dashboard/admin/queries' },
   ]
 
@@ -41,9 +41,9 @@ const Admindashboard = () => {
     const path = location.pathname
     if (path.startsWith('/dashboard/admin/user-management')) setActiveTab('users')
     else if (path.startsWith('/dashboard/admin/crops')) setActiveTab('crops')
-    else if (path.startsWith('/dashboard/admin/diseases')) setActiveTab('diseases')
-    else if (path.startsWith('/dashboard/admin/treatments')) setActiveTab('treatments')
+    else if (path.startsWith('/dashboard/admin/diseases') || path.startsWith('/dashboard/admin/treatments')) setActiveTab('diseases')
     else if (path.startsWith('/dashboard/admin/subsidy')) setActiveTab('subsidy')
+    else if (path.startsWith('/dashboard/admin/subscriptions')) setActiveTab('subscriptions')
     else if (path.startsWith('/dashboard/admin/queries')) setActiveTab('queries')
     else if (path === '/dashboard/admin' || path.startsWith('/dashboard/admin/admin-info')) {
       if (path.startsWith('/dashboard/admin/admin-info')) setActiveTab('adminInfo')
@@ -93,11 +93,11 @@ const Admindashboard = () => {
       case 'crops':
         return <CropManagement />
       case 'diseases':
-        return <DiseaseManagement />
-      case 'treatments':
-        return <TreatmentManagement />
+        return <DiseaseAndTreatmentManagement />
       case 'subsidy':
         return <Subsidy />
+      case 'subscriptions':
+        return <SubscriptionManagement />
       case 'queries':
         return <SupportQueries />
       case 'adminInfo':

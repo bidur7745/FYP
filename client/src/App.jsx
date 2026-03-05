@@ -38,6 +38,8 @@ import GovernmentSchemes from './pages/user/GovernmentSchemes'
 import SchemeDetails from './pages/user/SchemeDetails'
 import MarketPrices from './pages/user/MarketPrices'
 import PremiumSubscription from './pages/PremiumSubscription'
+import PremiumSuccess from './pages/PremiumSuccess'
+import SubscriptionDetails from './pages/user/SubscriptionDetails'
 
 /** Expert portal layout: clears fixed navbar + mobile bottom nav */
 const ExpertLayout = () => (
@@ -83,6 +85,7 @@ const AppContent = () => {
           <Route path="/our-story" element={<OurStory/>}/>
           <Route path="/support" element={<Support/>}/>
           <Route path="/premium" element={<PremiumSubscription />} />
+          <Route path="/premium/success" element={<PremiumSuccess />} />
 
           {/* User Routes */}
           <Route element={<ProtectedRoute allowedRoles={['user']} />}>
@@ -95,6 +98,7 @@ const AppContent = () => {
             <Route path="/disease-detection/scan" element={<DiseaseDetectionScan/>}/>
             <Route path="/disease-detection/verify-with-expert" element={<VerifyWithExpert/>}/>
             <Route path="/dashboard/user" element={<UserDashboard />} />
+            <Route path="/dashboard/user/subscription" element={<SubscriptionDetails />} />
           </Route>
 
 
@@ -109,8 +113,9 @@ const AppContent = () => {
             <Route path="/dashboard/admin/user-management" element={<Admindashboard />} />
             <Route path="/dashboard/admin/crops" element={<Admindashboard />} />
             <Route path="/dashboard/admin/diseases" element={<Admindashboard />} />
-            <Route path="/dashboard/admin/treatments" element={<Admindashboard />} />
+            <Route path="/dashboard/admin/treatments" element={<Navigate to="/dashboard/admin/diseases" replace />} />
             <Route path="/dashboard/admin/subsidy" element={<Admindashboard />} />
+            <Route path="/dashboard/admin/subscriptions" element={<Admindashboard />} />
             <Route path="/dashboard/admin/queries" element={<Admindashboard />} />
             <Route path="/dashboard/admin/admin-info" element={<Admindashboard />} />
           </Route>
