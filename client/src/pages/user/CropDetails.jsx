@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, MapPin, Calendar, Droplet, Sun, Info, Video, CheckCircle2, Loader2 } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Droplet, Sun, Info, Video, CheckCircle2, Loader2, FlaskConical, ChevronRight } from 'lucide-react'
 import { useLanguage } from '../../context/LanguageContext'
 import { getAllCrops, getPlantationGuide, getAllPlantingCalendars, getUserProfile } from '../../services/api'
 
@@ -432,6 +432,25 @@ const CropDetails = () => {
             </div>
           )}
         </div>
+
+        {/* Agro Recommendations CTA */}
+        <button
+          onClick={() => navigate(`/crop-advisory/${cropId}/agro-recommendations`)}
+          className="w-full mb-6 group"
+        >
+          <div className="bg-gradient-to-r from-emerald-900/60 to-teal-900/60 backdrop-blur-sm rounded-2xl border border-emerald-500/30 shadow-xl p-5 flex items-center justify-between hover:border-emerald-400/50 hover:shadow-emerald-900/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-emerald-600/30 flex items-center justify-center border border-emerald-500/30">
+                <FlaskConical className="text-emerald-300" size={24} />
+              </div>
+              <div className="text-left">
+                <h3 className="text-lg font-bold text-white">{t.agroRecommendations || 'Fertilizer & Pesticide Guide'}</h3>
+                <p className="text-emerald-200/70 text-sm">{t.agroSubtitle || 'AI-powered fertilizer, pesticide & herbicide advice for this crop'}</p>
+              </div>
+            </div>
+            <ChevronRight size={22} className="text-emerald-400 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </button>
 
         {/* Video Guide Section - Full Width at Bottom */}
         {embedVideoUrl && (

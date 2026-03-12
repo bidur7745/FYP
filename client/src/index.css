@@ -34,3 +34,7 @@
     color: #0f1f10;
     min-height: 100vh;
 } */
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

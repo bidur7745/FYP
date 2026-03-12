@@ -1,16 +1,18 @@
- import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   LayoutDashboard, 
   Users, 
   Sprout, 
   DollarSign,
   MessageSquare,
+  MessageCircle,
   LogOut,
   UserCircle,
   Leaf,
-  CreditCard
+  CreditCard,
 } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import useTotalUnread from '../../hooks/useTotalUnread'
 import DashboardOverview from '../../components/admin/DashboardOverview'
 import UserManagement from '../../components/admin/UserManagement'
 import CropManagement from '../../components/admin/CropManagement'
@@ -25,6 +27,7 @@ const Admindashboard = () => {
   const [activeTab, setActiveTab] = useState('overview')
   const [isSidebarHovered, setIsSidebarHovered] = useState(false)
   const navigate = useNavigate()
+  const { unreadChatCount } = useTotalUnread()
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: '/dashboard/admin' },
@@ -36,7 +39,6 @@ const Admindashboard = () => {
     { id: 'queries', label: 'Queries', icon: MessageSquare, path: '/dashboard/admin/queries' },
   ]
 
-  // Sync active tab with current URL
   useEffect(() => {
     const path = location.pathname
     if (path.startsWith('/dashboard/admin/user-management')) setActiveTab('users')
@@ -51,7 +53,6 @@ const Admindashboard = () => {
     }
   }, [location.pathname])
 
-  // Listen for tab switch events from DashboardOverview
   useEffect(() => {
     const handleTabSwitch = (event) => {
       const tabId = event.detail
@@ -73,7 +74,6 @@ const Admindashboard = () => {
   const handleLogout = async () => {
     localStorage.removeItem('authToken')
     localStorage.removeItem('userRole')
-    // Clear all cached data
     const { clearAllCaches } = await import('../../utils/cache')
     clearAllCaches()
     navigate('/login')
@@ -109,7 +109,7 @@ const Admindashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 flex">
-      {/* Sidebar Navigation - Fixed to left */}
+      {/* Sidebar */}
       <aside
         className={`fixed left-0 top-20 h-[calc(100vh-5rem)] bg-slate-900/95 border-r border-emerald-500/30 shadow-2xl shadow-emerald-900/60 rounded-r-2xl transform ${
           isSidebarHovered ? 'w-64 translate-y-1' : 'w-20 translate-y-1'
@@ -136,7 +136,7 @@ const Admindashboard = () => {
                   }`}
                   title={tab.label}
                 >
-                  <Icon size={20} className="flex-shrink-0" />
+                  <Icon size={20} className="shrink-0" />
                   <span className={`whitespace-nowrap transition-opacity duration-300 ${
                     isSidebarHovered ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
                   }`}>
@@ -147,7 +147,6 @@ const Admindashboard = () => {
             })}
           </nav>
 
-          {/* Bottom Section - Admin Info and Logout */}
           <div className="border-t border-slate-700 pt-4 px-3 space-y-2">
             <button
               onClick={handleAdminInfo}
@@ -158,7 +157,7 @@ const Admindashboard = () => {
               }`}
               title="Admin Info"
             >
-              <UserCircle size={20} className="flex-shrink-0" />
+              <UserCircle size={20} className="shrink-0" />
               <span className={`whitespace-nowrap transition-opacity duration-300 ${
                 isSidebarHovered ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
               }`}>
@@ -170,7 +169,7 @@ const Admindashboard = () => {
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-300 hover:bg-red-600 hover:text-white"
               title="Logout"
             >
-              <LogOut size={20} className="flex-shrink-0" />
+              <LogOut size={20} className="shrink-0" />
               <span className={`whitespace-nowrap transition-opacity duration-300 ${
                 isSidebarHovered ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
               }`}>
@@ -189,6 +188,21 @@ const Admindashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Floating Chat Bubble */}
+      <button
+        type="button"
+        onClick={() => navigate('/dashboard/admin/chats')}
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/40 hover:bg-emerald-500 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+        aria-label="Open chats"
+      >
+        <MessageCircle size={24} />
+        {unreadChatCount > 0 && (
+          <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 bg-red-500 text-white text-[11px] rounded-full border-2 border-white flex items-center justify-center font-bold">
+            {unreadChatCount > 99 ? '99+' : unreadChatCount}
+          </span>
+        )}
+      </button>
     </div>
   )
 }

@@ -40,6 +40,10 @@ import MarketPrices from './pages/user/MarketPrices'
 import PremiumSubscription from './pages/PremiumSubscription'
 import PremiumSuccess from './pages/PremiumSuccess'
 import SubscriptionDetails from './pages/user/SubscriptionDetails'
+import UserChatsPage from './pages/user/UserChatsPage'
+import AdminChatsPage from './pages/admin/AdminChatsPage'
+import ChatDetailsPage from './pages/chat/ChatDetailsPage'
+import AgroRecommendations from './pages/user/AgroRecommendations'
 
 /** Expert portal layout: clears fixed navbar + mobile bottom nav */
 const ExpertLayout = () => (
@@ -69,13 +73,23 @@ const AppContent = () => {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/dashboard/admin')
   const isExpertRoute = location.pathname.startsWith('/dashboard/expert')
+  const isSharedChatRoute = location.pathname.startsWith('/chat/')
 
-  const showMainNav = !isAdminRoute && !isExpertRoute
+  const userRole = typeof window !== 'undefined' ? localStorage.getItem('userRole') : null
+  const isAdminOnChat = isSharedChatRoute && userRole === 'admin'
+  const isExpertOnChat = isSharedChatRoute && userRole === 'expert'
+
+  const showAdminNav = isAdminRoute || isAdminOnChat
+  const showExpertNav = isExpertRoute || isExpertOnChat
+  const showMainNav = !showAdminNav && !showExpertNav
+
+  const isChatRoute = location.pathname.startsWith('/dashboard/user/chats') || isSharedChatRoute
+  const showFooter = showMainNav && !isChatRoute
 
   return (
     <>
-      {isAdminRoute && <AdminNavbar />}
-      {isExpertRoute && <ExpertNavbar />}
+      {showAdminNav && <AdminNavbar />}
+      {showExpertNav && <ExpertNavbar />}
       {showMainNav && <Navbar />}
         <Routes>
           <Route path="/" element={<Home />} />
@@ -91,6 +105,7 @@ const AppContent = () => {
           <Route element={<ProtectedRoute allowedRoles={['user']} />}>
             <Route path="/crop-advisory" element={<CropAdvisory/>}/>
             <Route path="/crop-advisory/:cropId" element={<CropDetails/>}/>
+            <Route path="/crop-advisory/:cropId/agro-recommendations" element={<AgroRecommendations/>}/>
             <Route path="/weather-dashboard" element={<WeatherDashboard/>}/>
             <Route path="/market-prices" element={<MarketPrices/>}/>
             <Route path="/government-schemes" element={<GovernmentSchemes/>}/>
@@ -98,7 +113,13 @@ const AppContent = () => {
             <Route path="/disease-detection/scan" element={<DiseaseDetectionScan/>}/>
             <Route path="/disease-detection/verify-with-expert" element={<VerifyWithExpert/>}/>
             <Route path="/dashboard/user" element={<UserDashboard />} />
+            <Route path="/dashboard/user/chats" element={<UserChatsPage />} />
             <Route path="/dashboard/user/subscription" element={<SubscriptionDetails />} />
+          </Route>
+
+          {/* Chat details – accessible to all authenticated roles */}
+          <Route element={<ProtectedRoute allowedRoles={['user', 'expert', 'admin']} />}>
+            <Route path="/chat/details/:id" element={<ChatDetailsPage />} />
           </Route>
 
 
@@ -117,6 +138,7 @@ const AppContent = () => {
             <Route path="/dashboard/admin/subsidy" element={<Admindashboard />} />
             <Route path="/dashboard/admin/subscriptions" element={<Admindashboard />} />
             <Route path="/dashboard/admin/queries" element={<Admindashboard />} />
+            <Route path="/dashboard/admin/chats" element={<AdminChatsPage />} />
             <Route path="/dashboard/admin/admin-info" element={<Admindashboard />} />
           </Route>
 
@@ -132,7 +154,7 @@ const AppContent = () => {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      {showMainNav && <Footer />}
+      {showFooter && <Footer />}
     </>
   )
 }

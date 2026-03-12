@@ -24,4 +24,6 @@ export const ENV ={
     KHALTI_EPAYMENT_INITIATE_URL: process.env.KHALTI_EPAYMENT_INITIATE_URL || "https://dev.khalti.com/api/v2/epayment/initiate/",
     KHALTI_VERIFY_URL: process.env.KHALTI_VERIFY_URL || "https://dev.khalti.com/api/v2/payment/verify/",
     PREMIUM_AMOUNT_PAISA: parseInt(process.env.PREMIUM_AMOUNT_PAISA, 10) || 199900, // Rs 1999
+    // DeepSeek AI (agro recommendations)
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
 };

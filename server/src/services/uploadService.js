@@ -14,16 +14,20 @@ cloudinary.config({
  * @param {string} [resourceType="image"] - image, raw, video
  * @returns {Promise<{ url: string, publicId: string }>}
  */
-export const uploadToCloudinary = async (buffer, mimetype, folder = "krishimitra", resourceType = "image") => {
+export const uploadToCloudinary = async (buffer, mimetype, folder = "krishimitra", resourceType = "image", originalFilename) => {
   if (!ENV.CLOUDINARY_CLOUD_NAME || !ENV.CLOUDINARY_API_KEY || !ENV.CLOUDINARY_API_SECRET) {
     throw new Error("Cloudinary is not configured. Set cloudname, cloudkey, cloudsecret in .env");
   }
 
   const dataUri = `data:${mimetype || "image/jpeg"};base64,${buffer.toString("base64")}`;
-  const result = await cloudinary.uploader.upload(dataUri, {
-    folder,
-    resource_type: resourceType,
-  });
+
+  const opts = { folder, resource_type: resourceType };
+  if (resourceType === "raw" && originalFilename) {
+    const sanitized = originalFilename.replace(/[^a-zA-Z0-9._-]/g, "_");
+    opts.public_id = `${Date.now()}_${sanitized}`;
+  }
+
+  const result = await cloudinary.uploader.upload(dataUri, opts);
 
   return {
     url: result.secure_url,

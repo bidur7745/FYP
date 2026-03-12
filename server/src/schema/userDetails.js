@@ -17,6 +17,10 @@ export const userDetailsTable = pgTable("userDetails", {
   education: text("education"),
   licenseImage: text("licenseImage"), // URL or path to license image (for experts)
   isVerifiedExpert: expertVerificationStatusEnum("isVerifiedExpert").default("pending").notNull(),
+  lastVerificationExpertId: integer("last_verification_expert_id").references(
+    () => userTable.id,
+    { onDelete: "set null" }
+  ),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

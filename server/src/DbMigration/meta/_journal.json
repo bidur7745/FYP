@@ -43,6 +43,34 @@
       "when": 1772600955947,
       "tag": "0005_strange_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772685365684,
+      "tag": "0006_thankful_enchantress",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773161860088,
+      "tag": "0007_boring_nightmare",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773226063853,
+      "tag": "0008_loving_dreadnoughts",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773302369968,
+      "tag": "0009_late_hammerhead",
+      "breakpoints": true
     }
   ]
 }

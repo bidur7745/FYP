@@ -1,9 +1,11 @@
+import http from "http";
 import activeBackend, {
   runMarketPriceScrapeIfNeeded,
   marketPriceScrapeJob,
 } from "./config/cron.js";
 import express from "express";
 import { ENV } from "./config/env.js";
+import { attachChatSocket } from "./socket/chatSocket.js";
 import userRoutes from "./routes/userRoute.js";
 import cropAdvisoryRoutes from "./routes/cropAdvisoryRoute.js";
 import weatherRoutes from "./routes/weatherRoute.js";
@@ -15,6 +17,8 @@ import notificationRoutes from "./routes/notificationRoute.js";
 import marketPriceRoutes from "./routes/marketPriceRoute.js";
 import diseaseRoutes from "./routes/diseaseRoute.js";
 import subscriptionRoutes from "./routes/subscriptionRoute.js";
+import chatRoutes from "./routes/chatRoute.js";
+import agroRecommendationRoutes from "./routes/agroRecommendationRoute.js";
 import testAlertRoutes from "./test/testAlertRoute.js";
 import cors from "cors";
 
@@ -70,6 +74,8 @@ server.use("/api/notifications", notificationRoutes);
 server.use("/api/market-prices", marketPriceRoutes);
 server.use("/api/disease", diseaseRoutes);
 server.use("/api/subscription", subscriptionRoutes);
+server.use("/api/chat", chatRoutes);
+server.use("/api/agro-recommendations", agroRecommendationRoutes);
 
 // Mount dashboard routes (protected)
 server.use("/dashboard", userRoutes);
@@ -79,8 +85,11 @@ if (ENV.NODE_ENV !== "production") {
   server.use("/api/test", testAlertRoutes);
 }
 
-// Start server
-server.listen(PORT, async () => {
+// Create HTTP server and attach Socket.IO for chat
+const httpServer = http.createServer(server);
+attachChatSocket(httpServer);
+
+httpServer.listen(PORT, async () => {
   console.log(`Server running → http://localhost:${PORT}`);
   await runMarketPriceScrapeIfNeeded();
 });

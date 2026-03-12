@@ -213,6 +213,84 @@ export const getAdminSubscriptions = (params = {}) => {
 export const getAdminSubscriptionStats = () =>
   apiRequest('/api/subscription/admin/stats', { method: 'GET' }, true, false)
 
+// Chat - List conversations for current user
+export const getChatConversations = (params = {}) => {
+  const qs = new URLSearchParams();
+  if (params.type) qs.set('type', params.type);
+  if (params.status) qs.set('status', params.status);
+  const path = qs.toString() ? `/api/chat/conversations?${qs}` : '/api/chat/conversations';
+  return apiRequest(path, { method: 'GET' }, true, false);
+};
+
+// Chat - Create conversation (type, participantUserIds?, subject?, diseasePredictionId?, expertId?)
+export const createChatConversation = (payload) =>
+  apiRequest('/api/chat/conversations', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, true, false);
+
+// Chat - Get single conversation
+export const getChatConversation = (id) =>
+  apiRequest(`/api/chat/conversations/${id}`, { method: 'GET' }, true, false);
+
+// Chat - Update conversation metadata (subject, avatarUrl)
+export const updateChatConversation = (id, payload) =>
+  apiRequest(`/api/chat/conversations/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  }, true, false);
+
+// Chat - Remove member from conversation (admin/group owner only)
+export const removeChatMember = (conversationId, userId) =>
+  apiRequest(`/api/chat/conversations/${conversationId}/members/${userId}`, {
+    method: 'DELETE',
+  }, true, false);
+
+// Chat - Get messages (before?, limit?)
+export const getChatMessages = (conversationId, params = {}) => {
+  const qs = new URLSearchParams();
+  if (params.before) qs.set('before', params.before);
+  if (params.limit) qs.set('limit', params.limit);
+  const path = `/api/chat/conversations/${conversationId}/messages${qs.toString() ? `?${qs}` : ''}`;
+  return apiRequest(path, { method: 'GET' }, true, false);
+};
+
+// Chat - Send message
+export const sendChatMessage = (conversationId, payload) =>
+  apiRequest(`/api/chat/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, true, false);
+
+// Chat - Total unread message count
+export const getChatUnreadCount = () =>
+  apiRequest('/api/chat/unread-count', { method: 'GET' }, true, false);
+
+// Chat - Mark read up to messageId
+export const markChatRead = (conversationId, messageId) =>
+  apiRequest(`/api/chat/conversations/${conversationId}/read`, {
+    method: 'POST',
+    body: JSON.stringify({ messageId }),
+  }, true, false);
+
+export const deleteChatMessage = (conversationId, messageId) =>
+  apiRequest(`/api/chat/conversations/${conversationId}/messages/${messageId}`, {
+    method: 'DELETE',
+  }, true, false);
+
+// Chat - Available people for group/DM (search?, role?)
+export const getChatAvailablePeople = (params = {}) => {
+  const qs = new URLSearchParams();
+  if (params.search) qs.set('search', params.search);
+  if (params.role) qs.set('role', params.role);
+  const path = qs.toString() ? `/api/chat/available-people?${qs}` : '/api/chat/available-people';
+  return apiRequest(path, { method: 'GET' }, true, false);
+};
+
+// Chat - Verify with expert context (previousExpert + availableExperts)
+export const getVerifyWithExpertContext = () =>
+  apiRequest('/api/chat/verify-with-expert/context', { method: 'GET' }, true, false);
+
 // User Profile - Update user profile (invalidate cache on update)
 export const updateUserProfile = async (payload) => {
   const result = await apiRequest('/api/users/profile', {
@@ -234,6 +312,21 @@ export const uploadImage = async (file, folder = 'krishimitra') => {
   if (folder) formData.append('folder', folder);
   const token = localStorage.getItem('authToken');
   const res = await fetch(`${API_BASE}/api/upload/image`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message || 'Upload failed');
+  return data;
+};
+
+export const uploadFile = async (file, folder = 'krishimitra') => {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (folder) formData.append('folder', folder);
+  const token = localStorage.getItem('authToken');
+  const res = await fetch(`${API_BASE}/api/upload/file`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
@@ -655,3 +748,7 @@ export const adminUpdateTreatment = (id, payload) =>
   apiRequest(`/api/disease/treatments/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }, true);
 export const adminDeleteTreatment = (id) =>
   apiRequest(`/api/disease/treatments/${id}`, { method: 'DELETE' }, true);
+
+// Agro Recommendations (AI-powered fertilizer/pesticide/herbicide advice per crop)
+export const getAgroRecommendations = (cropId, lang = 'en') =>
+  apiRequest(`/api/agro-recommendations/${cropId}?lang=${lang}`, { method: 'GET' }, true, false);

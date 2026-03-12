@@ -17,3 +17,14 @@ export {
   subscriptionsTable,
   subscriptionStatusEnum,
 } from "./subscriptions.js";
+export {
+  conversationsTable,
+  conversationTypeEnum,
+  conversationStatusEnum,
+} from "./conversations.js";
+export { conversationParticipantsTable } from "./conversationParticipants.js";
+export {
+  chatMessagesTable,
+  messageContentTypeEnum,
+} from "./chatMessages.js";
+export { agroRecommendationsTable } from "./agroRecommendations.js";

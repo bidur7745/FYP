@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Menu, X, ChevronDown, User, Home, Leaf, ScanLine, Bell } from 'lucide-react'
+import { Menu, X, ChevronDown, User, Home, Leaf, ScanLine, Bell, MessageCircle } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/images/assets'
 import { useLanguage } from '../context/LanguageContext'
 import { tw } from '../assets/styles/styles'
 import { getUnreadAlertCount, getUnreadNotificationCount } from '../services/api'
+import useTotalUnread from '../hooks/useTotalUnread'
 import AlertsModal from './AlertsModal'
 
 
@@ -17,6 +18,7 @@ const Navbar = () => {
     const { locale, changeLanguage, content } = useLanguage()
     const location = useLocation()
     const navigate = useNavigate()
+    const { unreadChatCount } = useTotalUnread()
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -70,6 +72,7 @@ const Navbar = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
     const role = typeof window !== 'undefined' ? localStorage.getItem('userRole') : null
     const dashboardPath = `/dashboard/${role || 'user'}`
+    const chatsPath = `/dashboard/${role || 'user'}/chats`
 
     const joinLabel = content?.nav?.joinLabel || 'Join Us'
     const dashboardLabel = content?.nav?.dashboardLabel || 'Dashboard'
@@ -99,6 +102,10 @@ const Navbar = () => {
         `relative ${tw.navLink} ${isActive(href) ? tw.navActive : tw.navInactive}`
 
     const closeMobileMenu = () => setIsMobileMenuOpen(false)
+
+    const isChatsPage =
+        location.pathname.endsWith('/chats') ||
+        location.pathname.includes('/chats?')
 
     return (
         <>
@@ -234,6 +241,18 @@ const Navbar = () => {
                                         }`}
                                 >
                                     <button
+                                        onClick={() => { setIsProfileOpen(false); navigate(chatsPath) }}
+                                        className="w-full text-left px-4 py-3 text-sm text-slate-100 hover:bg-emerald-500/10 transition flex items-center gap-2"
+                                    >
+                                        <MessageCircle className="w-4 h-4" />
+                                        {content?.nav?.chats || 'Chats'}
+                                        {unreadChatCount > 0 && (
+                                            <span className="ml-auto h-5 min-w-[20px] px-1.5 bg-emerald-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                                {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                    <button
                                         onClick={() => { setIsProfileOpen(false); navigate(dashboardPath) }}
                                         className="w-full text-left px-4 py-3 text-sm text-slate-100 hover:bg-emerald-500/10 transition"
                                     >
@@ -347,6 +366,19 @@ const Navbar = () => {
                                     )}
                                 </button>
                                 <Link
+                                    to={chatsPath}
+                                    onClick={() => { closeMobileMenu(); setIsProfileOpen(false) }}
+                                    className="w-full inline-flex justify-center items-center gap-2 px-6 py-3 text-white hover:text-emerald-300 transition-colors duration-300"
+                                >
+                                    <MessageCircle className="w-5 h-5" />
+                                    <span>{content?.nav?.chats || 'Chats'}</span>
+                                    {unreadChatCount > 0 && (
+                                        <span className="ml-auto h-5 min-w-[20px] px-1.5 bg-emerald-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                            {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                                        </span>
+                                    )}
+                                </Link>
+                                <Link
                                     to={dashboardPath}
                                     onClick={() => { closeMobileMenu(); setIsProfileOpen(false) }}
                                     className="w-full inline-flex justify-center items-center gap-2 px-6 py-3 text-white hover:text-emerald-300 transition-colors duration-300"
@@ -412,6 +444,22 @@ const Navbar = () => {
             </div>
 
         </nav>
+        {/* Floating chat bubble for logged-in users */}
+        {token && !isChatsPage && (
+            <button
+                type="button"
+                onClick={() => navigate(chatsPath)}
+                className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full bg-emerald-500 text-white shadow-xl shadow-emerald-900/40 flex items-center justify-center border border-emerald-300 hover:bg-emerald-400 hover:scale-105 transition-transform duration-200"
+                aria-label={content?.nav?.chats || 'Open chats'}
+            >
+                <MessageCircle className="w-7 h-7" />
+                {unreadChatCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 bg-red-500 text-white text-[11px] rounded-full border-2 border-white flex items-center justify-center font-bold">
+                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                    </span>
+                )}
+            </button>
+        )}
         {/* Alerts Modal */}
         {token && (
             <AlertsModal

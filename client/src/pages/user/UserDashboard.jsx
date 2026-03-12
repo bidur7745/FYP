@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { getUserProfile, getSubscription } from '../../services/api'
 import ProfileCompletion from '../../components/user/ProfileCompletion'
 import OverviewTab from '../../components/user/OverviewTab'
@@ -9,6 +10,7 @@ import {
   LayoutDashboard,
   User,
   MessageSquare,
+  MessageCircle,
   Settings,
 } from 'lucide-react'
 
@@ -21,10 +23,12 @@ const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview')
   const [isPremium, setIsPremium] = useState(false)
 
+  const location = useLocation()
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'queries', label: 'My Queries', icon: MessageSquare },
+    { id: 'chats', label: 'Chats', icon: MessageCircle, link: '/dashboard/user/chats' },
     { id: 'settings', label: 'Settings', icon: Settings },
   ]
 
@@ -163,16 +167,25 @@ const UserDashboard = () => {
           <nav className="flex items-center justify-center gap-1 overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => {
               const Icon = tab.icon
-              const isActive = activeTab === tab.id
+              const isActive = tab.link ? location.pathname === tab.link : activeTab === tab.id
+              const className = `flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-lg ${
+                isActive
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`
+              if (tab.link) {
+                return (
+                  <Link key={tab.id} to={tab.link} className={className}>
+                    <Icon size={18} className="shrink-0" />
+                    <span>{tab.label}</span>
+                  </Link>
+                )
+              }
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-lg ${
-                    isActive
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                  }`}
+                  className={className}
                 >
                   <Icon size={18} className="shrink-0" />
                   <span>{tab.label}</span>

@@ -577,6 +577,14 @@ const DiseaseDetectionScan = () => {
                   </button>
                   <Link
                     to="/disease-detection/verify-with-expert"
+                    state={{
+                      predictionId: result?.predictionId ?? result?.id,
+                      crop: selectedCrop,
+                      predictedDisease: result?.predictedDisease || result?.class,
+                      diseaseNameDisplay: diseaseNameDisplay || displayName,
+                      imageUrl: result?.imageUrl || null,
+                      diseaseConfidence: result?.diseaseConfidence || null,
+                    }}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-emerald-500/60 text-emerald-400 bg-transparent font-semibold text-sm md:text-base hover:bg-emerald-500/10 transition-colors"
                   >
                     <UserCheck className="w-4 h-4" />

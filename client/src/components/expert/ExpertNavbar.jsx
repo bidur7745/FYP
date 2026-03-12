@@ -2,11 +2,13 @@ import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { User, Menu, X, MessageCircle, LogOut, Wallet } from 'lucide-react'
 import { assets } from '../../assets/images/assets'
+import useTotalUnread from '../../hooks/useTotalUnread'
 
 const ExpertNavbar = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { unreadChatCount } = useTotalUnread()
 
   const handleLogout = async () => {
     localStorage.removeItem('authToken')
@@ -66,6 +68,11 @@ const ExpertNavbar = () => {
                 <Link key={to} to={to} className={linkClass(to)}>
                   <Icon className="w-5 h-5 shrink-0" />
                   {label}
+                  {label === 'Chats' && unreadChatCount > 0 && (
+                    <span className="h-5 min-w-[20px] px-1.5 bg-emerald-500 text-white text-[11px] rounded-full flex items-center justify-center font-bold">
+                      {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                    </span>
+                  )}
                 </Link>
               ))}
               <button
@@ -112,6 +119,11 @@ const ExpertNavbar = () => {
               >
                 <Icon className="w-5 h-5 shrink-0" />
                 {label}
+                {label === 'Chats' && unreadChatCount > 0 && (
+                  <span className="ml-auto h-5 min-w-[20px] px-1.5 bg-emerald-500 text-white text-[11px] rounded-full flex items-center justify-center font-bold">
+                    {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                  </span>
+                )}
               </Link>
             ))}
             <button
@@ -130,12 +142,17 @@ const ExpertNavbar = () => {
           <Link
             to={`${basePath}/chats`}
             onClick={closeMobile}
-            className={`flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-xl min-w-[72px] ${
+            className={`relative flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-xl min-w-[72px] ${
               location.pathname.startsWith(`${basePath}/chats`) ? 'text-emerald-400' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <MessageCircle className="w-6 h-6" />
             <span className="text-xs font-medium">Chats</span>
+            {unreadChatCount > 0 && (
+              <span className="absolute top-0 right-2 h-4 min-w-[16px] px-1 bg-emerald-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                {unreadChatCount > 99 ? '99+' : unreadChatCount}
+              </span>
+            )}
           </Link>
           <Link
             to={`${basePath}/profile`}
