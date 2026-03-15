@@ -90,6 +90,7 @@ const httpServer = http.createServer(server);
 attachChatSocket(httpServer);
 
 httpServer.listen(PORT, async () => {
-  console.log(`Server running → http://localhost:${PORT}`);
+  const baseUrl = ENV.NODE_ENV === "production" ? ENV.BACKEND_URL : `http://localhost:${PORT}`;
+  console.log(`Server running → ${baseUrl}`);
   await runMarketPriceScrapeIfNeeded();
 });

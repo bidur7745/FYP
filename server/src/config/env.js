@@ -7,6 +7,8 @@ const frontendUrl = isProd ? prodFrontend : devFrontend;
 const corsOrigins = frontendUrl.split(",").map((s) => s.trim().replace(/\/+$/, "")).filter(Boolean);
 const origins = corsOrigins.length ? corsOrigins : [isProd ? prodFrontend : devFrontend];
 
+const prodBackendUrl = (process.env.prod_API_URL || process.env.PROD_API_URL || process.env.BACKEND_URL || "https://krishimitra-zzo6.onrender.com").replace(/\/+$/, "");
+
 export const ENV = {
     PORT: process.env.PORT || 5001,
     DATABASE_URL: process.env.DATABASE_URL,
@@ -16,6 +18,8 @@ export const ENV = {
     FRONTEND_URL: origins[0],
     /** All allowed CORS origins */
     CORS_ORIGINS: origins,
+    /** Backend base URL for logs; in production use prod_API_URL or BACKEND_URL */
+    BACKEND_URL: isProd ? prodBackendUrl : `http://localhost:${process.env.PORT || 5001}`,
     DISEASE_API_BASE_URL: process.env.DISEASE_API_BASE_URL,
     // Email configuration
     SMTP_HOST: process.env.SMTP_HOST,
