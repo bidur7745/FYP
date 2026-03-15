@@ -1,11 +1,21 @@
 import "dotenv/config";
 
-export const ENV ={
+const devFrontend = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
+const prodFrontend = (process.env.prod_FRONTEND_URL || process.env.PROD_FRONTEND_URL || "https://krishimitrafyp.vercel.app").replace(/\/+$/, "");
+const isProd = process.env.NODE_ENV === "production";
+const frontendUrl = isProd ? prodFrontend : devFrontend;
+const corsOrigins = frontendUrl.split(",").map((s) => s.trim().replace(/\/+$/, "")).filter(Boolean);
+const origins = corsOrigins.length ? corsOrigins : [isProd ? prodFrontend : devFrontend];
+
+export const ENV = {
     PORT: process.env.PORT || 5001,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     JWT_SECRET: process.env.JWT_SECRET,
-    FRONTEND_URL: process.env.FRONTEND_URL,
+    /** Primary frontend URL; dev: FRONTEND_URL, prod: prod_FRONTEND_URL */
+    FRONTEND_URL: origins[0],
+    /** All allowed CORS origins */
+    CORS_ORIGINS: origins,
     DISEASE_API_BASE_URL: process.env.DISEASE_API_BASE_URL,
     // Email configuration
     SMTP_HOST: process.env.SMTP_HOST,

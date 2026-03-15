@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+const API_BASE = import.meta.env.PROD
+  ? (import.meta.env.VITE_PROD_API_URL || import.meta.env.VITE_API_URL || 'https://krishimitra-zzo6.onrender.com')
+  : (import.meta.env.VITE_API_URL || 'http://localhost:5002');
+
+export { API_BASE };
 import { getCache, setCache, removeCache } from '../utils/cache';
 
 const defaultHeaders = {

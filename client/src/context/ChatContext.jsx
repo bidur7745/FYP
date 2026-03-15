@@ -8,9 +8,8 @@ import {
   markChatRead as apiMarkRead,
   createChatConversation as apiCreateConversation,
   deleteChatMessage as apiDeleteMessage,
+  API_BASE,
 } from '../services/api'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5002'
 
 const ChatContext = createContext(null)
 

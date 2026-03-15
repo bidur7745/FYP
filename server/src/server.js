@@ -28,7 +28,7 @@ const PORT = ENV.PORT;
 // Middlewares
 server.use(
   cors({
-    origin: ENV.FRONTEND_URL || "http://localhost:5173",
+    origin: ENV.CORS_ORIGINS,
     credentials: true,
   })
 );

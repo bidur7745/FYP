@@ -12,7 +12,7 @@ export function getIO() {
 export function attachChatSocket(httpServer) {
   io = new Server(httpServer, {
     cors: {
-      origin: ENV.FRONTEND_URL || "http://localhost:5173",
+      origin: ENV.CORS_ORIGINS,
       credentials: true,
     },
     path: "/socket.io",
