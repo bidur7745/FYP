@@ -27,7 +27,19 @@ export const registerUser = async (req, res) => {
       });
   
     } catch (error) {
-      console.error("Register Error:", error.message);
+      // Print full error details (Postgres code/detail/etc.) so we can identify
+      // the real cause behind Drizzle's "Failed query" wrapper.
+      console.error("Register Error (full):", error);
+      console.error("Register Error (code/detail):", {
+        code: error?.code,
+        detail: error?.detail,
+        constraint: error?.constraint,
+        constraintName: error?.constraintName,
+        schema: error?.schema,
+        table: error?.table,
+        column: error?.column,
+        hint: error?.hint,
+      });
   
       // Handle password validation errors
       if (error.message.includes("Password must")) {

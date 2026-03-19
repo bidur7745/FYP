@@ -7,19 +7,20 @@ const frontendUrl = isProd ? prodFrontend : devFrontend;
 const corsOrigins = frontendUrl.split(",").map((s) => s.trim().replace(/\/+$/, "")).filter(Boolean);
 const origins = corsOrigins.length ? corsOrigins : [isProd ? prodFrontend : devFrontend];
 
-const prodBackendUrl = (process.env.prod_API_URL || process.env.PROD_API_URL || process.env.BACKEND_URL || "https://krishimitra-zzo6.onrender.com").replace(/\/+$/, "");
+const prodApiUrl = (process.env.prod_API_URL || "https://krishimitra-zzo6.onrender.com").replace(/\/+$/, "");
+const serverDisplayUrl = isProd ? prodApiUrl : `http://localhost:${process.env.PORT || 5001}`;
 
 export const ENV = {
     PORT: process.env.PORT || 5001,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     JWT_SECRET: process.env.JWT_SECRET,
-    /** Primary frontend URL; dev: FRONTEND_URL, prod: prod_FRONTEND_URL */
+    /** Primary frontend URL: dev = FRONTEND_URL, prod = prod_FRONTEND_URL */
     FRONTEND_URL: origins[0],
     /** All allowed CORS origins */
     CORS_ORIGINS: origins,
-    /** Backend base URL for logs; in production use prod_API_URL or BACKEND_URL */
-    BACKEND_URL: isProd ? prodBackendUrl : `http://localhost:${process.env.PORT || 5001}`,
+    /** URL shown in server log: prod = prod_API_URL, dev = localhost:PORT */
+    BACKEND_URL: serverDisplayUrl,
     DISEASE_API_BASE_URL: process.env.DISEASE_API_BASE_URL,
     // Email configuration
     SMTP_HOST: process.env.SMTP_HOST,

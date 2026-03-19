@@ -1,31 +1,9 @@
 import React, { useMemo } from 'react'
 import { Chart } from 'react-chartjs-2'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
+// Chart.js v4: auto-registers all controllers/elements/scales/plugins.
+// This prevents runtime errors like "line is not a registered controller".
+import 'chart.js/auto'
 import { Thermometer, CloudRain, Snowflake, Droplet } from 'lucide-react'
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-)
 
 const WeatherGraph = ({ currentWeather, forecastData, extendedWeather }) => {
   // Process 48-hour temperature data (past 12h + future 36h)
