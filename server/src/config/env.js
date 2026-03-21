@@ -3,9 +3,12 @@ import "dotenv/config";
 const devFrontend = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
 const prodFrontend = (process.env.prod_FRONTEND_URL || process.env.PROD_FRONTEND_URL || "https://krishimitrafyp.vercel.app").replace(/\/+$/, "");
 const isProd = process.env.NODE_ENV === "production";
-const frontendUrl = isProd ? prodFrontend : devFrontend;
-const corsOrigins = frontendUrl.split(",").map((s) => s.trim().replace(/\/+$/, "")).filter(Boolean);
-const origins = corsOrigins.length ? corsOrigins : [isProd ? prodFrontend : devFrontend];
+
+const allOrigins = [devFrontend, prodFrontend]
+  .flatMap((url) => url.split(","))
+  .map((s) => s.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+const origins = [...new Set(allOrigins)];
 
 const prodApiUrl = (process.env.prod_API_URL || "https://krishimitra-zzo6.onrender.com").replace(/\/+$/, "");
 const serverDisplayUrl = isProd ? prodApiUrl : `http://localhost:${process.env.PORT || 5001}`;
@@ -28,6 +31,9 @@ export const ENV = {
     SMTP_SECURE: process.env.SMTP_SECURE || "false",
     SMTP_USER: process.env.SMTP_USER,
     SMTP_PASS: process.env.SMTP_PASS,
+    RESEND_API_KEY: process.env.Resend_API_KEY || process.env.RESEND_API_KEY,
+    SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
+    SENDGRID_FROM_EMAIL: process.env.SENDGRID_FROM_EMAIL,
     // Weather API configuration
     OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY,
     // Cloudinary (images: profile, license)

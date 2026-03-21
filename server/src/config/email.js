@@ -1,33 +1,38 @@
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 import { ENV } from "./env.js";
 
-// Create transporter for sending emails
-export const transporter = nodemailer.createTransport({
-  host: ENV.SMTP_HOST,
-  port: ENV.SMTP_PORT,
-  secure: ENV.SMTP_SECURE === "true", // true for 465, false for other ports
-  auth: {
-    user: ENV.SMTP_USER,
-    pass: ENV.SMTP_PASS,
-  },
-});
+const EMAIL_FROM = ENV.SENDGRID_FROM_EMAIL || "KrishiMitra <bidursiwakoti2062@gmail.com>";
 
-// Verify transporter configuration
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("Email transporter error:", error);
-  } else {
-    console.log("Email server is ready to send messages");
+if (ENV.SENDGRID_API_KEY) {
+  sgMail.setApiKey(ENV.SENDGRID_API_KEY);
+  console.log("SendGrid email service initialized");
+} else {
+  console.warn(
+    "SendGrid is not configured. Set SENDGRID_API_KEY in environment."
+  );
+}
+
+const sendEmail = async ({ to, subject, html }) => {
+  if (!ENV.SENDGRID_API_KEY) {
+    throw new Error("SendGrid is not configured. Set SENDGRID_API_KEY.");
   }
-});
+
+  const msg = { to, from: EMAIL_FROM, subject, html };
+
+  try {
+    const [response] = await sgMail.send(msg);
+    return { success: true, messageId: response?.headers?.["x-message-id"] || response?.statusCode };
+  } catch (err) {
+    if (err.response) {
+      console.error("SendGrid error body:", JSON.stringify(err.response.body, null, 2));
+    }
+    throw err;
+  }
+};
 
 // Send OTP email
 export const sendOTPEmail = async (email, otp, name) => {
-  const mailOptions = {
-    from: `"KrishiMitra" <${ENV.SMTP_USER}>`,
-    to: email,
-    subject: "Verify Your Email - KrishiMitra",
-    html: `
+  const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2d5016;">Welcome to KrishiMitra!</h2>
         <p>Hello ${name},</p>
@@ -40,13 +45,16 @@ export const sendOTPEmail = async (email, otp, name) => {
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         <p style="color: #666; font-size: 12px;">This is an automated email, please do not reply.</p>
       </div>
-    `,
-  };
+    `;
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendEmail({
+      to: email,
+      subject: "Verify Your Email - KrishiMitra",
+      html,
+    });
     console.log("OTP email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    return info;
   } catch (error) {
     console.error("Error sending OTP email:", error);
     throw new Error("Failed to send verification email");
@@ -55,11 +63,7 @@ export const sendOTPEmail = async (email, otp, name) => {
 
 // Send Password Reset OTP Email
 export const sendPasswordResetOTPEmail = async (email, otp, name) => {
-  const mailOptions = {
-    from: `"KrishiMitra" <${ENV.SMTP_USER}>`,
-    to: email,
-    subject: "Password Reset OTP - KrishiMitra",
-    html: `
+  const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2d5016;">Password Reset Request</h2>
         <p>Hello ${name},</p>
@@ -73,13 +77,16 @@ export const sendPasswordResetOTPEmail = async (email, otp, name) => {
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         <p style="color: #666; font-size: 12px;">This is an automated email, please do not reply.</p>
       </div>
-    `,
-  };
+    `;
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendEmail({
+      to: email,
+      subject: "Password Reset OTP - KrishiMitra",
+      html,
+    });
     console.log("Password reset OTP email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    return info;
   } catch (error) {
     console.error("Error sending password reset OTP email:", error);
     throw new Error("Failed to send password reset email");
@@ -88,11 +95,7 @@ export const sendPasswordResetOTPEmail = async (email, otp, name) => {
 
 // Send support reply email (contact form response)
 export const sendSupportReplyEmail = async (toEmail, userName, originalMessage, adminReply) => {
-  const mailOptions = {
-    from: `"KrishiMitra Support" <${ENV.SMTP_USER}>`,
-    to: toEmail,
-    subject: "Re: Your support request - KrishiMitra",
-    html: `
+  const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2d5016;">Support Reply - KrishiMitra</h2>
         <p>Hello ${userName},</p>
@@ -109,13 +112,16 @@ export const sendSupportReplyEmail = async (toEmail, userName, originalMessage, 
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         <p style="color: #666; font-size: 12px;">KrishiMitra - Your farming companion.</p>
       </div>
-    `,
-  };
+    `;
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendEmail({
+      to: toEmail,
+      subject: "Re: Your support request - KrishiMitra",
+      html,
+    });
     console.log("Support reply email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    return info;
   } catch (error) {
     console.error("Error sending support reply email:", error);
     throw new Error("Failed to send support reply email");
@@ -124,11 +130,7 @@ export const sendSupportReplyEmail = async (toEmail, userName, originalMessage, 
 
 export const sendSubscriptionActivatedEmail = async (email, userName, plan, expiresAt) => {
   const expiresStr = expiresAt ? new Date(expiresAt).toLocaleDateString("en-IN", { dateStyle: "long" }) : "";
-  const mailOptions = {
-    from: `"KrishiMitra" <${ENV.SMTP_USER}>`,
-    to: email,
-    subject: "Welcome to Premium - KrishiMitra",
-    html: `
+  const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2d5016;">Welcome to Premium!</h2>
         <p>Hello ${userName},</p>
@@ -142,12 +144,15 @@ export const sendSubscriptionActivatedEmail = async (email, userName, plan, expi
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         <p style="color: #666; font-size: 12px;">KrishiMitra - Your farming companion.</p>
       </div>
-    `,
-  };
+    `;
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendEmail({
+      to: email,
+      subject: "Welcome to Premium - KrishiMitra",
+      html,
+    });
     console.log("Subscription activated email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    return info;
   } catch (error) {
     console.error("Error sending subscription activated email:", error);
     throw new Error("Failed to send subscription email");
@@ -156,11 +161,7 @@ export const sendSubscriptionActivatedEmail = async (email, userName, plan, expi
 
 export const sendSubscriptionCancelledEmail = async (email, userName, expiresAt) => {
   const expiresStr = expiresAt ? new Date(expiresAt).toLocaleDateString("en-IN", { dateStyle: "long" }) : "";
-  const mailOptions = {
-    from: `"KrishiMitra" <${ENV.SMTP_USER}>`,
-    to: email,
-    subject: "Subscription cancelled - KrishiMitra",
-    html: `
+  const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2d5016;">Subscription cancelled</h2>
         <p>Hello ${userName},</p>
@@ -169,12 +170,15 @@ export const sendSubscriptionCancelledEmail = async (email, userName, expiresAt)
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         <p style="color: #666; font-size: 12px;">KrishiMitra - Your farming companion.</p>
       </div>
-    `,
-  };
+    `;
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendEmail({
+      to: email,
+      subject: "Subscription cancelled - KrishiMitra",
+      html,
+    });
     console.log("Subscription cancelled email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    return info;
   } catch (error) {
     console.error("Error sending subscription cancelled email:", error);
     throw new Error("Failed to send subscription cancelled email");
