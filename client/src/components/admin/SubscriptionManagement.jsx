@@ -15,6 +15,22 @@ const formatDate = (d) => {
   return date.toLocaleDateString('en-IN', { dateStyle: 'short' })
 }
 
+const formatAmountPaid = (amountPaid, paymentProvider) => {
+  if (amountPaid == null || amountPaid === '') return '—'
+  const n = Number(amountPaid)
+  if (!Number.isFinite(n)) return '—'
+  const prov = (paymentProvider || 'khalti').toLowerCase()
+  if (prov === 'stripe') return `$${n.toFixed(2)} USD`
+  return `Rs ${n.toLocaleString('en-IN')}`
+}
+
+const providerLabel = (paymentProvider) => {
+  const p = (paymentProvider || '—').toLowerCase()
+  if (p === 'khalti') return 'Khalti'
+  if (p === 'stripe') return 'Card (Stripe)'
+  return paymentProvider || '—'
+}
+
 const SubscriptionManagement = () => {
   const [subscriptions, setSubscriptions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -142,6 +158,7 @@ const SubscriptionManagement = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Started</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
@@ -151,7 +168,7 @@ const SubscriptionManagement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
                     No subscriptions found.
                   </td>
                 </tr>
@@ -172,10 +189,11 @@ const SubscriptionManagement = () => {
                         {s.status?.replace(/_/g, ' ') || '—'}
                       </span>
                     </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{providerLabel(s.payment_provider)}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{formatDate(s.started_at)}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{formatDate(s.expires_at)}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {s.amount_paid != null ? `Rs ${s.amount_paid}` : '—'}
+                      {formatAmountPaid(s.amount_paid, s.payment_provider)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">{formatDate(s.created_at)}</td>
                   </tr>

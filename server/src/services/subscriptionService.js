@@ -11,6 +11,23 @@ import axios from "axios";
 const PREMIUM_AMOUNT_PAISA = ENV.PREMIUM_AMOUNT_PAISA || 199900;
 const MONTHS_ACTIVE = 1;
 
+/** Public amounts for Premium UI (Khalti = NPR from paise; Stripe = USD — match STRIPE_PRICE_ID in Dashboard). */
+export function getPublicSubscriptionPricing() {
+  const npr = Math.round(PREMIUM_AMOUNT_PAISA) / 100;
+  const usd = Number(ENV.PREMIUM_STRIPE_USD) || 19.99;
+  return {
+    khalti: {
+      currency: "NPR",
+      amount: npr,
+      amount_paisa: PREMIUM_AMOUNT_PAISA,
+    },
+    stripe: {
+      currency: "USD",
+      amount: usd,
+    },
+  };
+}
+
 export async function getSubscriptionByUserId(userId) {
   const rows = await db
     .select()
@@ -47,34 +64,46 @@ export async function listAllSubscriptions(limit = 200) {
   return rows;
 }
 
-/** Admin stats: premium user count, total revenue, list of premium user ids */
+/** Admin stats: premium user count, revenue by currency (active subs only), premium user ids */
 export async function getSubscriptionStats() {
   const now = new Date();
+  const activeCondition = and(
+    eq(subscriptionsTable.status, "active"),
+    or(isNull(subscriptionsTable.expiresAt), gt(subscriptionsTable.expiresAt, now))
+  );
+
   const activeRows = await db
     .select({ userId: subscriptionsTable.userId })
     .from(subscriptionsTable)
-    .where(
-      and(
-        eq(subscriptionsTable.status, "active"),
-        or(isNull(subscriptionsTable.expiresAt), gt(subscriptionsTable.expiresAt, now))
-      )
-    );
+    .where(activeCondition);
   const premiumUserIds = [...new Set(activeRows.map((r) => r.userId))];
 
-  const allRows = await db
-    .select({ amountPaid: subscriptionsTable.amountPaid })
-    .from(subscriptionsTable);
-  let totalRevenue = 0;
-  for (const r of allRows) {
-    if (r.amountPaid != null) {
-      const n = Number(r.amountPaid);
-      if (Number.isFinite(n)) totalRevenue += n;
-    }
+  const revenueRows = await db
+    .select({
+      amountPaid: subscriptionsTable.amountPaid,
+      paymentProvider: subscriptionsTable.paymentProvider,
+    })
+    .from(subscriptionsTable)
+    .where(activeCondition);
+
+  let totalRevenueNpr = 0;
+  let totalRevenueUsd = 0;
+  for (const r of revenueRows) {
+    if (r.amountPaid == null) continue;
+    const n = Number(r.amountPaid);
+    if (!Number.isFinite(n) || n <= 0) continue;
+    const prov = (r.paymentProvider || "khalti").toLowerCase();
+    if (prov === "stripe") totalRevenueUsd += n;
+    else totalRevenueNpr += n;
   }
+
+  totalRevenueNpr = Math.round(totalRevenueNpr * 100) / 100;
+  totalRevenueUsd = Math.round(totalRevenueUsd * 100) / 100;
 
   return {
     premiumUserCount: premiumUserIds.length,
-    totalRevenue: Math.round(totalRevenue * 100) / 100,
+    totalRevenueNpr,
+    totalRevenueUsd,
     premiumUserIds,
   };
 }
@@ -89,14 +118,18 @@ export function isSubscriptionActive(sub) {
   return true;
 }
 
-export async function createPendingSubscription(userId, plan = "premium_monthly") {
+export async function createPendingSubscription(
+  userId,
+  plan = "premium_monthly",
+  paymentProvider = "khalti"
+) {
   const [row] = await db
     .insert(subscriptionsTable)
     .values({
       userId,
       plan,
       status: "pending_payment",
-      paymentProvider: "khalti",
+      paymentProvider,
     })
     .returning();
   return row;
@@ -243,6 +276,20 @@ export async function cancelSubscription(userId, cancelAtPeriodEnd = true) {
   const sub = await getSubscriptionByUserId(userId);
   if (!sub) throw new Error("No subscription found");
   if (sub.status !== "active") throw new Error("Subscription is not active");
+
+  if (sub.paymentProvider === "stripe" && sub.paymentReference && cancelAtPeriodEnd) {
+    try {
+      const { cancelStripeSubscriptionAtPeriodEnd } = await import(
+        "./stripeSubscriptionService.js"
+      );
+      await cancelStripeSubscriptionAtPeriodEnd(sub.paymentReference);
+    } catch (e) {
+      console.error("Stripe cancel_at_period_end failed:", e);
+      throw new Error(
+        e?.message || "Could not cancel Stripe subscription. Check STRIPE_SECRET_KEY or try again."
+      );
+    }
+  }
 
   await db
     .update(subscriptionsTable)

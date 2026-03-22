@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
-import { verifySubscription } from '../services/api'
-
-const PREMIUM_AMOUNT_PAISA = 199900
+import { verifySubscription, verifyStripeSubscriptionSession, getSubscriptionPricing } from '../services/api'
 
 const PremiumSuccess = () => {
   const [searchParams] = useSearchParams()
@@ -11,21 +9,60 @@ const PremiumSuccess = () => {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    const pidx = searchParams.get('pidx')
-    if (!pidx) {
-      setStatus('error')
-      setMessage('Invalid return from payment. Missing payment reference.')
-      return
+    let cancelled = false
+
+    const run = async () => {
+      const provider = searchParams.get('provider')
+      const sessionId = searchParams.get('session_id')
+
+      if (provider === 'stripe') {
+        if (!sessionId) {
+          setStatus('error')
+          setMessage('Missing Stripe session. Open Premium from your account or contact support if you were charged.')
+          return
+        }
+        try {
+          await verifyStripeSubscriptionSession({ session_id: sessionId })
+          if (!cancelled) setStatus('success')
+        } catch (err) {
+          if (!cancelled) {
+            setStatus('error')
+            setMessage(err?.message || 'Payment verification failed.')
+          }
+        }
+        return
+      }
+
+      const pidx = searchParams.get('pidx')
+      if (!pidx) {
+        setStatus('error')
+        setMessage('Invalid return from payment. Missing payment reference.')
+        return
+      }
+
+      let amountPaisa = 199900
+      try {
+        const pr = await getSubscriptionPricing()
+        if (pr?.khalti?.amount_paisa != null) amountPaisa = Number(pr.khalti.amount_paisa)
+      } catch {
+        /* fallback */
+      }
+
+      try {
+        await verifySubscription({ pidx, amount: amountPaisa })
+        if (!cancelled) setStatus('success')
+      } catch (err) {
+        if (!cancelled) {
+          setStatus('error')
+          setMessage(err?.message || 'Payment verification failed.')
+        }
+      }
     }
 
-    verifySubscription({ pidx, amount: PREMIUM_AMOUNT_PAISA })
-      .then(() => {
-        setStatus('success')
-      })
-      .catch((err) => {
-        setStatus('error')
-        setMessage(err?.message || 'Payment verification failed.')
-      })
+    run()
+    return () => {
+      cancelled = true
+    }
   }, [searchParams])
 
   return (

@@ -181,6 +181,10 @@ export const getUserProfile = (forceRefresh = false) => {
   return apiRequest('/api/users/profile', { method: 'GET' }, true, true);
 };
 
+// Subscription - Public pricing (Khalti NPR / Stripe USD) for Premium page
+export const getSubscriptionPricing = () =>
+  apiRequest('/api/subscription/pricing', { method: 'GET' }, false, false);
+
 // Subscription - Get current user's subscription
 export const getSubscription = (forceRefresh = false) => {
   if (forceRefresh) {
@@ -200,6 +204,17 @@ export const verifySubscription = (payload) =>
     method: 'POST',
     body: JSON.stringify(payload),
   }, false);
+
+// Subscription - Stripe Checkout (monthly recurring, test mode) — returns checkout_url
+export const createStripeSubscriptionCheckout = () =>
+  apiRequest('/api/subscription/stripe/checkout', { method: 'POST' }, true, false);
+
+// Subscription - After Stripe redirect (session_id in URL); idempotent if webhook already activated
+export const verifyStripeSubscriptionSession = (payload) =>
+  apiRequest('/api/subscription/stripe/verify-session', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, true, false);
 
 // Subscription - Cancel (at period end)
 export const cancelSubscription = () =>

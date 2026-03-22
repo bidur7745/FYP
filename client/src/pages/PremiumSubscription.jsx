@@ -3,18 +3,58 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Check, Sparkles, Shield, Loader2, XCircle } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import khaltiLogo from '../assets/images/khaltilogo.jpg'
-import { getSubscription, createSubscription, cancelSubscription } from '../services/api'
+import stripeLogo from '../assets/images/stripe.svg'
+import {
+  getSubscription,
+  getSubscriptionPricing,
+  createSubscription,
+  createStripeSubscriptionCheckout,
+  cancelSubscription,
+} from '../services/api'
+
+function formatNprDisplay(amount, locale) {
+  const n = amount ?? 1999
+  try {
+    return new Intl.NumberFormat(locale === 'ne' ? 'ne-NP' : 'en-IN', {
+      style: 'currency',
+      currency: 'NPR',
+      maximumFractionDigits: 0,
+    }).format(n)
+  } catch {
+    return `Rs. ${n.toLocaleString('en-IN')}`
+  }
+}
+
+function formatUsdDisplay(amount) {
+  const n = amount ?? 19.99
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+  } catch {
+    return `$${Number(n).toFixed(2)}`
+  }
+}
+
+function formatSubAmount(sub, locale) {
+  if (sub?.amount_paid == null) return null
+  const n = Number(sub.amount_paid)
+  if (!Number.isFinite(n)) return null
+  const prov = (sub.payment_provider || 'khalti').toLowerCase()
+  if (prov === 'stripe') return formatUsdDisplay(n)
+  return formatNprDisplay(n, locale)
+}
 
 const PremiumSubscription = () => {
-  const { content } = useLanguage()
+  const { content, locale } = useLanguage()
   const p = content?.premiumPage || {}
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [sub, setSub] = useState(null)
   const [active, setActive] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('khalti')
   const [proceeding, setProceeding] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [error, setError] = useState('')
+  const [pricing, setPricing] = useState(null)
 
   const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('authToken')
   const isUser = typeof window !== 'undefined' && localStorage.getItem('userRole') === 'user'
@@ -33,23 +73,46 @@ const PremiumSubscription = () => {
       .finally(() => setLoading(false))
   }, [isLoggedIn, isUser])
 
-  const handleProceed = () => {
+  useEffect(() => {
+    getSubscriptionPricing()
+      .then((data) => {
+        if (data?.success && data.khalti && data.stripe) {
+          setPricing({ khalti: data.khalti, stripe: data.stripe })
+        }
+      })
+      .catch(() => setPricing(null))
+  }, [])
+
+  const nprAmount = pricing?.khalti?.amount ?? 1999
+  const usdAmount = pricing?.stripe?.amount ?? 19.99
+  const headlinePrice =
+    paymentMethod === 'stripe' ? formatUsdDisplay(usdAmount) : formatNprDisplay(nprAmount, locale)
+  const headlinePeriod =
+    paymentMethod === 'stripe' ? (p.pricePeriodUsd || '/ month · USD') : (p.pricePeriod || '/month')
+  const planAmountLabel = formatSubAmount(sub, locale)
+
+  const handlePay = () => {
     if (!isLoggedIn || !isUser) {
       navigate('/login')
       return
     }
     setError('')
     setProceeding(true)
-    createSubscription()
-      .then((data) => {
-        const url = data?.payment_url
-        if (url) window.location.href = url
-        else setError(p.comingSoon || 'Payment link not available.')
-      })
-      .catch((err) => {
-        setError(err?.message || 'Failed to start payment.')
-      })
-      .finally(() => setProceeding(false))
+    const go =
+      paymentMethod === 'stripe'
+        ? createStripeSubscriptionCheckout().then((data) => {
+            const url = data?.checkout_url
+            if (url) window.location.href = url
+            else setError(p.stripeUnavailable || 'Card payment is unavailable right now.')
+          })
+        : createSubscription().then((data) => {
+            const url = data?.payment_url
+            if (url) window.location.href = url
+            else setError(p.comingSoon || 'Payment link not available.')
+          })
+    go.catch((err) => {
+      setError(err?.message || 'Could not start payment.')
+    }).finally(() => setProceeding(false))
   }
 
   const handleCancel = () => {
@@ -122,6 +185,13 @@ const PremiumSubscription = () => {
                         ? (p.cancelledNote || 'Cancellation requested. Access until the end of the period above.')
                         : (p.cancelAnytimeNote || 'Cancel anytime; access continues until the end of the period.')}
                     </p>
+                    {planAmountLabel ? (
+                      <p className="mt-2 text-sm text-emerald-200/90">
+                        {p.yourPlanRate || 'Your rate'}:{' '}
+                        <span className="font-semibold text-white">{planAmountLabel}</span>
+                        {p.perMonthShort ? <span className="text-slate-500"> {p.perMonthShort}</span> : null}
+                      </p>
+                    ) : null}
                     {!sub?.cancelled_at && (
                     <button
                       type="button"
@@ -142,11 +212,13 @@ const PremiumSubscription = () => {
                         {p.priceLabel || 'Monthly subscription'}
                       </p>
                       <p className="text-3xl sm:text-4xl font-bold text-emerald-400">
-                        {p.price || 'Rs. 1,999'}
-                        <span className="text-lg font-normal text-slate-400 ml-1">{p.pricePeriod || '/month'}</span>
+                        {headlinePrice}
+                        <span className="text-lg font-normal text-slate-400 ml-1">{headlinePeriod}</span>
                       </p>
                       <p className="mt-1.5 text-slate-400 text-sm">
-                        {p.priceNote || 'Cancel anytime. No long-term commitment.'}
+                        {paymentMethod === 'stripe'
+                          ? (p.priceNoteStripe || p.priceNote || 'Billed in US dollars. Cancel anytime.')
+                          : (p.priceNoteKhalti || p.priceNote || 'Pay in NPR via Khalti. Cancel anytime.')}
                       </p>
                     </section>
 
@@ -155,17 +227,73 @@ const PremiumSubscription = () => {
                         {p.paymentTitle || 'Choose payment method'}
                       </h2>
                       <p className="text-slate-400 text-sm mb-4">
-                        {p.paymentSubtitle || 'Pay securely with Khalti.'}
+                        {p.paymentSubtitle || 'Select how you would like to pay.'}
                       </p>
-                      <div className="rounded-xl border-2 border-emerald-500 bg-emerald-500/20 p-4 flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1.5 shrink-0 overflow-hidden">
-                          <img src={khaltiLogo} alt="Khalti" className="h-full w-full object-contain" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-white text-sm">{p.khaltiLabel || 'Khalti'}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">{p.khaltiDesc || 'Pay with Khalti wallet, bank, or mobile banking'}</p>
-                        </div>
-                        <Check className="h-5 w-5 text-emerald-400 ml-auto shrink-0" />
+                      <div className="space-y-3" role="radiogroup" aria-label={p.paymentTitle || 'Payment method'}>
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={paymentMethod === 'khalti'}
+                          onClick={() => setPaymentMethod('khalti')}
+                          className={`w-full text-left rounded-xl border-2 p-4 flex items-center gap-3 transition-colors ${
+                            paymentMethod === 'khalti'
+                              ? 'border-emerald-500 bg-emerald-500/15 shadow-[0_0_0_1px_rgba(16,185,129,0.25)]'
+                              : 'border-slate-600 bg-slate-800/40 hover:border-slate-500'
+                          }`}
+                        >
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1.5 shrink-0 overflow-hidden">
+                            <img src={khaltiLogo} alt="" className="h-full w-full object-contain" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-white text-sm">{p.khaltiLabel || 'Khalti'}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{p.khaltiDesc || 'Wallet, bank, or mobile banking'}</p>
+                            <p className="text-xs font-semibold text-emerald-400/90 mt-1">
+                              {formatNprDisplay(nprAmount, locale)}
+                              <span className="text-slate-500 font-normal"> {p.perMonthShort || '/mo'}</span>
+                            </p>
+                          </div>
+                          <span
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                              paymentMethod === 'khalti' ? 'border-emerald-400 bg-emerald-500/30' : 'border-slate-500'
+                            }`}
+                          >
+                            {paymentMethod === 'khalti' ? <Check className="h-3 w-3 text-emerald-300" strokeWidth={3} /> : null}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={paymentMethod === 'stripe'}
+                          onClick={() => setPaymentMethod('stripe')}
+                          className={`w-full text-left rounded-xl border-2 p-4 flex items-center gap-3 transition-colors ${
+                            paymentMethod === 'stripe'
+                              ? 'border-emerald-500 bg-emerald-500/15 shadow-[0_0_0_1px_rgba(16,185,129,0.25)]'
+                              : 'border-slate-600 bg-slate-800/40 hover:border-slate-500'
+                          }`}
+                        >
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg shrink-0 overflow-hidden">
+                            <img src={stripeLogo} alt="" className="h-full w-full object-contain" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-white text-sm">{p.stripeLabel || 'Card'}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{p.stripeDesc || 'Credit or debit card'}</p>
+                            <p className="text-xs font-semibold text-emerald-400/90 mt-1">
+                              {formatUsdDisplay(usdAmount)}
+                              <span className="text-slate-500 font-normal"> {p.perMonthShort || '/mo'}</span>
+                              <span className="text-slate-500 font-normal"> {p.pricePeriodUsdShort || 'USD'}</span>
+                            </p>
+                            {p.stripeBillingNote ? (
+                              <p className="text-xs text-slate-500 mt-1.5 leading-snug">{p.stripeBillingNote}</p>
+                            ) : null}
+                          </div>
+                          <span
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                              paymentMethod === 'stripe' ? 'border-emerald-400 bg-emerald-500/30' : 'border-slate-500'
+                            }`}
+                          >
+                            {paymentMethod === 'stripe' ? <Check className="h-3 w-3 text-emerald-300" strokeWidth={3} /> : null}
+                          </span>
+                        </button>
                       </div>
                       <div className="mt-4 flex items-center gap-2 text-slate-400 text-xs sm:text-sm">
                         <Shield className="h-4 w-4 shrink-0" />
@@ -179,11 +307,11 @@ const PremiumSubscription = () => {
                       )}
                       <button
                         type="button"
-                        onClick={handleProceed}
+                        onClick={handlePay}
                         disabled={proceeding}
                         className="mt-6 w-full py-3.5 px-6 rounded-xl bg-emerald-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-500 transition-colors"
                       >
-                        {proceeding ? (p.proceeding || 'Redirecting...') : (p.proceedButton || 'Proceed to payment')}
+                        {proceeding ? (p.proceeding || 'Redirecting...') : (p.payButton || 'Continue to payment')}
                       </button>
                       {!isLoggedIn && (
                         <p className="mt-3 text-slate-400 text-sm text-center">

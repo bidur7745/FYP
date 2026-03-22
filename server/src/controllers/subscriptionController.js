@@ -6,7 +6,31 @@ import {
   cancelSubscription,
   listAllSubscriptions,
   getSubscriptionStats,
+  getPublicSubscriptionPricing,
 } from "../services/subscriptionService.js";
+import {
+  createStripeCheckoutSession,
+  verifyStripeCheckoutSession,
+  verifyStripeWebhookSignature,
+  handleStripeWebhookEvent,
+} from "../services/stripeSubscriptionService.js";
+
+/** Public: Khalti (NPR) vs Stripe (USD) amounts for Premium page */
+export async function getSubscriptionPricingController(req, res) {
+  try {
+    const pricing = getPublicSubscriptionPricing();
+    return res.status(200).json({
+      success: true,
+      ...pricing,
+    });
+  } catch (error) {
+    console.error("getSubscriptionPricing error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to load pricing",
+    });
+  }
+}
 
 export async function getSubscriptionController(req, res) {
   try {
@@ -175,6 +199,85 @@ export async function listSubscriptionsAdminController(req, res) {
 }
 
 /** Admin: subscription stats (premium count, revenue, premium user ids) */
+/** Stripe Checkout (test): returns checkout_url */
+export async function createStripeCheckoutController(req, res) {
+  try {
+    const userId = req.user?.id;
+    const email = req.user?.email;
+    const name = req.user?.name;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const result = await createStripeCheckoutSession(userId, email, name);
+    return res.status(200).json({
+      success: true,
+      checkout_url: result.checkout_url,
+      subscription_id: result.subscription_id,
+      stripe_session_id: result.stripe_session_id,
+    });
+  } catch (error) {
+    console.error("createStripeCheckout error:", error);
+    const msg = error.message || "Failed to start Stripe checkout";
+    const code = msg.includes("already have an active") ? 400 : 500;
+    return res.status(code).json({ success: false, message: msg });
+  }
+}
+
+/** After Stripe redirect: idempotent activate (webhook may have run first) */
+export async function verifyStripeSessionController(req, res) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const sessionId = req.body?.session_id || req.query?.session_id;
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing session_id",
+      });
+    }
+    const result = await verifyStripeCheckoutSession(sessionId, userId);
+    return res.status(200).json({
+      success: true,
+      subscription: {
+        id: result.subscription.id,
+        status: result.subscription.status,
+        expires_at: result.subscription.expiresAt,
+      },
+      already_active: result.alreadyActive,
+    });
+  } catch (error) {
+    console.error("verifyStripeSession error:", error);
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Stripe session verification failed",
+    });
+  }
+}
+
+/** Raw body webhook — mounted in server.js before express.json() */
+export async function stripeWebhookController(req, res) {
+  const sig = req.headers["stripe-signature"];
+  if (!sig) {
+    return res.status(400).send("Missing stripe-signature");
+  }
+  let event;
+  try {
+    event = verifyStripeWebhookSignature(req.body, sig);
+  } catch (err) {
+    console.error("Stripe webhook signature error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  try {
+    await handleStripeWebhookEvent(event);
+  } catch (err) {
+    console.error("Stripe webhook handler error:", err);
+    return res.status(500).json({ error: "handler_failed" });
+  }
+  return res.json({ received: true });
+}
+
 export async function getSubscriptionStatsAdminController(req, res) {
   try {
     const stats = await getSubscriptionStats();

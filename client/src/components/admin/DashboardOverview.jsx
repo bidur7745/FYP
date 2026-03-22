@@ -34,7 +34,8 @@ const DashboardOverview = () => {
     totalSchemes: 0,
     activeSchemes: 0,
     premiumUserCount: 0,
-    totalRevenue: 0,
+    totalRevenueNpr: 0,
+    totalRevenueUsd: 0,
   })
 
   // Raw data for charts
@@ -69,7 +70,13 @@ const DashboardOverview = () => {
         getAllUsers(false).catch(() => ({ success: false, data: [] })),
         getAllCrops(false).catch(() => ({ success: false, crops: [] })),
         getAllGovernmentSchemes({}, false).catch(() => ({ success: false, schemes: [] })),
-        getAdminSubscriptionStats().catch(() => ({ success: false, premiumUserCount: 0, totalRevenue: 0, premiumUserIds: [] }))
+        getAdminSubscriptionStats().catch(() => ({
+          success: false,
+          premiumUserCount: 0,
+          totalRevenueNpr: 0,
+          totalRevenueUsd: 0,
+          premiumUserIds: [],
+        }))
       ])
 
       // Process Users Data
@@ -91,7 +98,11 @@ const DashboardOverview = () => {
       setSchemesData(schemes)
 
       const premiumUserCount = subscriptionStatsRes?.success ? (subscriptionStatsRes.premiumUserCount ?? 0) : 0
-      const totalRevenue = subscriptionStatsRes?.success ? (subscriptionStatsRes.totalRevenue ?? 0) : 0
+      const totalRevenueNpr =
+        subscriptionStatsRes?.success
+          ? (subscriptionStatsRes.totalRevenueNpr ?? subscriptionStatsRes.totalRevenue ?? 0)
+          : 0
+      const totalRevenueUsd = subscriptionStatsRes?.success ? (subscriptionStatsRes.totalRevenueUsd ?? 0) : 0
 
       const dashboardStats = {
         totalUsers: users.length,
@@ -102,7 +113,8 @@ const DashboardOverview = () => {
         totalSchemes: schemes.length,
         activeSchemes: activeSchemes.length,
         premiumUserCount,
-        totalRevenue,
+        totalRevenueNpr,
+        totalRevenueUsd,
       }
 
       // Cache the processed dashboard stats and raw data for charts
@@ -207,8 +219,13 @@ const DashboardOverview = () => {
         <StatCard
           icon={Banknote}
           title="Subscription Revenue"
-          value={typeof stats.totalRevenue === 'number' ? `Rs ${stats.totalRevenue.toLocaleString('en-IN')}` : 'Rs 0'}
-          subtitle="Total from subscriptions"
+          value={
+            <span className="flex flex-col gap-0.5 text-left leading-tight">
+              <span>Rs {Number(stats.totalRevenueNpr || 0).toLocaleString('en-IN')} <span className="text-slate-500 font-normal text-sm">(Khalti)</span></span>
+              <span>${Number(stats.totalRevenueUsd || 0).toFixed(2)} <span className="text-slate-500 font-normal text-sm">USD (card)</span></span>
+            </span>
+          }
+          subtitle="Active subs only · NPR and USD shown separately"
           color="emerald"
           onClick={() => {
             const event = new CustomEvent('switchTab', { detail: 'subscriptions' })

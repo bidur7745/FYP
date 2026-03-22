@@ -17,6 +17,7 @@ import notificationRoutes from "./routes/notificationRoute.js";
 import marketPriceRoutes from "./routes/marketPriceRoute.js";
 import diseaseRoutes from "./routes/diseaseRoute.js";
 import subscriptionRoutes from "./routes/subscriptionRoute.js";
+import { stripeWebhookController } from "./controllers/subscriptionController.js";
 import chatRoutes from "./routes/chatRoute.js";
 import agroRecommendationRoutes from "./routes/agroRecommendationRoute.js";
 import testAlertRoutes from "./test/testAlertRoute.js";
@@ -31,6 +32,12 @@ server.use(
     origin: ENV.CORS_ORIGINS,
     credentials: true,
   })
+);
+// Stripe webhook must receive raw body (before express.json)
+server.post(
+  "/api/subscription/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhookController
 );
 server.use(express.json());
 
