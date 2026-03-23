@@ -28,3 +28,4 @@ export {
   messageContentTypeEnum,
 } from "./chatMessages.js";
 export { agroRecommendationsTable } from "./agroRecommendations.js";
+export { generatedPlantationGuidesTable } from "./generatedPlantationGuides.js";

@@ -24,7 +24,7 @@ export const ENV = {
     CORS_ORIGINS: origins,
     /** URL shown in server log: prod = prod_API_URL, dev = localhost:PORT */
     BACKEND_URL: serverDisplayUrl,
-    DISEASE_API_BASE_URL: process.env.DISEASE_API_BASE_URL,
+    AI_API_BASE_URL: process.env.AI_API_BASE_URL,
     // Email configuration
     SMTP_HOST: process.env.SMTP_HOST,
     SMTP_PORT: parseInt(process.env.SMTP_PORT) || 587,

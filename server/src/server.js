@@ -20,6 +20,7 @@ import subscriptionRoutes from "./routes/subscriptionRoute.js";
 import { stripeWebhookController } from "./controllers/subscriptionController.js";
 import chatRoutes from "./routes/chatRoute.js";
 import agroRecommendationRoutes from "./routes/agroRecommendationRoute.js";
+import cropRecommendationRoutes from "./routes/cropRecommendationRoute.js";
 import testAlertRoutes from "./test/testAlertRoute.js";
 import cors from "cors";
 
@@ -83,6 +84,7 @@ server.use("/api/disease", diseaseRoutes);
 server.use("/api/subscription", subscriptionRoutes);
 server.use("/api/chat", chatRoutes);
 server.use("/api/agro-recommendations", agroRecommendationRoutes);
+server.use("/api/crop-recommendations", cropRecommendationRoutes);
 
 // Mount dashboard routes (protected)
 server.use("/dashboard", userRoutes);

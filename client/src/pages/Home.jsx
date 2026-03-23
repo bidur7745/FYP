@@ -5,6 +5,7 @@ import { assets } from '../assets/images/assets'
 import { useLanguage } from '../context/LanguageContext'
 import {
     FeatureCarousel,
+    CropRecommendationPreview,
     RoadmapSection,
     Subscription,
     CTA,
@@ -125,6 +126,11 @@ const Home = () => {
             <div className="w-full px-4 sm:px-6 lg:px-8 pt-12">
                 <div className="mx-auto max-w-7xl">
                     <FeatureCarousel />
+                </div>
+            </div>
+            <div className="w-full px-4 sm:px-6 lg:px-8 pt-12">
+                <div className="mx-auto max-w-7xl">
+                    <CropRecommendationPreview />
                 </div>
             </div>
             <RoadmapSection />

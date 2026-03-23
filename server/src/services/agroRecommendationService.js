@@ -121,6 +121,12 @@ async function callDeepSeek(prompt) {
   return JSON.parse(cleaned);
 }
 
+export async function generateAgroRecommendationFromCropProfile(cropProfile, lang = "en") {
+  const validLang = lang === "ne" ? "ne" : "en";
+  const prompt = buildPrompt(cropProfile, validLang);
+  return callDeepSeek(prompt);
+}
+
 export async function getAgroRecommendation(cropId, lang = "en") {
   const validLang = lang === "ne" ? "ne" : "en";
 
@@ -150,8 +156,7 @@ export async function getAgroRecommendation(cropId, lang = "en") {
 
   if (!crop) throw new Error("Crop not found");
 
-  const prompt = buildPrompt(crop, validLang);
-  const parsed = await callDeepSeek(prompt);
+  const parsed = await generateAgroRecommendationFromCropProfile(crop, validLang);
 
   if (cached) {
     await db

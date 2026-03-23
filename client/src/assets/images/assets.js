@@ -29,6 +29,7 @@ import cropadvisory from './cropadvisory.png'
 import schema from './schema.png'
 import weather from './weather.png'
 import market from './market.png'
+import cropRecommendation from './cropreco.png'
 
 export const assets = {
     logo: Logo,
@@ -61,7 +62,8 @@ export const assets = {
     cropadvisory,
     schema,
     weather,
-    market
+    market,
+    cropRecommendation
 }
 
 export default assets

@@ -44,6 +44,7 @@ import UserChatsPage from './pages/user/UserChatsPage'
 import AdminChatsPage from './pages/admin/AdminChatsPage'
 import ChatDetailsPage from './pages/chat/ChatDetailsPage'
 import AgroRecommendations from './pages/user/AgroRecommendations'
+import CropRecommendation from './pages/user/CropRecommendation'
 
 /** Expert portal layout: clears fixed navbar + mobile bottom nav */
 const ExpertLayout = () => (
@@ -106,6 +107,7 @@ const AppContent = () => {
             <Route path="/crop-advisory" element={<CropAdvisory/>}/>
             <Route path="/crop-advisory/:cropId" element={<CropDetails/>}/>
             <Route path="/crop-advisory/:cropId/agro-recommendations" element={<AgroRecommendations/>}/>
+            <Route path="/crop-recommendation" element={<CropRecommendation/>}/>
             <Route path="/weather-dashboard" element={<WeatherDashboard/>}/>
             <Route path="/market-prices" element={<MarketPrices/>}/>
             <Route path="/government-schemes" element={<GovernmentSchemes/>}/>

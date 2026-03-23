@@ -12,9 +12,9 @@ import { diseasePredictionsTable } from "../schema/index.js";
  * @returns {Promise<{ class, predictedDisease, generalName, confidence, leaf_check, probabilities }>}
  */
 export const callDiseasePredict = async (imageBuffer, mimetype, crop) => {
-  const baseUrl = (ENV.DISEASE_API_BASE_URL || "").replace(/\/$/, "");
+  const baseUrl = (ENV.AI_API_BASE_URL || "").replace(/\/$/, "");
   if (!baseUrl) {
-    const err = new Error("Disease prediction API is not configured (DISEASE_API_BASE_URL)");
+    const err = new Error("AI API is not configured (AI_API_BASE_URL)");
     err.statusCode = 503;
     throw err;
   }

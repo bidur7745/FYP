@@ -771,3 +771,16 @@ export const adminDeleteTreatment = (id) =>
 // Agro Recommendations (AI-powered fertilizer/pesticide/herbicide advice per crop)
 export const getAgroRecommendations = (cropId, lang = 'en') =>
   apiRequest(`/api/agro-recommendations/${cropId}?lang=${lang}`, { method: 'GET' }, true, false);
+
+// Crop Recommendation (soil + climate → AI crop suggestions with plantation guides)
+export const recommendCropsWithGuides = (payload) =>
+  apiRequest('/api/crop-recommendations/recommend-with-guides', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, true, false);
+
+export const generateMissingCropGuide = (cropName, language = 'en') =>
+  apiRequest('/api/crop-recommendations/generate-guide', {
+    method: 'POST',
+    body: JSON.stringify({ cropName, language }),
+  }, true, false);
