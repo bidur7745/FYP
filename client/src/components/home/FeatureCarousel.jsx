@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { gsap } from 'gsap'
-import { Leaf, CloudSun, ShieldCheck, TrendingUp, Landmark, Bookmark } from 'lucide-react'
+import { Leaf, CloudSun, ShieldCheck, TrendingUp, Landmark, Bookmark, ArrowRight } from 'lucide-react'
 import { useLanguage } from '../../context/LanguageContext'
 import { assets } from '../../assets/images/assets'
 
@@ -16,11 +16,72 @@ const numberSize = Math.round(50 * scale)
 const progressMax = Math.round(500 * scale)
 const cardContentOffset = Math.round(100 * scale)
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < breakpoint : false
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`)
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    setIsMobile(mq.matches)
+    return () => mq.removeEventListener('change', handler)
+  }, [breakpoint])
+  return isMobile
+}
+
+const MobileFeatureCards = ({ cardsData, ctaLabel }) => {
+  const Icon = (name) => iconMap[name] || Leaf
+  return (
+    <section className="w-full rounded-xl bg-slate-950 py-8 px-4 font-['Inter']">
+      <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+        {cardsData.map((item, index) => {
+          const rawAsset = item.image ? assets[item.image] : null
+          const imgSrc = typeof rawAsset === 'string' ? rawAsset : rawAsset?.default ?? null
+          const IconComp = Icon(item.icon)
+          return (
+            <Link
+              key={index}
+              to={item.href}
+              className="snap-start shrink-0 w-[75vw] max-w-[300px] rounded-2xl overflow-hidden relative group"
+              style={{ minHeight: 280 }}
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: imgSrc
+                    ? `url(${imgSrc})`
+                    : `linear-gradient(to bottom right, rgb(4 120 87), rgb(20 83 45))`
+                }}
+              />
+              <div className={`absolute inset-0 ${imgSrc ? 'bg-black/50' : `bg-gradient-to-br ${item.gradient || 'from-emerald-800 to-green-900'} opacity-80`}`} />
+              <div className="relative z-10 flex flex-col justify-end h-full p-5">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+                  <IconComp className="h-5 w-5 text-emerald-300" />
+                </div>
+                <p className="text-xs font-medium text-emerald-300 uppercase tracking-wider">{item.place}</p>
+                <h3 className="mt-1 text-xl font-bold text-white leading-tight" style={{ fontFamily: 'Oswald, sans-serif' }}>
+                  {item.title} {item.title2}
+                </h3>
+                <p className="mt-2 text-sm text-white/80 leading-snug line-clamp-3">{item.description}</p>
+                <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300 group-hover:text-emerald-200 transition-colors">
+                  {ctaLabel} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 const FeatureCarousel = () => {
   const { content } = useLanguage()
   const navigate = useNavigate()
   const cardsData = content?.home?.features?.cards || []
   const ctaLabel = content?.home?.features?.ctaLabel || 'Explore'
+  const isMobile = useIsMobile()
 
   const sectionRef = useRef(null)
   const demoRef = useRef(null)
@@ -54,7 +115,7 @@ const FeatureCarousel = () => {
   }, [n])
 
   useEffect(() => {
-    if (!ready || !sectionRef.current || !demoRef.current || n === 0) return
+    if (!ready || !sectionRef.current || !demoRef.current || n === 0 || isMobile) return
 
     const section = sectionRef.current
     const sectionWidth = section.offsetWidth || (typeof window !== 'undefined' ? window.innerWidth : 1200)
@@ -299,7 +360,7 @@ const FeatureCarousel = () => {
       if (loopTimeoutRef.current) clearTimeout(loopTimeoutRef.current)
       if (stepTimeoutRef.current) clearTimeout(stepTimeoutRef.current)
     }
-  }, [ready, n])
+  }, [ready, n, isMobile])
 
   const handlePrev = () => {
     if (n === 0) return
@@ -444,6 +505,10 @@ const FeatureCarousel = () => {
   }
 
   if (cardsData.length === 0) return null
+
+  if (isMobile) {
+    return <MobileFeatureCards cardsData={cardsData} ctaLabel={ctaLabel} />
+  }
 
   const evenItem = cardsData[evenContentIndex] || cardsData[0]
   const oddItem = cardsData[oddContentIndex] || cardsData[0]

@@ -312,10 +312,10 @@ const OurStory = () => {
             <Calendar className="h-6 w-6 text-emerald-300" />
             {story.journey?.title || "Our Journey"}
           </h2>
-          <div className="relative space-y-6 border-l border-slate-700 pl-6">
+          <div className="relative space-y-6 border-l border-slate-700 pl-8">
             {story.journey?.items?.map((item, index) => (
               <div key={index} className="relative">
-                <div className="absolute -left-[10px] top-0 h-3 w-3 rounded-full border-2 border-emerald-300 bg-black" />
+                <div className="absolute -left-[38px] top-4 h-3 w-3 rounded-full border-2 border-emerald-300 bg-black" />
                 <div className="rounded-2xl border border-emerald-500/30 bg-black/40 backdrop-blur-xl p-4 shadow-lg">
                   <p className="text-sm font-semibold text-slate-100 sm:text-base">
                     {item.title}
@@ -361,21 +361,21 @@ const OurStory = () => {
         </section>
 
         {/* Closing Note */}
-        <section className="grid grid-cols-1 gap-6 rounded-3xl border border-emerald-500/30 bg-black/50 backdrop-blur-xl p-6 sm:p-8 md:grid-cols-[1.5fr,1fr] md:items-center">
-  <div className="space-y-4 text-center md:text-left">
-    <h2 className="text-2xl font-semibold sm:text-3xl">{story.closingNote?.title || "A Closing Note"}</h2>
-    <p className="text-sm leading-relaxed text-slate-100 sm:text-base">
-      {story.closingNote?.description || ""}
-    </p>
-  </div>
-  <div className="flex justify-center md:justify-end">
-    <img
-      src={assets.hopeForFuture}
-      alt="Hope for Future"
-      className="h-auto w-full rounded-2xl object-contain"
-    />
-  </div>
-</section>
+        <section className="flex flex-col md:flex-row gap-8 rounded-3xl border border-emerald-500/30 bg-black/50 backdrop-blur-xl p-6 sm:p-8 items-center">
+          <div className="w-full md:w-2/5 shrink-0 flex justify-center">
+            <img
+              src={assets.hopeForFuture}
+              alt="Hope for Future"
+              className="h-auto w-full max-w-sm rounded-2xl object-contain"
+            />
+          </div>
+          <div className="w-full md:w-3/5 space-y-4 text-center md:text-left">
+            <h2 className="text-2xl font-semibold sm:text-3xl">{story.closingNote?.title || "A Closing Note"}</h2>
+            <p className="text-sm leading-relaxed text-slate-100 sm:text-base">
+              {story.closingNote?.description || ""}
+            </p>
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Menu, X, ChevronDown, User, Home, Leaf, ScanLine, Bell, MessageCircle } from 'lucide-react'
+import { Menu, X, ChevronDown, User, Home, Leaf, ScanLine, Bell, MessageCircle, CloudSun } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/images/assets'
 import { useLanguage } from '../context/LanguageContext'
@@ -317,7 +317,7 @@ const Navbar = () => {
                                         <span>{item.name}</span>
                                         <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isServicesOpen ? 'rotate-180' : ''}`} />
                                     </button>
-                                    <div className={`pl-4 space-y-1 overflow-hidden transition-all duration-300 ${isServicesOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                                    <div className={`pl-4 space-y-1 overflow-hidden transition-all duration-300 ${isServicesOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                                         }`}>
                                         {item.dropdown.map((sub) => (
                                             <Link
@@ -346,6 +346,17 @@ const Navbar = () => {
                             )}
                         </div>
                     ))}
+
+                    {/* Disease Detection */}
+                    <Link
+                        to="/disease-detection"
+                        onClick={closeMobileMenu}
+                        className={`block px-4 py-3 rounded-xl font-medium transition-all duration-300 ${isActive('/disease-detection')
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            : 'text-slate-200 hover:bg-slate-800/60 hover:text-emerald-300'}`}
+                    >
+                        {content?.nav?.diseaseDetection || 'Disease Detection'}
+                    </Link>
 
                     <div className="pt-4 space-y-3 border-t border-slate-700/50 mt-4">
                         {token ? (
@@ -423,6 +434,14 @@ const Navbar = () => {
                     >
                         <Leaf size={22} />
                         <span className="mt-1">{bottomNav.advisory || 'Advisory'}</span>
+                    </Link>
+
+                    <Link
+                        to="/weather-dashboard"
+                        className={`flex flex-col items-center text-xs ${location.pathname === '/weather-dashboard' ? 'text-emerald-400' : 'text-slate-300 hover:text-emerald-300'}`}
+                    >
+                        <CloudSun size={22} />
+                        <span className="mt-1">{bottomNav.weather || 'Weather'}</span>
                     </Link>
 
                     <Link

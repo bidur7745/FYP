@@ -2,14 +2,20 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Sprout, ArrowRight, FlaskConical, Thermometer, Droplets } from 'lucide-react'
 import { assets } from '../../assets/images/assets'
+import { useLanguage } from '../../context/LanguageContext'
 
-const highlights = [
-  { icon: FlaskConical, label: 'Soil Nutrients (N, P, K)' },
-  { icon: Thermometer, label: 'Temperature & Humidity' },
-  { icon: Droplets, label: 'Rainfall & pH Level' },
-]
+const highlightIcons = [FlaskConical, Thermometer, Droplets]
 
 const CropRecommendationPreview = () => {
+  const { content } = useLanguage()
+  const t = content?.cropRecommendationPreview || {}
+
+  const highlights = (t.highlights || [
+    'Soil Nutrients (N, P, K)',
+    'Temperature & Humidity',
+    'Rainfall & pH Level',
+  ]).map((label, i) => ({ icon: highlightIcons[i] || FlaskConical, label }))
+
   return (
     <section className="relative w-full overflow-hidden rounded-xl shadow-[0_4px_6px_-1px_rgb(0_0_0/0.2),0_2px_4px_-2px_rgb(0_0_0/0.1)]">
       <div
@@ -23,20 +29,18 @@ const CropRecommendationPreview = () => {
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-300">
               <Sprout className="w-4 h-4" />
-              <span>AI-Powered</span>
+              <span>{t.badge || 'AI-Powered'}</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
-              Smart Crop{' '}
+              {t.titleLine1 || 'Smart Crop'}{' '}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-green-300">
-                Recommendation
+                {t.titleLine2 || 'Recommendation'}
               </span>
             </h2>
 
             <p className="text-gray-300 text-base sm:text-lg max-w-lg leading-relaxed">
-              Enter your soil and climatic parameters and our AI model will
-              recommend the best crops suited for your land — complete with
-              detailed plantation guides.
+              {t.description || 'Enter your soil and climatic parameters and our AI model will recommend the best crops suited for your land — complete with detailed plantation guides.'}
             </p>
 
             <div className="space-y-3 pt-2">
@@ -55,7 +59,7 @@ const CropRecommendationPreview = () => {
                 to="/crop-recommendation"
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-linear-to-r from-emerald-500 to-green-500 text-white font-semibold shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:from-emerald-400 hover:to-green-400 transition-all duration-300"
               >
-                Try Crop Recommendation
+                {t.cta || 'Try Crop Recommendation'}
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
@@ -69,10 +73,10 @@ const CropRecommendationPreview = () => {
                   <Sprout className="w-10 h-10 text-white" />
                 </div>
                 <p className="text-white font-semibold text-lg text-center">
-                  Soil + Climate Analysis
+                  {t.glassTitle || 'Soil + Climate Analysis'}
                 </p>
                 <p className="text-gray-400 text-sm text-center leading-relaxed">
-                  Powered by Random Forest ML model trained on real agricultural data
+                  {t.glassDesc || 'Powered by Random Forest ML model trained on real agricultural data'}
                 </p>
               </div>
             </div>

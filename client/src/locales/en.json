@@ -43,6 +43,7 @@
     "bottomNav": {
       "home": "Home",
       "advisory": "Advisory",
+      "weather": "Weather",
       "scan": "Scan",
       "profile": "Profile"
     },
@@ -272,46 +273,41 @@
       ]
     }
   },
+  "cropRecommendationPreview": {
+    "badge": "AI-Powered",
+    "titleLine1": "Smart Crop",
+    "titleLine2": "Recommendation",
+    "description": "Enter your soil and climatic parameters and our AI model will recommend the best crops suited for your land — complete with detailed plantation guides.",
+    "highlights": [
+      "Soil Nutrients (N, P, K)",
+      "Temperature & Humidity",
+      "Rainfall & pH Level"
+    ],
+    "cta": "Try Crop Recommendation",
+    "glassTitle": "Soil + Climate Analysis",
+    "glassDesc": "Powered by Random Forest ML model trained on real agricultural data"
+  },
   "footer": {
     "subheading": "Smart digital agriculture assistant connecting Nepali farmers with expert guidance, weather insights, and AI-powered support.",
     "quickLinksTitle": "Quick Links",
     "quickLinks": [
-      {
-        "label": "Home",
-        "href": "/"
-      },
-      {
-        "label": "About Us",
-        "href": "/about-us"
-      },
-      {
-        "label": "Practice Questions",
-        "href": "/question-bank"
-      },
-      {
-        "label": "Register",
-        "href": "/register"
-      }
+      { "label": "Home", "href": "/" },
+      { "label": "Our Story", "href": "/our-story" },
+      { "label": "Support", "href": "/support" },
+      { "label": "Login", "href": "/login" },
+      { "label": "Sign Up", "href": "/signup" }
     ],
     "servicesTitle": "Services",
     "services": [
-      {
-        "label": "Crop Advisory",
-        "href": "#crop-advisory"
-      },
-      {
-        "label": "Disease Detection",
-        "href": "#disease-detection"
-      },
-      {
-        "label": "Weather Alerts",
-        "href": "#weather"
-      },
-      {
-        "label": "Market Updates",
-        "href": "#market"
-      }
+      { "label": "Crop Advisory", "href": "/crop-advisory" },
+      { "label": "Disease Detection", "href": "/disease-detection" },
+      { "label": "Weather Dashboard", "href": "/weather-dashboard" },
+      { "label": "Market Prices", "href": "/market-prices" },
+      { "label": "Government Schemes", "href": "/government-schemes" },
+      { "label": "Crop Recommendation", "href": "/crop-recommendation" }
     ],
+    "contactTitle": "Contact Us",
+    "contactEmail": "krishimitra2082@gmail.com",
     "followUs": "Follow Us",
     "privacyPolicy": "Privacy Policy",
     "terms": "Terms & Conditions",
@@ -330,7 +326,7 @@
     "userRightsHeading": "User Rights",
     "userRights": "You have the right to access your data, request corrections, update your information, or delete your account entirely. You may also withdraw consent at any time or request a copy of your stored information. We are committed to supporting users in managing their data responsibly.",
     "contactUsHeading": "Contact Us",
-    "contactUs": "If you have any questions, concerns, or requests related to this Privacy Policy or your personal data, you may contact us at: Email: Krishimitra2025@gmail.com | Project Name: KrishiMitra"
+    "contactUs": "If you have any questions, concerns, or requests related to this Privacy Policy or your personal data, you may contact us at: Email: krishimitra2082@gmail.com | Project Name: KrishiMitra"
   },
   "termsPage": {
     "lastUpdated": "Last Updated: 2025",
@@ -345,7 +341,7 @@
     "changesHeading": "Changes to Terms and Conditions",
     "changes": "We may update or revise these Terms at any time. Changes will be posted on this page with an updated date. Continued use of the platform after modifications indicates acceptance of the revised Terms.",
     "contactUsHeading": "Contact Us",
-    "contactUs": "If you have any questions or concerns regarding these Terms and Conditions, you may contact us at: Email: Krishimitra2025@gmail.com | Project Name: KrishiMitra"
+    "contactUs": "If you have any questions or concerns regarding these Terms and Conditions, you may contact us at: Email: krishimitra2082@gmail.com | Project Name: KrishiMitra"
   },
   "auth": {
     "signup": {
@@ -557,7 +553,7 @@
       "submit": "Send Message"
     },
     "contactEmailText": "You can also reach us at",
-    "contactEmail": "Krishimitra2025@gmail.com"
+    "contactEmail": "krishimitra2082@gmail.com"
   },
   "roadmap": {
     "title": "Roadmap & Future Enhancements",
