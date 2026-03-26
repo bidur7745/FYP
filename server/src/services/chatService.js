@@ -576,7 +576,7 @@ export async function sendMessage(conversationId, userId, { content, contentType
   const hasText = content && content.trim().length > 0;
   const hasAttachment = attachmentUrl && attachmentUrl.trim().length > 0;
   if (!hasText && !hasAttachment) {
-    throw new Error("Message content cannot be empty");
+    throw new Error("Your message is empty.");
   }
 
   const hub = await getOrCreateDiscussionHub();

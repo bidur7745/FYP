@@ -4,6 +4,7 @@ import { UserCheck, Loader2, AlertCircle, Upload, Leaf, Shield, Lock, Download, 
 import { predictDisease, getDiseaseTreatments, getDiseaseByCropAndClass } from '../../services/api'
 import { useLanguage } from '../../context/LanguageContext'
 import { openDiagnosisReportPdf } from '../../utils/diagnosisReportPdf'
+import { toast } from 'react-toastify'
 
 const reportTabs = [
   { id: 'overview', labelKey: 'overview', icon: Leaf },
@@ -17,10 +18,7 @@ const LeafUploadIcon = () => (
   </div>
 )
 
-/**
- * Normalize className for lookup - ML may return various formats:
- * Bacterial_spot, Bacterial spot, bacterial_spot, Bacterial-Spot
- */
+
 const normalizeClassName = (str) => {
   if (!str || typeof str !== 'string') return ''
   return str
@@ -30,10 +28,15 @@ const normalizeClassName = (str) => {
     .toLowerCase()
 }
 
-/**
- * Map ML predicted className → disease_treatments.class_name (same names as DB export).
- * Single source of truth aligned with disease_treatments table.
- */
+const toPercent = (value) => {
+  if (value == null) return null
+  const n = Number(value)
+  if (Number.isNaN(n)) return null
+
+  const pct = n <= 1 ? n * 100 : n
+  return Math.max(0, Math.min(100, Math.round(pct)))
+}
+
 const ML_TO_DB_CLASSNAME = {
   maize: {
     Blight: 'Blight',
@@ -89,7 +92,7 @@ const DiseaseDetectionScan = () => {
   const { content, locale } = useLanguage()
   const scanT = content?.diseaseDetection?.scan || {}
 
-  const [selectedCrop, setSelectedCrop] = useState('tomato')
+  const [selectedCrop, setSelectedCrop] = useState('')
   const [file, setFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -167,6 +170,7 @@ const DiseaseDetectionScan = () => {
     const err = validateFile(chosen)
     if (err) {
       setError(err)
+      toast.error(err)
       return
     }
     setFile(chosen)
@@ -236,7 +240,18 @@ const DiseaseDetectionScan = () => {
   }
 
   const handleScan = async () => {
-    if (!file) return
+    if (!file) {
+      const msg = scanT.errorNoImage || 'Please upload a leaf image before scanning.'
+      setError(msg)
+      toast.error(msg)
+      return
+    }
+    if (!selectedCrop) {
+      const msg = scanT.errorSelectCrop || 'Please select a crop type before scanning.'
+      setError(msg)
+      toast.error(msg)
+      return
+    }
     try {
       setLoading(true)
       setError('')
@@ -247,7 +262,9 @@ const DiseaseDetectionScan = () => {
       const data = await predictDisease(file, selectedCrop)
       setResult(data)
     } catch (err) {
-      setError(err.message || scanT.errorAnalyzeFailed || 'Failed to analyze leaf image')
+      const msg = err.message || scanT.errorAnalyzeFailed || 'Failed to analyze leaf image'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
@@ -290,8 +307,7 @@ const DiseaseDetectionScan = () => {
     )
   }
 
-  const confidence = result?.diseaseConfidence != null ? Number(result.diseaseConfidence) : null
-  const confidencePercent = confidence != null ? Math.round(confidence * 100) : null
+  const confidencePercent = toPercent(result?.diseaseConfidence)
   const isErrorState = !!error || (result && !result.success)
 
   const predictedClass = result?.predictedDisease || result?.class
@@ -391,6 +407,7 @@ const DiseaseDetectionScan = () => {
                 onChange={(e) => setSelectedCrop(e.target.value)}
                 className="w-full rounded-lg border border-slate-600 bg-slate-800/60 px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
               >
+                <option value="">{scanT.selectCropPlaceholder || 'Select crop type'}</option>
                 {cropOptions.map((opt) => (
                   <option key={opt.cropKey} value={opt.cropKey}>{opt.cropName}</option>
                 ))}
@@ -399,7 +416,7 @@ const DiseaseDetectionScan = () => {
 
             <button
               type="button"
-              disabled={!file || loading}
+              disabled={loading}
               onClick={handleScan}
               className="mt-6 w-full py-3.5 rounded-xl font-semibold text-white bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             >

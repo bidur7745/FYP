@@ -92,8 +92,12 @@ export async function createSubscriptionController(req, res) {
       amount_paisa: result.amount_paisa,
     });
   } catch (error) {
-    console.error("createSubscription (Khalti initiate) error:", error);
-    return res.status(500).json({
+    const status = error.statusCode || 500;
+    console.error("createSubscription (Khalti initiate) error:", {
+      message: error.message,
+      statusCode: status,
+    });
+    return res.status(status).json({
       success: false,
       message: error.message || "Failed to initiate payment",
     });
@@ -128,8 +132,12 @@ export async function verifySubscriptionController(req, res) {
       already_active: result.alreadyActive,
     });
   } catch (error) {
-    console.error("verifySubscription error:", error);
-    return res.status(400).json({
+    const status = error.statusCode || 400;
+    console.error("verifySubscription error:", {
+      message: error.message,
+      statusCode: status,
+    });
+    return res.status(status).json({
       success: false,
       message: error.message || "Payment verification failed",
     });

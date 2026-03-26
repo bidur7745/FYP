@@ -164,12 +164,44 @@ export async function initiateKhaltiPayment(userId, userName, userEmail) {
     },
   };
 
-  const response = await axios.post(ENV.KHALTI_EPAYMENT_INITIATE_URL, payload, {
-    headers: {
-      Authorization: `Key ${secret}`,
-      "Content-Type": "application/json",
-    },
-  });
+  let response;
+  try {
+    response = await axios.post(ENV.KHALTI_EPAYMENT_INITIATE_URL, payload, {
+      headers: {
+        Authorization: `Key ${secret}`,
+        "Content-Type": "application/json",
+      },
+      timeout: 20000,
+    });
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const detail =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "";
+
+      let message = "Failed to initiate Khalti payment.";
+      if (status === 401) {
+        message = "Khalti configuration is invalid. Please check your test secret key.";
+      } else if (status === 400) {
+        message = detail || "Payment request rejected by Khalti.";
+      } else if (
+        error.code === "ECONNABORTED" ||
+        error.code === "ENOTFOUND" ||
+        error.code === "ECONNRESET"
+      ) {
+        message = "Unable to reach Khalti right now. Please try again.";
+      } else if (detail) {
+        message = detail;
+      }
+
+      const err = new Error(message);
+      err.statusCode = status && status >= 400 && status < 500 ? status : 502;
+      throw err;
+    }
+    throw error;
+  }
 
   const pidx = response.data?.pidx;
   const paymentUrl = response.data?.payment_url || response.data?.redirect?.payment_url;
@@ -198,16 +230,36 @@ export async function verifyKhaltiAndActivate(pidx, _amountPaisa) {
   if (!secret) throw new Error("Khalti is not configured");
 
   const lookupUrl = getKhaltiLookupUrl();
-  const lookupRes = await axios.post(
-    lookupUrl,
-    { pidx },
-    {
-      headers: {
-        Authorization: `Key ${secret}`,
-        "Content-Type": "application/json",
-      },
+  let lookupRes;
+  try {
+    lookupRes = await axios.post(
+      lookupUrl,
+      { pidx },
+      {
+        headers: {
+          Authorization: `Key ${secret}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 20000,
+      }
+    );
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const detail =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "";
+      const message =
+        status === 401
+          ? "Khalti configuration is invalid. Please check your test secret key."
+          : detail || "Failed to verify Khalti payment.";
+      const err = new Error(message);
+      err.statusCode = status && status >= 400 && status < 500 ? status : 502;
+      throw err;
     }
-  );
+    throw error;
+  }
 
   const data = lookupRes.data;
   if (!data || data.status !== "Completed") {

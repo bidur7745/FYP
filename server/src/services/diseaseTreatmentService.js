@@ -33,7 +33,7 @@ export const getAllTreatments = async (cropKey = null) => {
     .innerJoin(diseasesTable, eq(diseaseTreatmentsTable.diseaseId, diseasesTable.id))
     .innerJoin(cropsTable, eq(diseasesTable.cropId, cropsTable.cropId));
   if (cropKey) {
-    const cropId = await getCropIdByKey(cropKey);
+    const cropId = await getCropIdByCropName(cropKey);
     if (!cropId) return [];
     return base.where(eq(diseasesTable.cropId, cropId)).orderBy(asc(diseaseTreatmentsTable.id));
   }

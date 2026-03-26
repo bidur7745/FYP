@@ -51,6 +51,7 @@
   },
   "cropAdvisoryPage": {
     "profileIncomplete": "Profile Incomplete",
+    "profileIncompleteDesc": "Your profile is not complete yet. Please fill in your details to access personalized crop recommendations.",
     "completeProfile": "Complete Profile",
     "setFarmLocation": "Please complete your profile and set your farm location to get personalized recommendations.",
     "loadError": "Failed to load crop advisory",
@@ -163,7 +164,29 @@
     "trendTitle": "30-day trend:",
     "noTrendData": "No trend data for this crop.",
     "date": "Date",
-    "loadError": "Failed to load market prices"
+    "loadError": "Failed to load market prices",
+    "viewDetails": "View price details"
+  },
+  "cropPriceDetailPage": {
+    "back": "Back",
+    "subtitle": "Price history & insights",
+    "latestPrice": "Latest Price",
+    "allTimeHigh": "All-Time High",
+    "allTimeLow": "All-Time Low",
+    "overallAvg": "Overall Average",
+    "records": "records",
+    "priceChart": "Price Chart",
+    "last7Days": "Last 7 Days",
+    "allTime": "All Time",
+    "avgPrice": "Avg Price",
+    "maxPrice": "Max Price",
+    "minPrice": "Min Price",
+    "noChartData": "No price data available for this period.",
+    "loadError": "Failed to load price data",
+    "date": "Date",
+    "minCol": "Min (Rs.)",
+    "maxCol": "Max (Rs.)",
+    "avgCol": "Avg (Rs.)"
   },
   "home": {
     "hero": {
@@ -711,6 +734,9 @@
       "confidencePercent": "Confidence percentage",
       "errorUnsupportedFormat": "Unsupported format. Use JPG, PNG, or HEIC.",
       "errorFileTooLarge": "File too large. Maximum 4 MB.",
+      "errorNoImage": "Please upload a leaf image before scanning.",
+      "errorSelectCrop": "Please select a crop type before scanning.",
+      "selectCropPlaceholder": "Select crop type",
       "errorAnalyzeFailed": "Failed to analyze leaf image",
       "detected": "Detected",
       "removeFile": "Remove file",

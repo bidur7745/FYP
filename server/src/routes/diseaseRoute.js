@@ -19,11 +19,23 @@ import {
 
 const router = Router();
 
+const handleDiseaseUploadError = (err, res) => {
+  return res.status(400).json({
+    success: false,
+    message: err?.message || "Invalid image file.",
+  });
+};
+
 // Predict crop disease from leaf image (authenticated)
 router.post(
   "/predict",
   authenticate,
-  uploadImage.single("file"),
+  (req, res, next) => {
+    uploadImage.single("file")(req, res, (err) => {
+      if (err) return handleDiseaseUploadError(err, res);
+      next();
+    });
+  },
   predictDiseaseController
 );
 

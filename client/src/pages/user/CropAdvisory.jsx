@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, AlertCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, AlertCircle, Loader2, ChevronLeft, ChevronRight, UserCircle } from 'lucide-react'
 import { useLanguage } from '../../context/LanguageContext'
 import { getRecommendedCrops, getFilteredCrops, searchCrops, getUserProfile } from '../../services/api'
 import CropCard from '../../components/CropCard'
@@ -163,24 +163,29 @@ const CropAdvisory = () => {
     )
   }
 
-  if (error && !userProfile) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-800 via-slate-700 to-slate-800 pt-24 pb-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-red-900/50 border border-red-500/50 text-red-100 px-6 py-4 rounded-xl">
-            <div className="flex items-start gap-3">
-              <AlertCircle size={24} />
-              <div>
-                <h3 className="font-semibold mb-1">{t.profileIncomplete || 'Profile Incomplete'}</h3>
-                <p>{error}</p>
-                <button
-                  onClick={() => navigate('/dashboard/user')}
-                  className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-                >
-                  {t.completeProfile || 'Complete Profile'}
-                </button>
-              </div>
+        <div className="max-w-7xl mx-auto flex items-center justify-center py-16">
+          <div className="max-w-md w-full bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-amber-500/10 border-2 border-amber-500/30 flex items-center justify-center">
+              <UserCircle className="text-amber-400" size={40} />
             </div>
+            <h3 className="text-xl font-bold text-white mb-3">
+              {t.profileIncomplete || 'Profile Incomplete'}
+            </h3>
+            <p className="text-gray-300 mb-2">
+              {t.profileIncompleteDesc || 'Your profile is not complete yet. Please fill in your details to access personalized crop recommendations.'}
+            </p>
+            <p className="text-gray-400 text-sm mb-6">
+              {t.setFarmLocation || 'Please complete your profile and set your farm location to get personalized recommendations.'}
+            </p>
+            <button
+              onClick={() => navigate('/dashboard/user')}
+              className="w-full px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+            >
+              {t.completeProfile || 'Complete Profile'}
+            </button>
           </div>
         </div>
       </div>

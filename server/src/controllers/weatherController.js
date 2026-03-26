@@ -88,7 +88,13 @@ export const getCurrentWeatherController = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching weather:", error);
+    if (error?.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    console.error("Error fetching weather:", error.message || error);
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch weather data",
@@ -129,7 +135,13 @@ export const getForecastController = async (req, res) => {
       forecast: forecastData,
     });
   } catch (error) {
-    console.error("Error fetching forecast:", error);
+    if (error?.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    console.error("Error fetching forecast:", error.message || error);
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch forecast data",
@@ -173,7 +185,13 @@ export const getExtendedWeatherController = async (req, res) => {
       current: oneCallData.current || {},
     });
   } catch (error) {
-    console.error("Error fetching extended weather:", error);
+    if (error?.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    console.error("Error fetching extended weather:", error.message || error);
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch extended weather data",

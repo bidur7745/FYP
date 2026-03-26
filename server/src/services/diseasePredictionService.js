@@ -4,6 +4,20 @@ import { db } from "../config/db.js";
 import { ENV } from "../config/env.js";
 import { diseasePredictionsTable } from "../schema/index.js";
 
+function formatLeafValidationMessage(rawMessage) {
+  if (!rawMessage) return "";
+  const match = rawMessage.match(/leaf_confidence\s*=\s*([0-9]*\.?[0-9]+)/i);
+  if (!match) return rawMessage;
+  const n = Number(match[1]);
+  if (Number.isNaN(n)) return rawMessage;
+  const percent = n <= 1 ? n * 100 : n;
+  const rounded = Math.max(0, Math.min(100, Math.round(percent * 10) / 10));
+  const label = /predicted\s*=\s*['"]?other['"]?/i.test(rawMessage)
+    ? "non-leaf confidence"
+    : "leaf confidence";
+  return rawMessage.replace(match[0], `${label}=${rounded}%`);
+}
+
 /**
  * Call ML microservice to predict disease from leaf image.
  * @param {Buffer} imageBuffer
@@ -21,20 +35,40 @@ export const callDiseasePredict = async (imageBuffer, mimetype, crop) => {
   const form = new FormData();
   form.append("file", imageBuffer, { filename: "leaf.jpg", contentType: mimetype || "image/jpeg" });
   form.append("crop", crop);
-  const response = await axios.post(`${baseUrl}/predict`, form, {
-    headers: form.getHeaders(),
-    maxBodyLength: Infinity,
-    timeout: 60000,
-  });
-  const data = response.data || {};
-  return {
-    class: data.class ?? data.predicted_disease ?? data.predictedDisease,
-    predictedDisease: data.predicted_disease ?? data.predictedDisease ?? data.class,
-    generalName: data.general_name ?? data.generalName,
-    confidence: data.confidence ?? data.disease_confidence ?? 0,
-    leaf_check: data.leaf_check ?? data.leafCheck,
-    probabilities: data.probabilities ?? {},
-  };
+  try {
+    const response = await axios.post(`${baseUrl}/predict`, form, {
+      headers: form.getHeaders(),
+      maxBodyLength: Infinity,
+      timeout: 60000,
+    });
+    const data = response.data || {};
+    return {
+      class: data.class ?? data.predicted_disease ?? data.predictedDisease,
+      predictedDisease: data.predicted_disease ?? data.predictedDisease ?? data.class,
+      generalName: data.general_name ?? data.generalName,
+      confidence: data.confidence ?? data.disease_confidence ?? 0,
+      leaf_check: data.leaf_check ?? data.leafCheck,
+      probabilities: data.probabilities ?? {},
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const detail = error.response?.data?.detail;
+      const message =
+        (typeof detail === "string" && detail) ||
+        (Array.isArray(detail) && detail.length && detail[0]?.msg) ||
+        error.response?.data?.message ||
+        "";
+      const friendlyMessage = formatLeafValidationMessage(message);
+
+      const err = new Error(
+        friendlyMessage || "Unable to analyze this image. Please upload a clear crop leaf image."
+      );
+      err.statusCode = status && status >= 400 && status < 500 ? status : 502;
+      throw err;
+    }
+    throw error;
+  }
 };
 
 /**

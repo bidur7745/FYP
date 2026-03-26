@@ -19,6 +19,14 @@ const alertsConfig = JSON.parse(readFileSync(alertsConfigPath, "utf8"));
  * Handles all weather-related API calls and alert generation
  */
 class WeatherService {
+  ensureApiKeyConfigured() {
+    if (!OPENWEATHER_API_KEY) {
+      const err = new Error("Weather service is unavailable: OPENWEATHER_API_KEY is not configured.");
+      err.statusCode = 503;
+      throw err;
+    }
+  }
+
   /**
    * Get current weather by coordinates
    * @param {number} lat - Latitude
@@ -27,9 +35,7 @@ class WeatherService {
    */
   async getCurrentWeatherByCoords(lat, lon) {
     try {
-      if (!OPENWEATHER_API_KEY) {
-        throw new Error("OPENWEATHER_API_KEY is not configured");
-      }
+      this.ensureApiKeyConfigured();
 
       const response = await axios.get(`${OPENWEATHER_BASE_URL}/weather`, {
         params: {
@@ -42,6 +48,7 @@ class WeatherService {
 
       return response.data;
     } catch (error) {
+      if (error?.statusCode) throw error;
       throw new Error(
         `Failed to fetch current weather: ${error.response?.data?.message || error.message}`
       );
@@ -56,9 +63,7 @@ class WeatherService {
    */
   async getForecastByCoords(lat, lon) {
     try {
-      if (!OPENWEATHER_API_KEY) {
-        throw new Error("OPENWEATHER_API_KEY is not configured");
-      }
+      this.ensureApiKeyConfigured();
 
       const response = await axios.get(`${OPENWEATHER_BASE_URL}/forecast`, {
         params: {
@@ -71,6 +76,7 @@ class WeatherService {
 
       return response.data;
     } catch (error) {
+      if (error?.statusCode) throw error;
       throw new Error(
         `Failed to fetch forecast: ${error.response?.data?.message || error.message}`
       );
@@ -85,9 +91,7 @@ class WeatherService {
    */
   async getOneCallData(lat, lon) {
     try {
-      if (!OPENWEATHER_API_KEY) {
-        throw new Error("OPENWEATHER_API_KEY is not configured");
-      }
+      this.ensureApiKeyConfigured();
 
       // Try One Call API 3.0 first (if available)
       try {
@@ -123,6 +127,7 @@ class WeatherService {
         }
       }
     } catch (error) {
+      if (error?.statusCode) throw error;
       throw new Error(`Failed to fetch extended weather: ${error.message}`);
     }
   }

@@ -12,6 +12,15 @@ const EMOJI_GROUPS = [
 
 const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif'
 const DOC_ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain'
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ALLOWED_DOC_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+]
 
 function formatFileSize(bytes) {
   if (!bytes) return ''
@@ -92,6 +101,7 @@ export default function ChatWindow({ conversation, currentUserId, theme = 'dark'
   const [showAttach, setShowAttach] = React.useState(false)
   const [pendingFile, setPendingFile] = React.useState(null)
   const [pendingPreview, setPendingPreview] = React.useState(null)
+  const [composerError, setComposerError] = React.useState('')
   const bottomRef = useRef(null)
   const scrollContainerRef = useRef(null)
   const imageInputRef = React.useRef(null)
@@ -154,6 +164,7 @@ export default function ChatWindow({ conversation, currentUserId, theme = 'dark'
   const clearPending = () => {
     setPendingFile(null)
     setPendingPreview(null)
+    setComposerError('')
     if (imageInputRef.current) imageInputRef.current.value = ''
     if (docInputRef.current) docInputRef.current.value = ''
   }
@@ -162,6 +173,16 @@ export default function ChatWindow({ conversation, currentUserId, theme = 'dark'
     const file = e.target.files?.[0]
     if (!file) return
     setShowAttach(false)
+
+    const allowedTypes = type === 'image' ? ALLOWED_IMAGE_TYPES : [...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOC_TYPES]
+    if (!allowedTypes.includes(file.type)) {
+      setComposerError('File type is not supported.')
+      if (imageInputRef.current) imageInputRef.current.value = ''
+      if (docInputRef.current) docInputRef.current.value = ''
+      return
+    }
+
+    setComposerError('')
     const isImage = file.type.startsWith('image/')
     setPendingFile({ file, type: isImage ? 'image' : 'document' })
     if (isImage) {
@@ -175,6 +196,7 @@ export default function ChatWindow({ conversation, currentUserId, theme = 'dark'
 
   const handleSendFile = async () => {
     if (!pendingFile || !conversation?.id || uploading) return
+    let uploadedAndSent = false
     try {
       setUploading(true)
       const isImage = pendingFile.type === 'image'
@@ -204,13 +226,15 @@ export default function ChatWindow({ conversation, currentUserId, theme = 'dark'
           url,
           meta
         )
+        uploadedAndSent = true
       }
     } catch (err) {
       console.error('File upload failed:', err)
+      setComposerError(err.message || 'File upload failed')
     } finally {
       setUploading(false)
       setUploadProgress('')
-      clearPending()
+      if (uploadedAndSent) clearPending()
     }
   }
 
@@ -218,13 +242,19 @@ export default function ChatWindow({ conversation, currentUserId, theme = 'dark'
     e.preventDefault()
     if (pendingFile) { handleSendFile(); return }
     const text = input.trim()
-    if (!text || !conversation?.id || sending || uploading) return
+    if (!conversation?.id || sending || uploading) return
+    if (!text) {
+      setComposerError('Your message is empty.')
+      return
+    }
     setSending(true)
+    setComposerError('')
     try {
       await sendMessage(conversation.id, text, 'text')
       setInput('')
     } catch (err) {
       console.error(err)
+      setComposerError(err.message || 'Failed to send message')
     } finally {
       setSending(false)
     }
@@ -355,7 +385,7 @@ export default function ChatWindow({ conversation, currentUserId, theme = 'dark'
             onChange={(e) => handleFileSelected(e, 'document')} />
 
           {!pendingFile ? (
-            <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
+            <input type="text" value={input} onChange={(e) => { setInput(e.target.value); if (composerError) setComposerError('') }}
               placeholder="Type a message..."
               className={`flex-1 px-4 py-2.5 rounded-full border outline-none focus:ring-2 ${t.input}`}
               disabled={sending || uploading} />
@@ -392,12 +422,15 @@ export default function ChatWindow({ conversation, currentUserId, theme = 'dark'
           </div>
 
           <button type="submit"
-            disabled={sending || (uploading && !pendingFile) || (!pendingFile && !input.trim())}
+            disabled={sending || (uploading && !pendingFile)}
             className="p-2.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             aria-label="Send message">
             {uploading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
           </button>
         </div>
+        {composerError && (
+          <p className="mt-2 px-2 text-sm text-rose-400">{composerError}</p>
+        )}
       </form>
     </div>
   )

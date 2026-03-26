@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Search, RefreshCw, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLanguage } from '../../context/LanguageContext'
 import { getMarketPrices, getMarketPriceCrops, refreshMarketPrices } from '../../services/api'
@@ -6,6 +7,7 @@ import { getMarketPrices, getMarketPriceCrops, refreshMarketPrices } from '../..
 const PAGE_SIZE = 30
 
 const MarketPrices = () => {
+  const navigate = useNavigate()
   const { content, locale } = useLanguage()
   const t = content?.marketPricesPage || {}
   const [prices, setPrices] = useState([])
@@ -201,12 +203,13 @@ const MarketPrices = () => {
                     <th className="px-4 py-3 text-slate-300 font-semibold">{t.max || 'Max (Rs.)'}</th>
                     <th className="px-4 py-3 text-slate-300 font-semibold">{t.avg || 'Avg (Rs.)'}</th>
                     <th className="px-4 py-3 text-slate-300 font-semibold">{t.unit || 'Unit'}</th>
+                    <th className="px-4 py-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {prices.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
+                      <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
                         {t.noData || 'No price data. Data is updated daily (around 10 AM).'}
                       </td>
                     </tr>
@@ -214,10 +217,11 @@ const MarketPrices = () => {
                     paginatedPrices.map((row) => (
                       <tr
                         key={row.id}
-                        className="border-b border-slate-700/50 hover:bg-slate-700/20"
+                        onClick={() => navigate(`/market-prices/${encodeURIComponent(row.cropNameEn || row.cropNameNe)}`)}
+                        className="border-b border-slate-700/50 hover:bg-slate-700/20 cursor-pointer group"
                       >
                         <td className="px-4 py-3">
-                          <span className="font-medium text-slate-100">
+                          <span className="font-medium text-slate-100 group-hover:text-emerald-400 transition-colors">
                             {row.cropNameNe || row.cropNameEn || '–'}
                           </span>
                         </td>
@@ -227,6 +231,9 @@ const MarketPrices = () => {
                           {formatPrice(row.averagePrice)}
                         </td>
                         <td className="px-4 py-3 text-slate-400">{row.unit || 'kg'}</td>
+                        <td className="px-4 py-3 text-slate-500 group-hover:text-emerald-400 transition-colors">
+                          <ChevronRight size={16} />
+                        </td>
                       </tr>
                     ))
                   )}

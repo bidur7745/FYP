@@ -37,6 +37,7 @@ import WeatherDashboard from './pages/user/WeatherDashboard'
 import GovernmentSchemes from './pages/user/GovernmentSchemes'
 import SchemeDetails from './pages/user/SchemeDetails'
 import MarketPrices from './pages/user/MarketPrices'
+import CropPriceDetail from './pages/user/CropPriceDetail'
 import PremiumSubscription from './pages/PremiumSubscription'
 import PremiumSuccess from './pages/PremiumSuccess'
 import SubscriptionDetails from './pages/user/SubscriptionDetails'
@@ -110,6 +111,7 @@ const AppContent = () => {
             <Route path="/crop-recommendation" element={<CropRecommendation/>}/>
             <Route path="/weather-dashboard" element={<WeatherDashboard/>}/>
             <Route path="/market-prices" element={<MarketPrices/>}/>
+            <Route path="/market-prices/:cropName" element={<CropPriceDetail/>}/>
             <Route path="/government-schemes" element={<GovernmentSchemes/>}/>
             <Route path="/government-schemes/:schemeId" element={<SchemeDetails/>}/>
             <Route path="/disease-detection/scan" element={<DiseaseDetectionScan/>}/>

@@ -30,6 +30,7 @@
     },
     "cropAdvisoryPage": {
       "profileIncomplete": "प्रोफाइल अपूर्ण",
+      "profileIncompleteDesc": "तपाईंको प्रोफाइल अझै पूरा भएको छैन। व्यक्तिगत बाली सिफारिसहरू पाउन कृपया आफ्नो विवरण भर्नुहोस्।",
       "completeProfile": "प्रोफाइल पूरा गर्नुहोस्",
       "setFarmLocation": "व्यक्तिगत सिफारिस पाउन आफ्नो प्रोफाइल पूरा गर्नुहोस् र खेतको स्थान सेट गर्नुहोस्।",
       "loadError": "बाली सल्लाह लोड गर्न असफल",
@@ -142,7 +143,29 @@
       "trendTitle": "३० दिने प्रवृत्ति:",
       "noTrendData": "यस बालीको प्रवृत्ति डाटा छैन।",
       "date": "मिति",
-      "loadError": "बजार मूल्य लोड गर्न असफल"
+      "loadError": "बजार मूल्य लोड गर्न असफल",
+      "viewDetails": "मूल्य विवरण हेर्नुहोस्"
+    },
+    "cropPriceDetailPage": {
+      "back": "पछाडि",
+      "subtitle": "मूल्य इतिहास र अन्तर्दृष्टि",
+      "latestPrice": "भर्खरको मूल्य",
+      "allTimeHigh": "सर्वकालिक उच्च",
+      "allTimeLow": "सर्वकालिक न्यून",
+      "overallAvg": "समग्र औसत",
+      "records": "रेकर्डहरू",
+      "priceChart": "मूल्य चार्ट",
+      "last7Days": "पछिल्लो ७ दिन",
+      "allTime": "सम्पूर्ण समय",
+      "avgPrice": "औसत मूल्य",
+      "maxPrice": "अधिकतम मूल्य",
+      "minPrice": "न्यूनतम मूल्य",
+      "noChartData": "यस अवधिको लागि मूल्य डाटा उपलब्ध छैन।",
+      "loadError": "मूल्य डाटा लोड गर्न असफल",
+      "date": "मिति",
+      "minCol": "न्यून (रू.)",
+      "maxCol": "अधिक (रू.)",
+      "avgCol": "औसत (रू.)"
     },
   
     "home": {
@@ -689,6 +712,9 @@
       "confidencePercent": "विश्वास प्रतिशत",
       "errorUnsupportedFormat": "समर्थित ढाँचा होईन। JPG, PNG, वा HEIC प्रयोग गर्नुहोस्।",
       "errorFileTooLarge": "फाइल धेरै ठूलो। अधिकतम 4 MB।",
+      "errorNoImage": "स्क्यान गर्नु अघि पातको छवि अपलोड गर्नुहोस्।",
+      "errorSelectCrop": "स्क्यान गर्नु अघि बालीको प्रकार छान्नुहोस्।",
+      "selectCropPlaceholder": "बालीको प्रकार छान्नुहोस्",
       "errorAnalyzeFailed": "पातको छवि विश्लेषण असफल भयो",
       "detected": "पहिचान भयो",
       "removeFile": "फाइल हटाउनुहोस्",

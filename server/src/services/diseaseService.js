@@ -51,8 +51,8 @@ export const getDiseaseById = async (id) => {
 };
 
 export const getDiseaseByCropAndClass = async (cropKey, className) => {
-  const cropId = await getCropIdByKey(cropKey);
-  const cls = normalizeKey(className);
+  const cropId = await getCropIdByCropName(cropKey);
+  const cls = normalize(className);
   if (!cropId || !cls) return null;
   const [row] = await db.select(diseaseSelect).from(diseasesTable).innerJoin(cropsTable, eq(diseasesTable.cropId, cropsTable.cropId)).where(and(eq(diseasesTable.cropId, cropId), sql`TRIM(${diseasesTable.className}) = ${cls}`)).limit(1);
   return row ?? null;
