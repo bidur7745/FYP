@@ -4,9 +4,9 @@ import {
   Sprout, ArrowLeft, ArrowRight, Loader2, FlaskConical,
   Thermometer, Droplets, CloudRain, TestTubes, Sparkles,
   ExternalLink, AlertTriangle, CheckCircle2, Wand2, RotateCcw,
-  Leaf, BarChart3
+  Leaf, BarChart3, Lock
 } from 'lucide-react'
-import { recommendCropsWithGuides, generateMissingCropGuide } from '../../services/api'
+import { recommendCropsWithGuides, generateMissingCropGuide, getSubscription } from '../../services/api'
 import { assets } from '../../assets/images/assets'
 
 const STORAGE_KEY = 'crop_recommendation_state'
@@ -50,6 +50,8 @@ const CropRecommendation = () => {
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState(saved?.results || null)
   const [error, setError] = useState('')
+  const [accessLoading, setAccessLoading] = useState(true)
+  const [hasPremiumAccess, setHasPremiumAccess] = useState(false)
   const [generatingFor, setGeneratingFor] = useState(null)
   const [generatedGuides, setGeneratedGuides] = useState(saved?.generatedGuides || {})
 
@@ -60,6 +62,25 @@ const CropRecommendation = () => {
   useEffect(() => {
     persistState()
   }, [persistState])
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        const token = localStorage.getItem('authToken')
+        if (!token) {
+          navigate('/signup')
+          return
+        }
+        const sub = await getSubscription(true)
+        setHasPremiumAccess(!!sub?.active)
+      } catch {
+        setHasPremiumAccess(false)
+      } finally {
+        setAccessLoading(false)
+      }
+    }
+    checkSubscription()
+  }, [navigate])
 
   const handleChange = (key, val) => {
     setValues(prev => ({ ...prev, [key]: val }))
@@ -112,6 +133,76 @@ const CropRecommendation = () => {
     setError('')
     setGeneratedGuides({})
     clearState()
+  }
+
+  if (accessLoading) {
+    return (
+      <div
+        className="min-h-screen text-slate-100 pt-24 pb-16 px-2 sm:px-4 relative"
+        style={{
+          backgroundImage: `url(${assets.cropRecommendation})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px]" />
+        <div className="relative max-w-5xl mx-auto flex items-center justify-center py-24">
+          <Loader2 className="animate-spin text-emerald-400" size={42} />
+        </div>
+      </div>
+    )
+  }
+
+  if (!hasPremiumAccess) {
+    return (
+      <div
+        className="min-h-screen text-slate-100 pt-24 pb-16 px-2 sm:px-4 relative"
+        style={{
+          backgroundImage: `url(${assets.cropRecommendation})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-[2px]" />
+        <div className="relative max-w-3xl mx-auto">
+          <button
+            onClick={() => navigate('/')}
+            className="mb-4 flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span>Back to Home</span>
+          </button>
+
+          <div className="bg-slate-900/70 backdrop-blur-sm rounded-2xl border border-amber-600/30 shadow-xl p-8 text-center">
+            <div className="w-16 h-16 mx-auto rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-5">
+              <Lock className="text-amber-400" size={30} />
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Premium Feature</h1>
+            <p className="text-slate-300 mb-6">
+              Crop Recommendation is available for Premium users only.
+              Upgrade your plan to unlock AI-powered crop suggestions.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link
+                to="/premium"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors"
+              >
+                <Sparkles size={16} />
+                Upgrade to Premium
+              </Link>
+              <Link
+                to="/dashboard/user/subscription"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-600 text-slate-200 hover:bg-slate-700/50 font-semibold transition-colors"
+              >
+                View Subscription
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
