@@ -53,6 +53,15 @@ server.get("/", (req, res) => {
   res.send("API is running...."); 
 });
 
+// Health check endpoint for monitoring
+server.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    service: "express-api"
+  });
+});
+
 // Mount user routes
 server.use("/api/users", userRoutes);
 

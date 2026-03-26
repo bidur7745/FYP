@@ -750,7 +750,10 @@
       "diseaseDesc": "Description",
       "preventiveMeasures": "Preventive measures",
       "treatment": "Treatment",
-      "recommendedMedicine": "Recommended medicine"
+      "recommendedMedicine": "Recommended medicine",
+      "monthlyQuota": "Monthly quota",
+      "remaining": "Remaining",
+      "premiumUnlimitedScans": "Premium: unlimited monthly scans"
     },
     "verifyWithExpert": {
       "title": "Verify with expert",

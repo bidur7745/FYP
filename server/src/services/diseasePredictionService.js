@@ -3,6 +3,7 @@ import FormData from "form-data";
 import { db } from "../config/db.js";
 import { ENV } from "../config/env.js";
 import { diseasePredictionsTable } from "../schema/index.js";
+import { and, eq, gte, lt, sql } from "drizzle-orm";
 
 function formatLeafValidationMessage(rawMessage) {
   if (!rawMessage) return "";
@@ -87,4 +88,18 @@ export const saveDiseasePrediction = async (payload) => {
     })
     .returning();
   return row;
+};
+
+export const countPredictionsByUserInRange = async (userId, startDate, endDate) => {
+  const [row] = await db
+    .select({ count: sql`count(*)::int` })
+    .from(diseasePredictionsTable)
+    .where(
+      and(
+        eq(diseasePredictionsTable.userId, Number(userId)),
+        gte(diseasePredictionsTable.createdAt, startDate),
+        lt(diseasePredictionsTable.createdAt, endDate)
+      )
+    );
+  return Number(row?.count ?? 0);
 };

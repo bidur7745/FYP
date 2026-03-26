@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { UserCheck, Loader2, AlertCircle, Upload, Leaf, Shield, Lock, Download, MoreVertical } from 'lucide-react'
-import { predictDisease, getDiseaseTreatments, getDiseaseByCropAndClass } from '../../services/api'
+import { predictDisease, getDiseaseTreatments, getDiseaseByCropAndClass, getDiseaseScanQuota } from '../../services/api'
 import { useLanguage } from '../../context/LanguageContext'
 import { openDiagnosisReportPdf } from '../../utils/diagnosisReportPdf'
 import { toast } from 'react-toastify'
@@ -106,9 +106,24 @@ const DiseaseDetectionScan = () => {
   const [showDiagnosis, setShowDiagnosis] = useState(false)
   const [reportTab, setReportTab] = useState('overview')
   const [catalogDisease, setCatalogDisease] = useState(null)
+  const [quota, setQuota] = useState(null)
 
   const MAX_FILE_SIZE = 4 * 1024 * 1024 // 4 MB
   const lang = locale === 'ne' ? 'ne' : 'en'
+
+  useEffect(() => {
+    const fetchQuota = async () => {
+      try {
+        const res = await getDiseaseScanQuota()
+        if (res?.success && res?.quota) {
+          setQuota(res.quota)
+        }
+      } catch {
+        // quota is non-blocking UI info
+      }
+    }
+    fetchQuota()
+  }, [])
 
   // Fetch disease catalog (name, category, symptoms) from API when we have a result
   useEffect(() => {
@@ -261,10 +276,20 @@ const DiseaseDetectionScan = () => {
       setShowDiagnosis(false)
       const data = await predictDisease(file, selectedCrop)
       setResult(data)
+      if (data?.quota) setQuota(data.quota)
     } catch (err) {
       const msg = err.message || scanT.errorAnalyzeFailed || 'Failed to analyze leaf image'
       setError(msg)
       toast.error(msg)
+      if (err?.code === 'MONTHLY_SCAN_LIMIT_REACHED') {
+        setQuota({
+          isPremium: false,
+          used: err.used,
+          limit: err.limit,
+          remaining: Math.max(0, Number(err.limit || 0) - Number(err.used || 0)),
+          resetAt: err.resetAt,
+        })
+      }
     } finally {
       setLoading(false)
     }
@@ -412,6 +437,21 @@ const DiseaseDetectionScan = () => {
                   <option key={opt.cropKey} value={opt.cropKey}>{opt.cropName}</option>
                 ))}
               </select>
+              {quota && (
+                <div className="mt-2 text-xs">
+                  {quota.isPremium ? (
+                    <span className="text-emerald-400">
+                      {scanT.premiumUnlimitedScans || 'Premium: unlimited monthly scans'}
+                    </span>
+                  ) : (
+                    <span className="text-amber-300">
+                      {(scanT.monthlyQuota || 'Monthly quota')}: {quota.used ?? 0}/{quota.limit ?? 10}
+                      {' · '}
+                      {(scanT.remaining || 'Remaining')}: {quota.remaining ?? Math.max(0, (quota.limit ?? 10) - (quota.used ?? 0))}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             <button

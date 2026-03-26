@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth.js";
 import { uploadImage } from "../middleware/upload.js";
-import { predictDiseaseController } from "../controllers/diseaseController.js";
+import {
+  predictDiseaseController,
+  getDiseaseScanQuotaController,
+} from "../controllers/diseaseController.js";
 import {
   getTreatmentsController,
   listTreatmentsAdminController,
@@ -38,6 +41,7 @@ router.post(
   },
   predictDiseaseController
 );
+router.get("/quota", authenticate, getDiseaseScanQuotaController);
 
 // ---------- Disease catalog (public GET; admin CRUD) ----------
 // List diseases (public or admin), optional ?crop= & lang=

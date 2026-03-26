@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel, Field
 from torchvision import models, transforms
+from datetime import datetime
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EXPORT_DIR = PROJECT_ROOT / "export"
@@ -124,6 +125,14 @@ def info():
         "leaf_classes": leaf_class_names or [],
         "disease_classes": {c: disease_class_names.get(c, []) for c in disease_models},
         "docs": "/docs",
+    }
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": "ai-api"
     }
 
 

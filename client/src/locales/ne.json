@@ -728,7 +728,10 @@
       "diseaseDesc": "विवरण",
       "preventiveMeasures": "रोकथाम उपाय",
       "treatment": "उपचार",
-      "recommendedMedicine": "सिफारिस गरिएको औषधि"
+      "recommendedMedicine": "सिफारिस गरिएको औषधि",
+      "monthlyQuota": "मासिक कोटा",
+      "remaining": "बाँकी",
+      "premiumUnlimitedScans": "प्रिमियम: असीमित मासिक स्क्यान"
     },
     "verifyWithExpert": {
       "title": "विशेषज्ञसँग सत्यापन गर्नुहोस्",

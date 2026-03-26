@@ -67,7 +67,12 @@ export const apiRequest = async (path, options = {}, requireAuth = false, useCac
     
     if (!response.ok) {
       const message = data?.message || 'Request failed';
-      throw new Error(message);
+      const err = new Error(message);
+      err.status = response.status;
+      if (data && typeof data === 'object') {
+        Object.assign(err, data);
+      }
+      throw err;
     }
 
     // Cache successful GET and POST responses (for POST with same body, use cache)
@@ -721,6 +726,10 @@ export const predictDisease = (file, crop) => {
     body: formData,
   }, true, false);
 };
+
+// Disease Detection – get monthly scan quota (non-premium users)
+export const getDiseaseScanQuota = () =>
+  apiRequest('/api/disease/quota', { method: 'GET' }, true, false);
 
 // Disease catalog – list or get by crop+class (public, optional lang=en|ne)
 export const getDiseaseCatalog = (params = {}) => {
